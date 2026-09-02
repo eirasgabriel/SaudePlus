@@ -12,8 +12,19 @@ O sistema tem como objetivo principal trazer mais acessibilidade à saúde a cad
 A plataforma permite que os pacientes encontrem profissionais, especialidades, clínicas, consulte horários e agende sua consulta remotamente, facilitando o processo de modo que acabe com problemas relacionados à acessibilidade à saúde dentro do nosso país. 
 
 ---
+## Equipe do Projeto: 
+A nossa equipe é composta de 6 Alunos de Engenharia de Software, da Universidade de Vassouras. 
 
-## ✨ Funcionalidades Esperadas: 
+> [Ana Júlia da Silva](https://github.com/AnaSoftEng) - <br> 
+> [Danielle Gil Silva](https://github.com/Daniellesilva-7) - <br>
+> [Fabricio Lima Galisa](https://github.com/backgroundGalisa) - <br>
+> [Gabriel J. Eiras](https://github.com/eirasgabriel) - <br> 
+> [Gabriel P. Marins Moreira](https://github.com/moreira-2203) - <br>
+> [Raissa Queiroz](https://github.com/Raissaqueirozz) - <br>
+---
+
+
+## ✨ Funcionalidades esperadas para o Sistema
 
 ### 👤 Pacientes
 
@@ -91,3 +102,24 @@ A plataforma permite que os pacientes encontrem profissionais, especialidades, c
 * 📈 Relatórios e indicadores
 * 📝 Registro de atividades e alterações
 * ⚙️ Configurações gerais do sistema
+
+---
+
+## Stack Técnica do Projeto - 
+
+> **Front-End:** <br>
+> **Back-End:** <br>
+> **Banco de Dados:** <br> 
+> **Mobile:** <br>
+> **Autenticação:** <br>
+> **Cache:** <br>
+
+
+---
+
+## Design Arquitetural do Projeto - 
+
+
+
+
+
