@@ -123,3 +123,5 @@ A nossa equipe é composta de 6 Alunos de Engenharia de Software, da Universidad
 
 
 
+
+Consulte a [organização de pastas e responsabilidades](docs/arquitetura.md) e o [contrato da API](docs/api.md).
