@@ -1,7 +1,7 @@
 # Arquitetura do SaúdePlus
 
 O repositório mantém duas aplicações: `frontend/` (React + Vite) e
-`backend/` (ainda sem framework definido). Cada aplicação deve manter suas
+`backend/` (Java 21 + Spring Boot 4.1.1 + Maven). Cada aplicação deve manter suas
 dependências, configurações e comandos em sua própria pasta.
 
 ## Front-end
@@ -25,24 +25,52 @@ na raiz de `frontend/`. Não mover `index.html` para `public/`.
 
 ## Back-end
 
-A estrutura é preparatória, sem API executável ou escolha de linguagem/framework.
+O back-end segue a estrutura Maven e mantém as funcionalidades em pacotes Java
+sob `br.com.saudeplus`. `SaudePlusApplication` fica no pacote raiz para que o
+Spring encontre os componentes adicionados nos subpacotes.
 
-- `src/config/`: leitura e validação da configuração do servidor.
-- `src/database/migrations/`: evolução versionada do banco, quando escolhido.
-- `src/middlewares/`: tratamento transversal das requisições.
-- `src/modules/`: funcionalidades agrupadas pelos mesmos domínios do front-end.
-- `tests/`: testes de integração da API e persistência quando implementadas.
+```text
+backend/
+├── pom.xml
+├── mvnw
+├── mvnw.cmd
+├── .mvn/wrapper/
+└── src/
+    ├── main/
+    │   ├── java/br/com/saudeplus/
+    │   │   ├── SaudePlusApplication.java
+    │   │   ├── config/
+    │   │   ├── security/
+    │   │   ├── exception/
+    │   │   ├── auth/
+    │   │   ├── profissionais/
+    │   │   ├── clinicas/
+    │   │   ├── exames/
+    │   │   └── agendamentos/dto/
+    │   └── resources/
+    │       ├── application.yml
+    │       └── db/migration/
+    └── test/java/br/com/saudeplus/
+        └── SaudePlusApplicationTests.java
+```
 
-Dentro de um módulo, separar entrada HTTP (rotas/controladores), regras de negócio
-(serviços), persistência (repositórios) e validação de entrada conforme as convenções
-do framework escolhido. Não criar camadas vazias de código antecipadamente.
+Dentro de cada domínio, os controllers receberão HTTP, os services concentrarão
+regras de negócio, os repositories acessarão a persistência e os DTOs definirão
+os contratos da API. Essas classes serão criadas conforme as funcionalidades.
+`config`, `security` e `exception` reservam espaço para configuração, segurança
+e tratamento compartilhado de erros.
 
-O front-end consome a API; não acessa o banco diretamente. Autorização e regras
-como disponibilidade de horários devem ser garantidas no servidor e no banco.
-Segredos pertencem à configuração do back-end, nunca ao código enviado ao navegador.
+A base inclui Spring MVC e validação. Ainda não há endpoints de negócio,
+autenticação, JPA, driver de banco ou Flyway. `db/migration` é uma pasta reservada,
+não um mecanismo de migração já ativo. Instruções de execução em
+[backend/README.md](../backend/README.md).
+
+O front-end consome a API por HTTP; não acessa o banco diretamente. Autorização e
+regras de disponibilidade devem ser garantidas no servidor e no banco quando
+implementados. Segredos não pertencem ao código enviado ao navegador.
 
 As pastas ainda sem implementação possuem `.gitkeep` para serem versionadas.
-Remover esses marcadores quando as pastas receberem arquivos reais.
+Remover os marcadores quando as pastas receberem arquivos reais.
 
 ## Realocação aplicada
 

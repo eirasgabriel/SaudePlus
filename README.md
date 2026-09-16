@@ -108,7 +108,7 @@ A nossa equipe é composta de 6 Alunos de Engenharia de Software, da Universidad
 ## Stack Técnica do Projeto - 
 
 > **Front-End:** React + Vite.js <br>
-> **Back-End: ** <br>
+> **Back-End:** Java 21 + Spring Boot 4.1.1 + Maven <br>
 > **Banco de Dados:** <br> 
 > **Mobile:** <br>
 > **Autenticação:** <br>
