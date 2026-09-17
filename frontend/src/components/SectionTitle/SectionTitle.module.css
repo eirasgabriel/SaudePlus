@@ -1,0 +1,22 @@
+.title {
+  font-size: var(--fs-section-title);
+  line-height: 1.2;
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.03em;
+  color: var(--color-navy-950);
+}
+
+.accent { color: var(--color-primary); }
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: var(--fw-medium);
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+.link svg { transition: transform var(--duration) var(--ease); }
+.link:hover svg { transform: translateX(4px); }
+.link { border: 0; padding: 0; background: transparent; font-family: inherit; }

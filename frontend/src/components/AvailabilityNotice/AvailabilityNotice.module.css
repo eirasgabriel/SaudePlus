@@ -1,0 +1,12 @@
+.dialog {
+  width: min(460px, calc(100% - 32px));
+  padding: 32px;
+  border: 0;
+  border-radius: var(--radius-card);
+  color: var(--color-text);
+  box-shadow: var(--shadow-float);
+}
+.dialog::backdrop { background: rgb(2 15 69 / 60%); }
+.dialog h2 { font-size: 24px; }
+.dialog p { margin-top: 16px; overflow-wrap: anywhere; }
+.close { margin-top: 24px; min-height: 48px; padding: 12px 20px; white-space: normal; }

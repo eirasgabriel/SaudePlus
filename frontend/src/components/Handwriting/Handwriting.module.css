@@ -1,0 +1,35 @@
+.wrap {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.text {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: var(--font-hand);
+  font-weight: 500;
+  font-size: 33px;
+  line-height: 1.02;
+  color: var(--color-handwriting);
+  white-space: nowrap;
+  transform: rotate(-17deg);
+  transform-origin: left top;
+}
+.text span { display: block; }
+.text span:nth-child(2) { padding-left: 14px; }
+.text span:nth-child(3) { padding-left: 26px; }
+
+/* Coração: 128px à direita e 66px abaixo do início da frase */
+.heart {
+  position: absolute;
+  left: 128px;
+  top: 66px;
+  color: #B9F2FC;
+}
+
+@media (max-width: 1180px) {
+  .wrap { display: none; }
+}

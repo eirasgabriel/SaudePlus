@@ -1,0 +1,108 @@
+/* ==========================================================
+   Como funciona — referência 1536 × 1024
+   ========================================================== */
+
+.hero {
+  --hero-height: 512px;
+  --hero-content-top: 131px;
+  --art-shift-lg: -20px;
+}
+
+.title {
+  margin-top: 16px;
+  font-size: 52px;
+  line-height: 1.1;
+}
+
+.lead {
+  margin-top: 14px;
+  max-width: 480px;
+  font-size: 19px;
+  line-height: 25px;
+}
+
+.actions {
+  margin-top: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+.primaryCta { min-width: 318px; height: 52px; font-size: 20px; }
+.secondaryCta { min-width: 256px; }
+
+/* Posições sobre a arte (px da referência) */
+.cardSchedule { left: 717px; top: 191px; width: 202px; height: 66px; padding-left: 16px; gap: 14px; font-size: 13px; }
+.cardSafe     { left: 1160px; top: 313px; width: 216px; height: 68px; padding-left: 22px; gap: 16px; font-size: 15px; }
+.handwriting  { left: 1142px; top: 165px; }
+
+/* ---------- Etapas ---------- */
+.steps {
+  z-index: 3;
+  margin-top: calc(-1 * var(--hero-overlap));
+  padding: var(--section-padding);
+}
+
+.stepList {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 42px 1fr 42px 1fr 42px 1fr 42px 1fr;
+  align-items: stretch;
+}
+
+.arrow {
+  align-self: center;
+  display: grid;
+  place-items: center;
+  color: var(--color-primary);
+}
+
+/* ---------- Por que escolher ---------- */
+.reasons {
+  margin-top: var(--section-gap);
+  padding: var(--section-padding);
+}
+
+.reasonGrid {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--card-gap);
+}
+.reasonCard { min-height: 128px; gap: 16px; }
+
+/* ---------- Faixa ---------- */
+.band {
+  margin-top: var(--section-gap);
+  margin-bottom: 40px;
+  padding-inline: var(--section-padding);
+}
+.band h2 { font-size: 30px; }
+.bandButton {
+  height: 48px;
+  min-width: 320px;
+  border-radius: var(--radius-pill);
+  font-size: 18px;
+}
+
+/* ==========================================================
+   Responsivo
+   ========================================================== */
+@media (max-width: 1280px) {
+  .stepList {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .arrow { display: none; }
+  .reasonGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .stepList,
+  .reasonGrid { grid-template-columns: 1fr; }
+  .band h2 { font-size: 24px; }
+  .bandButton { min-width: 0; }
+  .primaryCta,
+  .secondaryCta { width: 100%; min-width: 0; }
+}

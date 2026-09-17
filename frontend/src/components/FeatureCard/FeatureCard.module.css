@@ -1,0 +1,36 @@
+.feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-inline: 8px;
+  text-align: center;
+  transition: transform var(--duration) var(--ease);
+}
+.feature:hover { transform: translateY(-3px); }
+
+.iconCircle {
+  display: grid;
+  place-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.title {
+  margin-top: 12px;
+  font-size: var(--fs-card-title);
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--color-navy-950);
+}
+
+.text {
+  margin-top: 8px;
+  font-size: var(--fs-body);
+  line-height: 23px;
+  color: var(--color-text-muted);
+}
+.line { display: block; }

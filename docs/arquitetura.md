@@ -16,6 +16,16 @@ dependências, configurações e comandos em sua própria pasta.
 - `src/services/`: infraestrutura compartilhada de acesso HTTP; criar `http.js`
   quando a integração com a API começar. Operações específicas pertencem à
   funcionalidade, por exemplo `features/agendamentos/agendamentos.api.js`.
+- `src/features/home/`: homepage, com composição em `pages/` e conteúdo de
+  apresentação em `data/`. Os indicadores são dados demonstrativos do layout.
+- `src/features/profissionais/`: especialidades e busca, dados demonstrativos e
+  componentes específicos de profissionais e filtros.
+- `src/features/institucional/`: páginas Como funciona e Sobre nós e seus conteúdos.
+- `src/features/ajuda/`: central de ajuda, perguntas frequentes e canais de suporte.
+- `src/app/App.jsx`: rotas públicas; `RouteEffects.jsx` atualiza título e foco na navegação.
+  O `BrowserRouter` é inicializado em `src/main.jsx`.
+- `src/styles/tokens.css`: cores, tipografia, espaçamento e medidas compartilhadas.
+- `src/utils/`: utilitários compartilhados, como composição de classes CSS.
 - `src/assets/images/`: imagens importadas pelos componentes.
 - `src/styles/global.css`: estilos globais; estilos de componentes ficam próximos deles.
 - `public/`: arquivos servidos diretamente, como o favicon.

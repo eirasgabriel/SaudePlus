@@ -1,0 +1,12 @@
+.rating {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-navy-950);
+}
+.star { color: #F5A623; }
+.md { font-size: 15px; }
+.sm { font-size: 13px; }
+.rating strong { font-weight: var(--fw-semibold); }
+.reviews { color: var(--color-text-muted); }

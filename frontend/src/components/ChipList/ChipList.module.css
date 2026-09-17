@@ -1,0 +1,35 @@
+.row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+
+.label {
+  font-size: 14px;
+  color: #fff;
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(90, 160, 240, 0.8);
+  border-radius: var(--radius-pill);
+  background: rgba(10, 80, 200, 0.35);
+  color: #fff;
+  font-size: 13px;
+  transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+.chip:hover { background: rgba(40, 120, 240, 0.55); }
+
+.active {
+  background: #fff;
+  border-color: #fff;
+  color: var(--color-primary);
+}
