@@ -1,4 +1,4 @@
-/* Dados de exemplo idênticos ao protótipo.
+/* Dados fictícios idênticos ao protótipo.
    Na integração, substitua pelo retorno da API mantendo o mesmo formato. */
 
 export const mockPatient = {
@@ -9,10 +9,10 @@ export const mockPatient = {
 
 export const mockNotificationCount = 2;
 
-/** status aceitos: 'confirmada'  'pendente' 'cancelada' */
+/** status aceitos: 'confirmada' | 'pendente' | 'cancelada' */
 export const mockAppointments = [
   {
-    id: 'apt-1',
+    id: 'agd-1',
     dateTime: '2026-09-15T09:00:00',
     clinic: 'Clínica da Família – Centro',
     address: 'Rua das Flores, 123 – Saquarema, RJ',
@@ -21,7 +21,7 @@ export const mockAppointments = [
     status: 'confirmada',
   },
   {
-    id: 'apt-2',
+    id: 'agd-2',
     dateTime: '2026-09-28T14:30:00',
     clinic: 'Posto de Saúde – Jaconé',
     address: 'Av. Beira Mar, 456 – Jaconé, RJ',
@@ -30,7 +30,7 @@ export const mockAppointments = [
     status: 'confirmada',
   },
   {
-    id: 'apt-3',
+    id: 'agd-3',
     dateTime: '2026-10-12T10:15:00',
     clinic: 'Policlínica Municipal',
     address: 'Av. Saquarema, 789 – Saquarema, RJ',

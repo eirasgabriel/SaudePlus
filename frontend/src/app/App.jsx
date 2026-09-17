@@ -1,11 +1,7 @@
-import MainLayout from '../layouts/MainLayout.jsx'
+import PacienteDashboard from '../components/PacienteDashboard';
 
 function App() {
-  return (
-    <MainLayout>
-      <h1>Hello World!</h1>
-    </MainLayout>
-  );
+  return <PacienteDashboard />;
 }
 
 export default App;
