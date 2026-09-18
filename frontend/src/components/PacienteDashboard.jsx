@@ -1,5 +1,7 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import ListaAgendamentos from './ListaAgendamentos';
+import ModalAgendamento from './ModalAgendamento';
 import {
   mockAppointments,
   mockNotificationCount,
@@ -10,24 +12,27 @@ import estilos from './PacienteDashboard.module.css';
 
 /* 
    CONFIGURAÇÃO DE NAVEGAÇÃO E ATALHOS
-   Troque os href pelas rotas do seu app (ex.: '/consultas').
-   */
+
+   `para` é a rota do react-router-dom. Itens sem `para` ainda não
+   têm rota: são renderizados como âncora inerte. Ao criar a rota,
+   basta preencher o `para` — nada mais muda.
+    */
 
 const MENU_TOPO = [
-  { rotulo: 'Início', icone: 'inicio', href: '#', ativo: true },
-  { rotulo: 'Consultas', icone: 'calendario', href: '#' },
-  { rotulo: 'Exames', icone: 'frasco', href: '#' },
-  { rotulo: 'Histórico', icone: 'arquivo', href: '#' },
-  { rotulo: 'Clínicas', icone: 'hospital', href: '#' },
+  { rotulo: 'Início', icone: 'inicio', para: '/' },
+  { rotulo: 'Consultas', icone: 'calendario', para: '/consultas' },
+  { rotulo: 'Exames', icone: 'frasco', para: '/exames' },
+  { rotulo: 'Histórico', icone: 'arquivo', para: '/historico' },
+  { rotulo: 'Clínicas', icone: 'hospital', para: '/clinicas' },
 ];
 
 const MENU_LATERAL = [
-  { rotulo: 'Visão geral', icone: 'inicio', href: '#', ativo: true },
-  { rotulo: 'Minhas consultas', icone: 'calendario', href: '#' },
-  { rotulo: 'Meus exames', icone: 'frasco', href: '#' },
-  { rotulo: 'Meu histórico', icone: 'arquivo', href: '#' },
-  { rotulo: 'Minhas informações', icone: 'usuario', href: '#' },
-  { rotulo: 'Notificações', icone: 'sino', href: '#' },
+  { rotulo: 'Visão geral', icone: 'inicio', para: '/' },
+  { rotulo: 'Minhas consultas', icone: 'calendario', para: '/consultas' },
+  { rotulo: 'Meus exames', icone: 'frasco', para: '/exames' },
+  { rotulo: 'Meu histórico', icone: 'arquivo', para: '/historico' },
+  { rotulo: 'Minhas informações', icone: 'usuario', para: null },
+  { rotulo: 'Notificações', icone: 'sino', para: null },
 ];
 
 const CARDS_ATALHO = [
@@ -37,7 +42,7 @@ const CARDS_ATALHO = [
     titulo: 'Próximas consultas',
     descricao: 'Veja seus agendamentos e gerencie sua agenda.',
     rotuloLink: 'Ver consultas',
-    href: '#',
+    para: '/consultas',
   },
   {
     tom: 'verde',
@@ -45,7 +50,7 @@ const CARDS_ATALHO = [
     titulo: 'Exames',
     descricao: 'Acesse seus exames e resultados.',
     rotuloLink: 'Ver exames',
-    href: '#',
+    para: '/exames',
   },
   {
     tom: 'roxo',
@@ -53,7 +58,7 @@ const CARDS_ATALHO = [
     titulo: 'Histórico',
     descricao: 'Confira todo o seu histórico de atendimentos.',
     rotuloLink: 'Ver histórico',
-    href: '#',
+    para: '/historico',
   },
   {
     tom: 'rosa',
@@ -61,20 +66,20 @@ const CARDS_ATALHO = [
     titulo: 'Clínicas',
     descricao: 'Encontre endereços, horários e contatos.',
     rotuloLink: 'Ver clínicas',
-    href: '#',
+    para: null,
   },
 ];
 
 const ACESSO_RAPIDO = [
-  { rotulo: 'Consultar resultados de exames', icone: 'frasco', href: '#' },
-  { rotulo: 'Ver minhas consultas', icone: 'calendario', href: '#' },
-  { rotulo: 'Atualizar meus dados', icone: 'usuario', href: '#' },
-  { rotulo: 'Falar com a clínica', icone: 'conversa', href: '#' },
+  { rotulo: 'Consultar resultados de exames', icone: 'frasco', para: '/exames' },
+  { rotulo: 'Ver minhas consultas', icone: 'calendario', para: '/consultas' },
+  { rotulo: 'Atualizar meus dados', icone: 'usuario', para: null },
+  { rotulo: 'Falar com a clínica', icone: 'conversa', para: null },
 ];
 
 /* 
    UTILITÁRIOS
-    */
+*/
 
 /** Junta classes CSS ignorando valores falsy. */
 const classes = (...lista) => lista.filter(Boolean).join(' ');
@@ -82,9 +87,9 @@ const classes = (...lista) => lista.filter(Boolean).join(' ');
 /** "(22) 2655-1234" -> "tel:+552226551234" */
 const paraLinkTelefone = (telefone) => `tel:+55${telefone.replace(/\D/g, '')}`;
 
-/*
+/* 
    ÍCONES SVG (traço 24×24, cor via currentColor)
-   */
+    */
 
 const ICONES = {
   inicio: <path d="M3 10.2 12 3l9 7.2V20a1.5 1.5 0 0 1-1.5 1.5H15v-6.5H9v6.5H4.5A1.5 1.5 0 0 1 3 20z" />,
@@ -201,26 +206,74 @@ function Icone({ nome, preenchido = false, className }) {
   );
 }
 
-/** Link de texto azul com seta. Para React Router: <LinkSeta como={Link} to="/consultas"> */
-function LinkSeta({ como: Elemento = 'a', pequeno = false, className, children, ...resto }) {
-  return (
-    <Elemento className={classes(estilos.linkSeta, pequeno && estilos.linkSetaPequeno, className)} {...resto}>
+/**
+ * Link de texto azul com seta.
+ * `para` navega pelo router (<Link to>); `href` sai para um endereço externo.
+ */
+function LinkSeta({ para, href = '#', pequeno = false, className, children, ...resto }) {
+  const classe = classes(estilos.linkSeta, pequeno && estilos.linkSetaPequeno, className);
+  const conteudo = (
+    <>
       {children}
       <Icone nome="seta" className={estilos.linkSetaIcone} />
-    </Elemento>
+    </>
+  );
+
+  if (para) {
+    return <Link to={para} className={classe} {...resto}>{conteudo}</Link>;
+  }
+  return <a href={href} className={classe} {...resto}>{conteudo}</a>;
+}
+
+/**
+ * Item de menu (topo e lateral).
+ *
+ * Usa <NavLink>, que marca sozinho o item da rota atual com
+ * aria-current="page" — o mesmo seletor que o CSS já usava para o
+ * estado ativo. Por isso o PacienteDashboard.module.css não mudou.
+ */
+function LinkNavegacao({ item, className, classeIcone }) {
+  const conteudo = (ativo) => (
+    <>
+      <Icone
+        nome={item.icone}
+        preenchido={ativo && item.icone === 'inicio'}
+        className={classeIcone}
+      />
+      {item.rotulo}
+    </>
+  );
+
+  // Sem rota ainda: âncora inerte, com o mesmo visual
+  if (!item.para) {
+    return <a href="#" className={className}>{conteudo(false)}</a>;
+  }
+
+  return (
+    // `end` evita que "/" fique ativa em todas as rotas
+    <NavLink to={item.para} end={item.para === '/'} className={className}>
+      {({ isActive }) => conteudo(isActive)}
+    </NavLink>
   );
 }
 
 /* 
    COMPONENTE PRINCIPAL
-   */
+   =*/
 
 /**
- * Dashboard do Paciente — SaúdePlus
- *
- * Sem props, usa os dados de ../services/dadosficticios.js.
- * Na integração, passe os dados da API:
- * <PacienteDashboard paciente={...} agendamentos={...} unidade={...} totalNotificacoes={3} />
+  Dashboard do Paciente — SaúdePlus
+ 
+Sem props, usa os dados de ../services/dadosficticios.js.
+Na integração, passe os dados da API:
+<PacienteDashboard paciente={...} agendamentos={...} unidade={...} totalNotificacoes={3} />
+ 
+Precisa estar dentro de um <BrowserRouter> (ver src/App.jsx), porque usa
+Link, NavLink e useNavigate do react-router-dom.
+ 
+O modal de agendamento é controlado aqui. Para assumir o fluxo por fora,
+passe `aoAgendar` (abre o seu próprio) ou `aoConfirmarAgendamento`
+(recebe os dados do formulário e chama a API).
  */
 export default function PacienteDashboard({
   paciente = mockPatient,
@@ -228,7 +281,9 @@ export default function PacienteDashboard({
   unidade = mockUnit,
   totalNotificacoes = mockNotificationCount,
   imagemBoasVindas,
+  rotaAgendamento = '/consultas',
   aoAgendar,
+  aoConfirmarAgendamento,
   aoPesquisar,
   aoAbrirNotificacoes,
   aoAbrirPerfil,
@@ -248,42 +303,55 @@ export default function PacienteDashboard({
   const { name: nomePaciente, role: perfilPaciente, avatarUrl: fotoPaciente } = paciente;
   const rotuloContador = totalNotificacoes > 9 ? '9+' : totalNotificacoes;
 
-  const tratarCliqueAgendar = (evento) => {
+  const navegar = useNavigate();
+
+  /* Estado do modal de agendamento. Os dois gatilhos — o botão
+     "Agendar agora" e o link "Agendar consulta" do estado vazio da
+     lista — abrem o mesmo modal. */
+  const [modalAberto, setModalAberto] = useState(false);
+
+  const abrirAgendamento = () => {
+    // `aoAgendar` permite que a tela pai assuma o fluxo (outro modal, outra rota)
     if (aoAgendar) {
-      evento.preventDefault();
       aoAgendar();
+      return;
     }
+    setModalAberto(true);
+  };
+
+  const fecharAgendamento = () => setModalAberto(false);
+
+  const confirmarAgendamento = (dados) => {
+    if (aoConfirmarAgendamento) {
+      aoConfirmarAgendamento(dados);
+      return;
+    }
+    // Sem integração ainda: leva o paciente para a lista de consultas
+    navegar(rotaAgendamento, { state: { agendamento: dados } });
   };
 
   return (
     <div className={estilos.pagina}>
       <div className={estilos.app}>
-        {/*
+        {/* 
             CABEÇALHO
-             */}
+            */}
         <header className={estilos.cabecalho}>
-          <a href="/" className={estilos.marca} aria-label="SaúdePlus, página inicial">
+          <Link to="/" className={estilos.marca} aria-label="SaúdePlus, página inicial">
             <span className={estilos.nomeMarca}>
               Saúde<span>Plus</span>
             </span>
             <span className={estilos.slogan}>A sua saúde, sempre andando junto com você!</span>
-          </a>
+          </Link>
 
           <nav className={estilos.menuTopo} aria-label="Navegação principal">
             {MENU_TOPO.map((item) => (
-              <a
+              <LinkNavegacao
                 key={item.rotulo}
-                href={item.href}
+                item={item}
                 className={estilos.linkMenuTopo}
-                aria-current={item.ativo ? 'page' : undefined}
-              >
-                <Icone
-                  nome={item.icone}
-                  preenchido={item.ativo && item.icone === 'inicio'}
-                  className={estilos.iconeMenuTopo}
-                />
-                {item.rotulo}
-              </a>
+                classeIcone={estilos.iconeMenuTopo}
+              />
             ))}
           </nav>
 
@@ -333,26 +401,19 @@ export default function PacienteDashboard({
         </header>
 
         <div className={estilos.grade}>
-          {/*
+          {/* 
               MENU LATERAL
-              */}
+             */}
           <aside className={estilos.menuLateral} aria-label="Menu do paciente">
             <nav>
               <ul className={estilos.listaMenuLateral}>
                 {MENU_LATERAL.map((item) => (
                   <li key={item.rotulo}>
-                    <a
-                      href={item.href}
+                    <LinkNavegacao
+                      item={item}
                       className={estilos.linkMenuLateral}
-                      aria-current={item.ativo ? 'page' : undefined}
-                    >
-                      <Icone
-                        nome={item.icone}
-                        preenchido={item.ativo && item.icone === 'inicio'}
-                        className={estilos.iconeMenuLateral}
-                      />
-                      {item.rotulo}
-                    </a>
+                      classeIcone={estilos.iconeMenuLateral}
+                    />
                   </li>
                 ))}
               </ul>
@@ -381,9 +442,9 @@ export default function PacienteDashboard({
 
           {/* 
               CONTEÚDO CENTRAL
-             */}
+            */}
           <main className={estilos.conteudo}>
-            {/* ---- Boas-vindas ---- */}
+            {/*  Boas-vindas  */}
             <section className={estilos.boasVindas} aria-labelledby={ids.boasVindas}>
               <div className={estilos.boasVindasConteudo}>
                 <h1 id={ids.boasVindas} className={estilos.boasVindasTitulo}>Olá, {nomePaciente}!</h1>
@@ -435,27 +496,27 @@ export default function PacienteDashboard({
                   </span>
                   <h2 className={estilos.tituloAtalho}>{card.titulo}</h2>
                   <p className={estilos.descricaoAtalho}>{card.descricao}</p>
-                  <LinkSeta href={card.href} className={estilos.linkAtalho}>
+                  <LinkSeta para={card.para} className={estilos.linkAtalho}>
                     {card.rotuloLink}
                   </LinkSeta>
                 </article>
               ))}
             </section>
 
-            {/* Suas próximas consultas  */}
+            {/*  Suas próximas consultas */}
             <section className={estilos.painel} aria-labelledby={ids.consultas}>
               <header className={estilos.painelCabecalho}>
                 <Icone nome="calendario" className={estilos.painelIcone} />
                 <h2 id={ids.consultas} className={estilos.painelTitulo}>Suas próximas consultas</h2>
                 <div className={estilos.painelAcao}>
-                  <LinkSeta href="#" pequeno>Ver todas</LinkSeta>
+                  <LinkSeta para="/consultas" pequeno>Ver todas</LinkSeta>
                 </div>
               </header>
 
-              <ListaAgendamentos agendamentos={agendamentos} />
+              <ListaAgendamentos agendamentos={agendamentos} aoAgendar={abrirAgendamento} />
             </section>
 
-            {/* Segurança de dados  */}
+            {/* Segurança de dados */}
             <section className={estilos.faixaSeguranca} aria-labelledby={ids.seguranca}>
               <Icone nome="escudo" className={estilos.faixaIcone} />
               <div className={estilos.faixaCorpo}>
@@ -476,9 +537,9 @@ export default function PacienteDashboard({
             </section>
           </main>
 
-          {/* 
+          {/*
               PAINEL DIREITO
-             */}
+              */}
           <aside className={estilos.painelDireito} aria-label="Ações e informações">
             {/* ---- Agende sua consulta ---- */}
             <section className={classes(estilos.agendar, estilos.linhaInteira)} aria-labelledby={ids.agendar}>
@@ -487,29 +548,39 @@ export default function PacienteDashboard({
               <p className={estilos.agendarTexto}>
                 Escolha a especialidade, o profissional e o melhor horário para você.
               </p>
-              <a href="#" className={estilos.botaoAgendar} onClick={tratarCliqueAgendar}>
+              <button type="button" className={estilos.botaoAgendar} onClick={abrirAgendamento}>
                 Agendar agora
                 <Icone nome="seta" className={estilos.botaoAgendarIcone} />
-              </a>
+              </button>
               <Icone nome="calendarioMais" className={estilos.agendarArte} />
             </section>
 
-            {/*  Acesso rápido */}
+            {/*  Acesso rápido  */}
             <section className={estilos.painel} aria-labelledby={ids.acessoRapido}>
               <header className={estilos.painelCabecalho}>
                 <Icone nome="raio" preenchido className={estilos.painelIcone} />
                 <h2 id={ids.acessoRapido} className={estilos.painelTitulo}>Acesso rápido</h2>
               </header>
               <ul className={estilos.acessoLista}>
-                {ACESSO_RAPIDO.map((item) => (
-                  <li key={item.rotulo}>
-                    <a href={item.href} className={estilos.acessoLink}>
+                {ACESSO_RAPIDO.map((item) => {
+                  const conteudo = (
+                    <>
                       <Icone nome={item.icone} className={estilos.acessoIcone} />
                       <span className={estilos.acessoRotulo}>{item.rotulo}</span>
                       <Icone nome="setaDireita" className={estilos.acessoSeta} />
-                    </a>
-                  </li>
-                ))}
+                    </>
+                  );
+
+                  return (
+                    <li key={item.rotulo}>
+                      {item.para ? (
+                        <Link to={item.para} className={estilos.acessoLink}>{conteudo}</Link>
+                      ) : (
+                        <a href="#" className={estilos.acessoLink}>{conteudo}</a>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </section>
 
@@ -556,6 +627,12 @@ export default function PacienteDashboard({
           </aside>
         </div>
       </div>
+
+      <ModalAgendamento
+        aberto={modalAberto}
+        aoFechar={fecharAgendamento}
+        aoConfirmar={confirmarAgendamento}
+      />
     </div>
   );
 }
