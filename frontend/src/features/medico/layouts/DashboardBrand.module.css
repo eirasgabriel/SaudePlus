@@ -1,0 +1,35 @@
+.marca {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.nome {
+  font-size: 27px;
+  line-height: 1;
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.035em;
+  color: var(--color-navy-950);
+}
+
+.nome span {
+  color: var(--color-primary-bright);
+}
+
+.slogan {
+  font-size: 11px;
+  line-height: 1;
+  color: var(--color-text-soft);
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .nome {
+    font-size: 23px;
+  }
+
+  .slogan {
+    display: none;
+  }
+}

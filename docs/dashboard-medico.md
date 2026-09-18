@@ -1,0 +1,163 @@
+# Dashboard do Médico
+
+Tela do profissional de saúde, na branch `feature/dashboard-medico`, criada a
+partir de `feature/homepage`. **Nenhum arquivo anterior foi alterado**: tudo o
+que a tela usa é novo ou reaproveitado por importação.
+
+## Como abrir
+
+O painel tem um ponto de entrada próprio, para não mexer no roteamento
+institucional:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Depois abra `http://localhost:5173/medico.html`. A rota `/` continua sendo a
+homepage, sem alteração.
+
+> `npm run build` empacota apenas `index.html`. Para incluir o painel no build
+> de produção é preciso declarar a segunda entrada em `vite.config.js`
+> (`build.rollupOptions.input`). Essa mudança não foi feita porque exigiria
+> editar um arquivo existente — é uma linha, quando a equipe quiser.
+
+## O que foi reaproveitado
+
+| Origem (não alterada) | Uso no painel |
+| --- | --- |
+| `src/styles/tokens.css` | toda a paleta, tipografia, espaçamento, raios e sombras |
+| `src/styles/global.css` | reset, `.skip-link`, `.sr-only`, `:focus-visible` |
+| `src/components/icons/Icons.jsx` | 12 dos ícones da tela |
+| `src/utils/cx.js` | composição de classes |
+| padrão de `features/<dominio>/{pages,components,data}` | organização das pastas |
+| padrão de `scripts/*.test.mjs` | testes automatizados |
+
+Ícones que não existiam (`HomeIcon`, `FlaskIcon`, `BellIcon`, `ClipboardIcon`,
+`DotIcon`) foram criados em `features/medico/components/icons/MedicoIcons.jsx`,
+com o mesmo contrato dos ícones do sistema (`currentColor` e prop `size`), em
+vez de editar `Icons.jsx`.
+
+## Estrutura
+
+```text
+frontend/
+├── medico.html                          entrada do painel
+├── scripts/medico.test.mjs              testes (npm test já cobre)
+└── src/
+    ├── medico.jsx                       bootstrap do React
+    └── features/medico/
+        ├── selectors.js                 regras de leitura e contadores
+        ├── data/medico.js               mocks (médico, agenda, pacientes…)
+        ├── layouts/
+        │   ├── DashboardLayout.jsx      casca: skip-link, header, grade
+        │   ├── DashboardHeader.jsx      topo, busca, sino, perfil
+        │   ├── DashboardSidebar.jsx     menu lateral
+        │   ├── DashboardBrand.jsx       wordmark + slogan
+        │   └── navigation.js            itens dos dois menus
+        ├── pages/DashboardMedico.jsx    composição da tela
+        └── components/
+            ├── Panel/                   cartão branco com cabeçalho e ação
+            ├── SummaryCard/             os quatro cartões do topo
+            ├── WelcomeBanner/           faixa de boas-vindas (único <h1>)
+            ├── AgendaList/              lista da agenda + AgendaFilter
+            ├── StatusTag/               selo de status da consulta
+            ├── PatientList/             lista de pacientes
+            ├── PendingExamList/         exames aguardando resultado
+            ├── NotificationList/        notificações
+            ├── UnitCard/                dados da unidade
+            ├── DayAgendaCard/           cartão azul com data e frase
+            ├── HighlightCard/           cartões decorativos azul-claro
+            └── icons/MedicoIcons.jsx    ícones novos
+```
+
+## Contrato de dados
+
+`DashboardMedico` aceita tudo por props e usa os mocks só como valor padrão.
+Na integração, basta passar o retorno da API no mesmo formato:
+
+```jsx
+<DashboardMedico
+  medico={{ nome, perfil, especialidade, crm, avatarUrl }}
+  unidade={{ nome, cidade, endereco, telefone, horario, mapUrl }}
+  agenda={[{ id, horario: "08:00", pacienteId, tipo, status }]}
+  pacientes={[{ id, nome, idade, motivo }]}
+  exames={[{ id, nome, pacienteId, prazo }]}
+  notificacoes={[{ id, tipo, titulo, detalhe, quando, lida }]}
+  dataReferencia="2026-09-15"
+/>
+```
+
+`status` aceita `realizada`, `em_andamento`, `aguardando` e `confirmada`. Os
+rótulos e as cores vêm de `STATUS_CONSULTA`, em `data/medico.js` — acrescentar
+um status novo lá faz o selo e o filtro aparecerem sozinhos. `tipo` de
+notificação aceita `resultado`, `agendamento` e `retorno`; um tipo desconhecido
+cai num padrão em vez de quebrar a tela.
+
+## Contadores
+
+Nenhum número da tela está escrito no JSX. Todos saem de `selectors.js`, e as
+definições ficam num lugar só:
+
+| Cartão | Regra |
+| --- | --- |
+| Consultas hoje | total de itens da agenda |
+| Pacientes atendidos | consultas com status concluído (`realizada`) |
+| Exames pendentes | total de exames aguardando resultado |
+| Próximas consultas | consultas que ainda não começaram, e o horário da primeira |
+
+O contador do sino conta as notificações com `lida: false`. As iniciais do
+avatar (`AF`, `JS`…) vêm do primeiro e do último nome do paciente.
+
+### Diferença em relação ao modelo
+
+O modelo enviado traz **5** em "Pacientes atendidos" e **3** em "Próximas
+consultas", mas a própria agenda do modelo lista 3 consultas realizadas e 4
+ainda não iniciadas. Como os contadores passaram a ser derivados dos dados, a
+tela mostra **3** e **4**. Para obter os números do modelo, basta ajustar os
+status em `data/medico.js` — a tela acompanha. O mesmo vale para as iniciais de
+Carlos Eduardo Lima: o modelo mostra `CE`, a regra de primeiro+último nome gera
+`CL` (que é a mesma regra que produz `AF` para Ana Paula Ferreira).
+
+## Acessibilidade
+
+O painel repete o contrato do `MainLayout` institucional: `.skip-link`,
+`<main id="conteudo" tabIndex={-1}>`, um único `<h1>` e um único `<main>` por
+tela. Além disso:
+
+- cada painel é uma `<section aria-labelledby>` ligada ao próprio `<h2>`;
+- a busca do topo usa `aria-expanded`/`aria-controls`, fecha com `Esc` e
+  devolve o foco ao botão de origem;
+- os filtros da agenda são botões com `aria-pressed`, e a contagem de
+  resultados é anunciada por uma região `aria-live="polite"`;
+- linhas clicáveis têm nome acessível descritivo ("Abrir consulta de Fernanda
+  Alves às 10:40"), e o foco aparece na linha inteira via `:has()`;
+- ilustrações e ícones decorativos são `aria-hidden`.
+
+## Testes
+
+`frontend/scripts/medico.test.mjs`, coberto por `npm test`. São 17 testes em
+dois blocos:
+
+- **selectors** (7) — iniciais, contadores derivados, soma da contagem por
+  status, filtro, e integridade dos mocks (toda consulta e todo exame apontam
+  para um paciente existente; todo status usado existe em `STATUS_CONSULTA`).
+  Não dependem do Vite.
+- **página** (10) — renderiza `DashboardMedico` via SSR e confere o `<main>` e
+  o `<h1>` únicos, o contrato de acessibilidade, as seções do modelo, os
+  contadores, uma linha por consulta e o limite de 5 pacientes no painel.
+
+## Pendências conhecidas
+
+- Todos os `href` são `#`. Quando a área logada entrar no React Router, trocar
+  por `to`/`<NavLink>` e descartar `medico.html` e `src/medico.jsx`.
+- O painel não tem autenticação: qualquer pessoa que abrir a URL vê a tela. O
+  back-end ainda não expõe login.
+- A ilustração de boas-vindas é um SVG provisório. Passe `imagemBoasVindas`
+  quando houver a arte final.
+- A marca do painel é o wordmark, como no modelo. O `Logo` com o símbolo da
+  cruz (usado no site institucional) continua disponível e é uma troca de uma
+  linha, caso a equipe decida unificar — ele depende do React Router.
+- O slogan aqui está como "A sua **s**aúde", igual ao dashboard do paciente; o
+  site institucional usa "A sua **S**aúde". Vale padronizar antes do merge.
