@@ -1,0 +1,398 @@
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { mockSpecialties } from '../services/dadosficticios';
+import estilos from './ModalAgendamento.module.css';
+
+/* 
+   UTILITÁRIOS
+ */
+
+const classes = (...lista) => lista.filter(Boolean).join(' ');
+
+/** Data de hoje em AAAA-MM-DD, no fuso local (não em UTC). */
+function hojeISO() {
+  const agora = new Date();
+  const deslocamento = agora.getTimezoneOffset() * 60000;
+  return new Date(agora.getTime() - deslocamento).toISOString().slice(0, 10);
+}
+
+/** '2026-10-05' + '14:30' → 'segunda-feira, 5 de outubro de 2026 às 14:30' */
+function descreverDataHora(data, horario) {
+  if (!data || !horario) return '';
+  const [ano, mes, dia] = data.split('-').map(Number);
+  const [hora, minuto] = horario.split(':').map(Number);
+  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeStyle: 'short' })
+    .format(new Date(ano, mes - 1, dia, hora, minuto));
+}
+
+const FORMULARIO_VAZIO = {
+  especialidadeId: '',
+  profissionalId: '',
+  data: '',
+  horario: '',
+};
+
+const SELETOR_FOCAVEIS =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/*
+   ÍCONES
+   */
+
+const propsSvg = {
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.8,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  'aria-hidden': true,
+  focusable: 'false',
+};
+
+const IconeCalendario = ({ className }) => (
+  <svg {...propsSvg} className={className}>
+    <rect x="3" y="4.5" width="18" height="17" rx="2.5" />
+    <path d="M8 2.5v4M16 2.5v4M3 9.5h18M12 12.5v6M9 15.5h6" />
+  </svg>
+);
+
+const IconeFechar = ({ className }) => (
+  <svg {...propsSvg} className={className} strokeWidth="2.2">
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+);
+
+const IconeSeta = ({ className }) => (
+  <svg {...propsSvg} className={className} strokeWidth="2.2">
+    <path d="M4.5 12h15M13 5.5l6.5 6.5-6.5 6.5" />
+  </svg>
+);
+
+/* 
+   COMPONENTE
+   */
+
+/**
+ * Modal de agendamento de consulta.
+ *
+ * <ModalAgendamento
+ *   aberto={modalAberto}
+ *   aoFechar={() => setModalAberto(false)}
+ *   aoConfirmar={(dados) => api.agendar(dados)}
+ * />
+ *
+ * `aoConfirmar` recebe:
+ * { especialidade, profissional, data, horario, especialidadeId, profissionalId }
+ *
+ * Renderizado em portal no <body>, então funciona a partir de qualquer
+ * lugar da árvore sem depender do overflow ou do z-index da tela.
+ */
+export default function ModalAgendamento({
+  aberto,
+  aoFechar,
+  aoConfirmar,
+  especialidades = mockSpecialties,
+  titulo = 'Agendar consulta',
+  descricao = 'Escolha a especialidade, o profissional e o melhor horário para você.',
+}) {
+  const prefixoId = `ma-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const ids = {
+    titulo: `${prefixoId}-titulo`,
+    descricao: `${prefixoId}-descricao`,
+    especialidade: `${prefixoId}-especialidade`,
+    profissional: `${prefixoId}-profissional`,
+    data: `${prefixoId}-data`,
+    horario: `${prefixoId}-horario`,
+  };
+
+  const [formulario, setFormulario] = useState(FORMULARIO_VAZIO);
+  const [erros, setErros] = useState({});
+
+  const refDialogo = useRef(null);
+  const refPrimeiroCampo = useRef(null);
+  const refFocoAnterior = useRef(null);
+
+  const especialidadeEscolhida = useMemo(
+    () => especialidades.find((item) => item.id === formulario.especialidadeId) ?? null,
+    [especialidades, formulario.especialidadeId],
+  );
+
+  const profissionais = especialidadeEscolhida?.professionals ?? [];
+  const horarios = especialidadeEscolhida?.slots ?? [];
+
+  /* ---- Ao abrir: limpa o formulário e leva o foco para o 1º campo ---- */
+  useEffect(() => {
+    if (!aberto) return undefined;
+
+    refFocoAnterior.current = document.activeElement;
+    setFormulario(FORMULARIO_VAZIO);
+    setErros({});
+
+    const foco = window.setTimeout(() => refPrimeiroCampo.current?.focus(), 0);
+
+    // Trava a rolagem do fundo sem deslocar o layout
+    const larguraBarra = window.innerWidth - document.documentElement.clientWidth;
+    const overflowAnterior = document.body.style.overflow;
+    const paddingAnterior = document.body.style.paddingRight;
+    document.body.style.overflow = 'hidden';
+    if (larguraBarra > 0) document.body.style.paddingRight = `${larguraBarra}px`;
+
+    return () => {
+      window.clearTimeout(foco);
+      document.body.style.overflow = overflowAnterior;
+      document.body.style.paddingRight = paddingAnterior;
+      // Devolve o foco ao elemento que abriu o modal
+      refFocoAnterior.current?.focus?.();
+    };
+  }, [aberto]);
+
+  /* ---- Esc fecha; Tab circula dentro do diálogo ---- */
+  useEffect(() => {
+    if (!aberto) return undefined;
+
+    const aoTeclar = (evento) => {
+      if (evento.key === 'Escape') {
+        evento.stopPropagation();
+        aoFechar?.();
+        return;
+      }
+
+      if (evento.key !== 'Tab') return;
+
+      const focaveis = refDialogo.current?.querySelectorAll(SELETOR_FOCAVEIS);
+      if (!focaveis?.length) return;
+
+      const primeiro = focaveis[0];
+      const ultimo = focaveis[focaveis.length - 1];
+
+      if (evento.shiftKey && document.activeElement === primeiro) {
+        evento.preventDefault();
+        ultimo.focus();
+      } else if (!evento.shiftKey && document.activeElement === ultimo) {
+        evento.preventDefault();
+        primeiro.focus();
+      }
+    };
+
+    document.addEventListener('keydown', aoTeclar);
+    return () => document.removeEventListener('keydown', aoTeclar);
+  }, [aberto, aoFechar]);
+
+  if (!aberto) return null;
+
+  /* ---- Alterações do formulário ---- */
+  const alterarCampo = (campo, valor) => {
+    setFormulario((anterior) => {
+      const atualizado = { ...anterior, [campo]: valor };
+      // Trocar a especialidade invalida profissional e horário
+      if (campo === 'especialidadeId') {
+        atualizado.profissionalId = '';
+        atualizado.horario = '';
+      }
+      return atualizado;
+    });
+    setErros((anterior) => ({ ...anterior, [campo]: undefined }));
+  };
+
+  const validar = () => {
+    const novosErros = {};
+    if (!formulario.especialidadeId) novosErros.especialidadeId = 'Escolha uma especialidade.';
+    if (!formulario.profissionalId) novosErros.profissionalId = 'Escolha um profissional.';
+    if (!formulario.data) novosErros.data = 'Informe a data da consulta.';
+    else if (formulario.data < hojeISO()) novosErros.data = 'Escolha uma data de hoje em diante.';
+    if (!formulario.horario) novosErros.horario = 'Escolha um horário.';
+    return novosErros;
+  };
+
+  const enviar = (evento) => {
+    evento.preventDefault();
+
+    const novosErros = validar();
+    if (Object.keys(novosErros).length > 0) {
+      setErros(novosErros);
+      // Leva o foco para o primeiro campo com erro
+      const ordem = ['especialidadeId', 'profissionalId', 'data', 'horario'];
+      const primeiro = ordem.find((campo) => novosErros[campo]);
+      const mapa = {
+        especialidadeId: ids.especialidade,
+        profissionalId: ids.profissional,
+        data: ids.data,
+        horario: ids.horario,
+      };
+      document.getElementById(mapa[primeiro])?.focus();
+      return;
+    }
+
+    const profissional = profissionais.find((item) => item.id === formulario.profissionalId);
+
+    aoConfirmar?.({
+      especialidadeId: formulario.especialidadeId,
+      especialidade: especialidadeEscolhida?.name ?? '',
+      profissionalId: formulario.profissionalId,
+      profissional: profissional?.name ?? '',
+      data: formulario.data,
+      horario: formulario.horario,
+    });
+
+    aoFechar?.();
+  };
+
+  const resumo = descreverDataHora(formulario.data, formulario.horario);
+
+  return createPortal(
+    <div
+      className={estilos.fundo}
+      onMouseDown={(evento) => {
+        // Só fecha se o clique começou no fundo, não ao arrastar de dentro
+        if (evento.target === evento.currentTarget) aoFechar?.();
+      }}
+    >
+      <div
+        className={estilos.dialogo}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={ids.titulo}
+        aria-describedby={ids.descricao}
+        ref={refDialogo}
+      >
+        {/* ---- Cabeçalho ---- */}
+        <header className={estilos.cabecalho}>
+          <span className={estilos.iconeCabecalho} aria-hidden="true">
+            <IconeCalendario />
+          </span>
+          <div className={estilos.textoCabecalho}>
+            <h2 id={ids.titulo} className={estilos.titulo}>{titulo}</h2>
+            <p id={ids.descricao} className={estilos.descricao}>{descricao}</p>
+          </div>
+          <button
+            type="button"
+            className={estilos.botaoFechar}
+            onClick={aoFechar}
+            aria-label="Fechar"
+          >
+            <IconeFechar />
+          </button>
+        </header>
+
+        {/* Formulário  */}
+        <form className={estilos.formulario} onSubmit={enviar} noValidate>
+          {/* Especialidade */}
+          <div className={estilos.campo}>
+            <label className={estilos.rotulo} htmlFor={ids.especialidade}>Especialidade</label>
+            <select
+              id={ids.especialidade}
+              ref={refPrimeiroCampo}
+              className={classes(estilos.select, erros.especialidadeId && estilos.campoInvalido)}
+              value={formulario.especialidadeId}
+              onChange={(evento) => alterarCampo('especialidadeId', evento.target.value)}
+              aria-invalid={erros.especialidadeId ? 'true' : undefined}
+              aria-describedby={erros.especialidadeId ? `${ids.especialidade}-erro` : undefined}
+            >
+              <option value="">Selecione a especialidade</option>
+              {especialidades.map((item) => (
+                <option key={item.id} value={item.id}>{item.name}</option>
+              ))}
+            </select>
+            {erros.especialidadeId && (
+              <p id={`${ids.especialidade}-erro`} className={estilos.erro}>{erros.especialidadeId}</p>
+            )}
+          </div>
+
+          {/* Profissional */}
+          <div className={estilos.campo}>
+            <label className={estilos.rotulo} htmlFor={ids.profissional}>Médico / profissional</label>
+            <select
+              id={ids.profissional}
+              className={classes(estilos.select, erros.profissionalId && estilos.campoInvalido)}
+              value={formulario.profissionalId}
+              onChange={(evento) => alterarCampo('profissionalId', evento.target.value)}
+              disabled={!especialidadeEscolhida}
+              aria-invalid={erros.profissionalId ? 'true' : undefined}
+              aria-describedby={erros.profissionalId ? `${ids.profissional}-erro` : undefined}
+            >
+              <option value="">
+                {especialidadeEscolhida ? 'Selecione o profissional' : 'Escolha a especialidade primeiro'}
+              </option>
+              {profissionais.map((item) => (
+                <option key={item.id} value={item.id}>{item.name}</option>
+              ))}
+            </select>
+            {erros.profissionalId && (
+              <p id={`${ids.profissional}-erro`} className={estilos.erro}>{erros.profissionalId}</p>
+            )}
+          </div>
+
+          {/* Data */}
+          <div className={estilos.campo}>
+            <label className={estilos.rotulo} htmlFor={ids.data}>Data</label>
+            <input
+              id={ids.data}
+              type="date"
+              min={hojeISO()}
+              className={classes(estilos.input, erros.data && estilos.campoInvalido)}
+              value={formulario.data}
+              onChange={(evento) => alterarCampo('data', evento.target.value)}
+              aria-invalid={erros.data ? 'true' : undefined}
+              aria-describedby={erros.data ? `${ids.data}-erro` : undefined}
+            />
+            {erros.data && <p id={`${ids.data}-erro`} className={estilos.erro}>{erros.data}</p>}
+          </div>
+
+          {/* Horário */}
+          <fieldset
+            className={estilos.campo}
+            aria-invalid={erros.horario ? 'true' : undefined}
+            aria-describedby={erros.horario ? `${ids.horario}-erro` : undefined}
+          >
+            <legend className={estilos.rotulo}>Horário</legend>
+
+            {especialidadeEscolhida ? (
+              <div className={estilos.horarios} id={ids.horario} tabIndex={-1}>
+                {horarios.map((hora) => {
+                  const selecionado = formulario.horario === hora;
+                  return (
+                    <button
+                      key={hora}
+                      type="button"
+                      className={classes(estilos.horario, selecionado && estilos.horarioAtivo)}
+                      onClick={() => alterarCampo('horario', hora)}
+                      aria-pressed={selecionado}
+                    >
+                      {hora}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className={estilos.aviso} id={ids.horario} tabIndex={-1}>
+                Os horários aparecem depois que você escolhe a especialidade.
+              </p>
+            )}
+
+            {erros.horario && <p id={`${ids.horario}-erro`} className={estilos.erro}>{erros.horario}</p>}
+          </fieldset>
+
+          {/* Resumo da escolha */}
+          {resumo && (
+            <p className={estilos.resumo}>
+              Consulta para <strong>{resumo}</strong>.
+            </p>
+          )}
+
+          {/* Ações */}
+          <div className={estilos.acoes}>
+            <button type="button" className={estilos.botaoSecundario} onClick={aoFechar}>
+              Cancelar
+            </button>
+            <button type="submit" className={estilos.botaoPrimario}>
+              Confirmar agendamento
+              <IconeSeta className={estilos.iconeBotao} />
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>,
+    document.body,
+  );
+}

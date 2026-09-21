@@ -1,0 +1,194 @@
+/* As variáveis vêm do .pagina do PacienteDashboard; os valores após a vírgula
+   garantem o visual caso a lista seja usada fora da dashboard. */
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1.45fr) minmax(0, 1fr) 64px 100px;
+  grid-template-areas: 'data local profissional horario status';
+  align-items: center;
+  gap: 18px;
+  padding: 8px 12px 8px 8px;
+  border: 1px solid var(--border, #e3ecf8);
+  border-radius: 14px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.item:hover {
+  background: #fafcff;
+  border-color: #cfe0f8;
+}
+
+.data {
+  grid-area: data;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 64px;
+  border-radius: var(--radius-sm, 10px);
+  background: #f0f5fc;
+  color: var(--navy, #0a2463);
+}
+
+.dia {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.mes {
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+.local {
+  grid-area: local;
+  min-width: 0;
+}
+
+.titulo {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--navy, #0a2463);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 7px;
+  font-size: 12px;
+  color: var(--muted, #667085);
+}
+
+.metaIcone {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  color: var(--primary, #0066ff);
+}
+
+.profissional {
+  grid-area: profissional;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 0;
+}
+
+.profissionalIcone {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  color: var(--primary, #0066ff);
+}
+
+.especialidade {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy, #0a2463);
+}
+
+.nomeProfissional {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--muted, #667085);
+}
+
+.horario {
+  grid-area: horario;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy, #0a2463);
+  text-align: center;
+}
+
+.status {
+  grid-area: status;
+  justify-self: end;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sucesso { background: var(--success-bg, #e2f7eb); color: var(--success, #13a15c); }
+.alerta  { background: var(--warning-bg, #fff4dc); color: var(--warning, #b7791f); }
+.perigo  { background: var(--danger-bg, #ffe5ea);  color: var(--danger, #ff3b5c); }
+.neutro  { background: #eef2f7;                    color: var(--muted, #667085); }
+
+.vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 20px;
+  border: 1px dashed #cddcf0;
+  border-radius: 14px;
+  font-size: 14px;
+  color: var(--muted, #667085);
+}
+
+.vazio p {
+  margin: 0;
+}
+
+.linkVazio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary, #0066ff);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.iconeSeta {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
+}
+
+.somenteLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 1400px) {
+  .item {
+    grid-template-columns: 64px minmax(0, 1.3fr) minmax(0, 1fr) 54px 96px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 720px) {
+  .item {
+    grid-template-columns: 58px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'data local        local'
+      'data profissional profissional'
+      'data horario      status';
+    column-gap: 14px;
+    row-gap: 10px;
+  }
+
+  .data { height: 100%; min-height: 64px; }
+  .profissional { gap: 10px; }
+  .horario { text-align: left; }
+}
