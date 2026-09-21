@@ -1,0 +1,44 @@
+.periodoTopo {
+  min-width: 300px;
+}
+
+.gradeFiltros {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.colunaInteira {
+  grid-column: 1 / -1;
+}
+
+.botaoGerar {
+  padding: 7px 12px;
+  font-size: 12px;
+}
+
+.botaoPersonalizado {
+  padding: 13px 18px;
+}
+
+.valorResumo {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--azul);
+}
+
+.avisoResumo {
+  margin-top: 14px;
+}
+
+@media (max-width: 620px) {
+  .periodoTopo {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .gradeFiltros {
+    grid-template-columns: 1fr;
+  }
+}

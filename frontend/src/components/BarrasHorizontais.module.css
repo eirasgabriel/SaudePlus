@@ -1,0 +1,43 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12.5px;
+}
+
+.rotulo {
+  width: var(--rotulo-w, 96px);
+  flex: none;
+  color: var(--texto-2);
+  white-space: nowrap;
+}
+
+.trilho {
+  flex: 1;
+  height: 12px;
+  border-radius: var(--raio-pill);
+  background: var(--azul-bg);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.preenche {
+  height: 100%;
+  border-radius: var(--raio-pill);
+  background: linear-gradient(90deg, var(--azul) 0%, var(--azul-suave) 100%);
+  transition: width 0.4s ease;
+}
+
+.valor {
+  width: 42px;
+  flex: none;
+  text-align: right;
+  font-weight: 700;
+  color: var(--texto);
+}

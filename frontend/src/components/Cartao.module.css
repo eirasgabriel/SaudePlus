@@ -1,0 +1,80 @@
+.cartao {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  min-width: 0;
+}
+
+.topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px 14px;
+}
+
+.titulo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.tituloTexto {
+  min-width: 0;
+}
+
+.tituloTexto h2 {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.subtitulo {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--texto-3);
+  margin-top: 1px;
+}
+
+.icone {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--azul-claro);
+  color: var(--azul);
+  flex: none;
+}
+
+.extra {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--azul);
+  white-space: nowrap;
+}
+
+.acao:hover {
+  text-decoration: underline;
+}
+
+.corpo {
+  padding: 0 20px 20px;
+}
+
+.corpoSemPadding {
+  padding: 0;
+}

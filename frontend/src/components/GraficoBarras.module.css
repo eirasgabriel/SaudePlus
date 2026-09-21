@@ -1,0 +1,80 @@
+.grafico {
+  display: flex;
+  gap: 12px;
+  height: var(--altura, 230px);
+}
+
+.eixoY {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 11px;
+  color: var(--texto-3);
+  padding-bottom: 24px;
+  width: 44px;
+  flex: none;
+}
+
+.area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-width: 0;
+}
+
+.grade {
+  position: absolute;
+  inset: 0 0 24px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.grade span {
+  height: 1px;
+  background: #f1f5fc;
+}
+
+.barras {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding-bottom: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.barra {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  position: relative;
+  min-width: 0;
+}
+
+.preenche {
+  width: 100%;
+  max-width: 44px;
+  border-radius: 6px 6px 3px 3px;
+  background: linear-gradient(180deg, var(--azul-suave) 0%, #b9d6ff 100%);
+  transition: filter 0.2s ease, height 0.4s ease;
+}
+
+.barra:hover .preenche {
+  filter: brightness(0.93);
+}
+
+.rotulo {
+  position: absolute;
+  bottom: -21px;
+  font-size: 11px;
+  color: var(--texto-2);
+  font-weight: 500;
+  white-space: nowrap;
+}

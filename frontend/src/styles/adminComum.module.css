@@ -1,0 +1,191 @@
+/* =========================================================
+   Grades e blocos reutilizados pelas páginas administrativas.
+   Importado por cada página: import comum from './comum.module.css'
+   ========================================================= */
+
+/* --- faixas de métricas --- */
+.metricas {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 18px;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.metricas5 {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+/* --- grades de conteúdo --- */
+.grade2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+  align-items: start;
+}
+
+.grade3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 18px;
+  align-items: start;
+}
+
+.gradePrincipal {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 16px;
+  margin-bottom: 18px;
+  align-items: start;
+}
+
+.gradeLateral {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 2.2fr);
+  gap: 16px;
+  margin-bottom: 18px;
+  align-items: start;
+}
+
+.colunaLateral {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* --- barra de busca + filtros acima das tabelas --- */
+.barraFiltros {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+}
+
+.filtroCurto {
+  width: 170px;
+  flex: none;
+}
+
+.empurra {
+  margin-left: auto;
+}
+
+/* --- bloco simples com título de seção --- */
+.secao {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--texto-2);
+  margin: 4px 0 10px;
+}
+
+.secaoEspacada {
+  margin-top: 22px;
+}
+
+/* --- caixa de aviso/informação --- */
+.aviso {
+  display: flex;
+  gap: 11px;
+  padding: 14px 16px;
+  border-radius: var(--raio-sm);
+  background: var(--azul-bg);
+  border: 1px solid var(--borda);
+}
+
+.avisoIcone {
+  color: var(--azul);
+  flex: none;
+  margin-top: 1px;
+}
+
+.avisoTitulo {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--azul-escuro);
+  margin-bottom: 3px;
+}
+
+.avisoTexto {
+  font-size: 12px;
+  color: var(--texto-2);
+  line-height: 1.5;
+}
+
+/* --- lista de pares rótulo/valor --- */
+.pares {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.par {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12.5px;
+}
+
+.parRotulo {
+  color: var(--texto-2);
+}
+
+.parValor {
+  font-weight: 700;
+  color: var(--texto);
+  text-align: right;
+}
+
+/* --- responsivo --- */
+@media (max-width: 1500px) {
+  .metricas5 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1280px) {
+  .grade3 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .gradePrincipal,
+  .gradeLateral {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 1024px) {
+  .metricas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .grade2,
+  .grade3 {
+    grid-template-columns: 1fr;
+  }
+
+  .filtroCurto {
+    width: 100%;
+  }
+
+  .empurra {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .metricas,
+  .metricas5 {
+    grid-template-columns: 1fr;
+  }
+}
