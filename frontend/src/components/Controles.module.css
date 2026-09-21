@@ -1,0 +1,247 @@
+/* ---------- Interruptor (toggle) ---------- */
+.interruptor {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  border-radius: var(--raio-pill);
+  background: #cbd5e1;
+  flex: none;
+  transition: background var(--transicao);
+  padding: 0;
+}
+
+.interruptorLigado {
+  background: var(--azul);
+}
+
+.bolinha {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 31, 61, 0.25);
+  transition: transform var(--transicao);
+}
+
+.interruptorLigado .bolinha {
+  transform: translateX(20px);
+}
+
+.interruptor:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Campo de busca ---------- */
+.busca {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+}
+
+.buscaIcone {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--texto-3);
+  pointer-events: none;
+}
+
+.buscaInput {
+  width: 100%;
+  padding: 11px 14px 11px 40px;
+  font-size: 13.5px;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-sm);
+  transition: border-color var(--transicao), box-shadow var(--transicao);
+}
+
+.buscaInput::placeholder {
+  color: var(--texto-3);
+}
+
+.buscaInput:focus {
+  outline: none;
+  border-color: var(--azul-suave);
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+}
+
+.limpar {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--texto-3);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.limpar:hover {
+  color: var(--vermelho);
+}
+
+/* ---------- Seletor ---------- */
+.campoSeletor {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.rotuloSeletor {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+
+.seletorWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.seletorIcone {
+  position: absolute;
+  left: 12px;
+  color: var(--azul);
+  pointer-events: none;
+}
+
+.seletor {
+  width: 100%;
+  padding: 11px 34px 11px 13px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto);
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-sm);
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%235B6B85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+}
+
+.comIcone {
+  padding-left: 38px;
+}
+
+.seletor:hover {
+  border-color: var(--azul-suave);
+}
+
+.seletor:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+}
+
+/* ---------- Campo de texto ---------- */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rotuloCampo {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+
+.entradaWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.entradaIcone {
+  position: absolute;
+  left: 12px;
+  color: var(--azul);
+  pointer-events: none;
+}
+
+.entrada {
+  width: 100%;
+  padding: 11px 13px;
+  font-size: 13.5px;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-sm);
+  transition: border-color var(--transicao), box-shadow var(--transicao);
+  resize: vertical;
+}
+
+.entrada:focus {
+  outline: none;
+  border-color: var(--azul);
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+}
+
+.contador {
+  align-self: flex-end;
+  font-size: 11px;
+  color: var(--texto-3);
+}
+
+/* ---------- Botões ---------- */
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: var(--raio-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background var(--transicao), border-color var(--transicao),
+    transform var(--transicao);
+}
+
+.botao:active {
+  transform: translateY(1px);
+}
+
+.primario {
+  background: var(--azul);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.24);
+}
+
+.primario:hover {
+  background: var(--azul-hover);
+}
+
+.secundario {
+  background: var(--branco);
+  color: var(--azul);
+  border: 1px solid var(--borda);
+}
+
+.secundario:hover {
+  border-color: var(--azul-suave);
+  background: var(--azul-bg);
+}
+
+.suave {
+  background: var(--azul-claro);
+  color: var(--azul);
+}
+
+.suave:hover {
+  background: #d9e8ff;
+}
+
+.blocoTotal {
+  width: 100%;
+}
