@@ -107,12 +107,33 @@ A nossa equipe é composta de 6 Alunos de Engenharia de Software, da Universidad
 
 ## Stack Técnica do Projeto - 
 
-> **Front-End:** React + Vite.js <br>
-> **Back-End:** Java 21 + Spring Boot 4.1.1 + Maven <br>
-> **Banco de Dados:** <br> 
+> **Front-End:** React + Vite.js + React Router <br>
+> **Back-End:** a definir <br>
+> **Banco de Dados:** a definir <br> 
 > **Mobile:** <br>
-> **Autenticação:** <br>
+> **Autenticação:** JWT via cabeçalho `Authorization` — contrato em [docs/api.md](docs/api.md) <br>
 > **Cache:** <br>
+
+### O que já existe
+
+Este repositório contém **apenas o front-end**. As telas de Login, Criar conta,
+Recuperar senha e Nova senha estão prontas, com validação, mensagens de erro e de
+sucesso e proteção de rotas por perfil.
+
+Elas chamam `/api/auth/*`. Como ainda não há uma API no ar, tentar entrar mostra
+*"Não foi possível falar com o servidor"* — é o esperado. O que o back-end precisa
+implementar está especificado em [docs/api.md](docs/api.md).
+
+### Perfis e acesso
+
+| Perfil | Como a conta é criada |
+| --- | --- |
+| Paciente | cadastro público na tela **Criar conta** |
+| Profissional de saúde | criada pelo servidor na inicialização — **não há cadastro** |
+| Administração | criada pelo servidor na inicialização — **não há cadastro** |
+
+Os três entram pela mesma tela de login. As credenciais combinadas para médico e
+admin estão em [docs/api.md](docs/api.md).
 
 
 ---
