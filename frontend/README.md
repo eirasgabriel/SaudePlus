@@ -28,8 +28,8 @@ Os estilos usam CSS Modules e os tokens de `src/styles/tokens.css`.
 Imagens e conteúdo demonstrativo foram adaptados da referência fornecida.
 As páginas de Especialidades, Busca, Como funciona, Sobre nós e Ajuda estão
 integradas com React Router. Busca, filtros, ordenação e perguntas frequentes usam
-dados locais demonstrativos. Autenticação, agendamento, perfil completo e suporte
-exibem um aviso de indisponibilidade. Nenhum agendamento ou cadastro é enviado ao servidor.
+dados locais demonstrativos. Os botões Entrar e Criar conta do cabeçalho levam a `/login` e `/cadastro`;
+agendamento, perfil completo e suporte exibem um aviso de indisponibilidade. Nenhum agendamento é enviado ao servidor.
 
 Rotas: `/`, `/especialidades`, `/buscar`, `/como-funciona`, `/sobre-nos` e `/ajuda`.
 A busca aceita `q`, `especialidade`, `profissional`, `cidade` e `tipo` na URL.
@@ -43,8 +43,8 @@ Consulte [a arquitetura](../docs/arquitetura.md) para saber onde adicionar compo
 páginas, estilos e integrações. A base do back-end usa Java + Spring Boot; os endpoints ainda não estão implementados.
 ## A API
 
-**Este repositório não tem back-end.** As telas de autenticação chamam
-`/api/auth/*`, então, enquanto não houver uma API respondendo, entrar ou cadastrar
+**O back-end ainda não tem os endpoints de autenticação.** As telas de login chamam
+`/api/auth/*`, então, enquanto essa parte da API não existir, entrar ou cadastrar
 mostra:
 
 > Não foi possível falar com o servidor. Verifique se a API está no ar e tente novamente.
@@ -68,7 +68,7 @@ liberar a origem do front no CORS.
 | `/cadastro` | pública; cria apenas conta de **paciente** |
 | `/recuperar-senha` | pública; pede o link de redefinição |
 | `/redefinir-senha?token=...` | aberta a qualquer um — é o destino do link do e-mail |
-| `/paciente`, `/medico`, `/admin` | exigem o perfil correspondente |
+| `/paciente/*`, `/medico`, `/admin/*` | exigem o perfil correspondente (painéis reais do paciente, médico e admin) |
 
 Médico e admin não se cadastram: entram pelo `/login` com contas que a API precisa
 criar na inicialização. As credenciais combinadas estão em
