@@ -1,0 +1,70 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.rosca {
+  width: var(--tam, 140px);
+  height: var(--tam, 140px);
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.centro {
+  width: 64%;
+  height: 64%;
+  border-radius: 50%;
+  background: var(--branco);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  line-height: 1.2;
+  padding: 6px;
+}
+
+.valor {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--azul);
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+
+.descricao {
+  font-size: 10px;
+  color: var(--texto-3);
+}
+
+.legenda {
+  flex: 1;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--texto-2);
+}
+
+.cor {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.pct {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--texto);
+}

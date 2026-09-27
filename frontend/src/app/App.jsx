@@ -15,7 +15,6 @@ import Cadastro from '../features/auth/pages/Cadastro.jsx'
 import Login from '../features/auth/pages/Login.jsx'
 import RecuperarSenha from '../features/auth/pages/RecuperarSenha.jsx'
 import RedefinirSenha from '../features/auth/pages/RedefinirSenha.jsx'
-import Painel from '../features/painel/pages/Painel.jsx'
 import PainelMedicoConectado from '../features/medico/pages/PainelMedicoConectado.jsx'
 import PacienteDashboard from '../components/PacienteDashboard.jsx'
 import ConsultasPage from '../pages/ConsultasPage.jsx'
@@ -23,6 +22,15 @@ import ExamesPage from '../pages/ExamesPage.jsx'
 import HistoricoPage from '../pages/HistoricoPage.jsx'
 import ClinicasPage from '../pages/ClinicasPage.jsx'
 import '../styles/area-paciente.css'
+import AdminLayout from '../layouts/AdminLayout.jsx'
+import AdminDashboardPage from '../pages/AdminDashboardPage.jsx'
+import AdminUsuariosPage from '../pages/AdminUsuariosPage.jsx'
+import AdminClinicasPage from '../pages/AdminClinicasPage.jsx'
+import AdminAgendamentosPage from '../pages/AdminAgendamentosPage.jsx'
+import AdminRelatoriosPage from '../pages/AdminRelatoriosPage.jsx'
+import AdminFinanceiroPage from '../pages/AdminFinanceiroPage.jsx'
+import AdminConfiguracoesPage from '../pages/AdminConfiguracoesPage.jsx'
+import AdminSuportePage from '../pages/AdminSuportePage.jsx'
 import RouteEffects from './RouteEffects.jsx'
 import styles from './App.module.css'
 
@@ -95,7 +103,24 @@ export default function App() {
           <Route path="clinicas" element={<ClinicasPage />} />
         </Route>
         <Route path="/medico" element={<RotaProtegida permitir={['MEDICO']}><PainelMedicoConectado /></RotaProtegida>} />
-        <Route path="/admin" element={<RotaProtegida permitir={['ADMIN']}><Painel /></RotaProtegida>} />
+        <Route
+          path="/admin"
+          element={
+            <RotaProtegida permitir={['ADMIN']}>
+              <AdminLayout />
+            </RotaProtegida>
+          }
+        >
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="usuarios" element={<AdminUsuariosPage />} />
+          <Route path="clinicas" element={<AdminClinicasPage />} />
+          <Route path="agendamentos" element={<AdminAgendamentosPage />} />
+          <Route path="relatorios" element={<AdminRelatoriosPage />} />
+          <Route path="financeiro" element={<AdminFinanceiroPage />} />
+          {/* As abas ficam na query string: /admin/configuracoes?aba=seguranca */}
+          <Route path="configuracoes" element={<AdminConfiguracoesPage />} />
+          <Route path="suporte" element={<AdminSuportePage />} />
+        </Route>
       </Routes>
       <AvailabilityNotice ref={noticeRef} {...notice} />
     </>

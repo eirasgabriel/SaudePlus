@@ -34,7 +34,7 @@ precisa cumprir está em [api.md](api.md).
   - `features/auth/` já está implementada: Login, Criar conta, Recuperar senha e
     Nova senha, além de `auth.api.js`, `AuthProvider.jsx` e `auth.context.js`.
     As telas ocupam a página inteira; `CartaoAuth.jsx` é a moldura compartilhada.
-  - `features/painel/` é uma área interna provisória, só para o login ter destino.
+  - As áreas por perfil são `/paciente/*`, `/medico` e `/admin/*` em `app/App.jsx`, todas atrás de `RotaProtegida`.
 - `src/services/`: infraestrutura compartilhada de acesso HTTP. `http.js` envolve o
   `fetch` e traduz o formato de erro da API; `sessaoStorage.js` guarda o token.
   Operações específicas pertencem à funcionalidade, por exemplo

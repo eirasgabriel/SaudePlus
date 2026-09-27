@@ -1,0 +1,103 @@
+.metrica {
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 18px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.icone {
+  width: 50px;
+  height: 50px;
+  flex: none;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--azul-claro);
+  color: var(--azul);
+}
+
+.info {
+  min-width: 0;
+  flex: 1;
+}
+
+.rotulo {
+  font-size: 13px;
+  color: var(--texto-2);
+  font-weight: 500;
+}
+
+.valor {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--azul);
+  letter-spacing: -1px;
+  line-height: 1.15;
+  margin: 3px 0 4px;
+}
+
+.nota {
+  font-size: 11.5px;
+  color: var(--texto-3);
+}
+
+.variacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11.5px;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+/* --- tons --- */
+.azul .icone {
+  background: var(--azul-claro);
+  color: var(--azul);
+}
+
+.verde .icone {
+  background: var(--verde-bg);
+  color: var(--verde);
+}
+.verde .valor {
+  color: var(--verde);
+}
+
+.vermelho .icone {
+  background: var(--vermelho-bg);
+  color: var(--vermelho);
+}
+.vermelho .valor {
+  color: var(--vermelho);
+}
+
+.amarelo .icone {
+  background: var(--amarelo-bg);
+  color: var(--amarelo);
+}
+.amarelo .valor {
+  color: var(--amarelo);
+}
+
+/* --- variações --- */
+.sobe {
+  color: var(--verde);
+}
+
+.desce {
+  color: var(--vermelho);
+}
+
+.alerta {
+  color: var(--amarelo);
+}
+
+.neutra {
+  color: var(--texto-3);
+}

@@ -1,0 +1,330 @@
+/* ---------- grades ---------- */
+.gradeGraficos {
+  display: grid;
+  grid-template-columns: 1.55fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+  align-items: start;
+}
+
+.gradeListas {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 18px;
+  align-items: start;
+}
+
+.seletorPeriodo {
+  width: 165px;
+}
+
+/* ---------- ações rápidas ---------- */
+.colunaAcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.acoesTopo {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 16px 18px;
+  border-radius: var(--raio);
+  background: linear-gradient(120deg, var(--azul) 0%, var(--azul-medio) 100%);
+  color: #fff;
+  box-shadow: var(--sombra-azul);
+}
+
+.acoesIcone {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.22);
+  flex: none;
+}
+
+.acoesTitulo {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.acoesTexto {
+  font-size: 11.5px;
+  opacity: 0.88;
+  margin-top: 1px;
+}
+
+.acoesGrade {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex: 1;
+}
+
+.acao {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  transition: transform var(--transicao), box-shadow var(--transicao),
+    border-color var(--transicao);
+}
+
+.acao:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-md);
+  border-color: var(--azul-suave);
+}
+
+.acaoTopo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.acaoIcone {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--azul-claro);
+  color: var(--azul);
+}
+
+.acaoSeta {
+  color: var(--azul);
+}
+
+.acaoNome {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto);
+}
+
+/* ---------- tabela de clínicas ---------- */
+.tabelaWrap {
+  padding: 0 12px 16px;
+}
+
+.indice {
+  color: var(--texto-3);
+  font-weight: 600;
+  width: 34px;
+}
+
+.enderecoCelula {
+  color: var(--texto-3);
+  font-size: 12px;
+}
+
+.numeroCelula {
+  font-weight: 600;
+}
+
+/* ---------- listas ---------- */
+.lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.itemAgendamento {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--borda-suave);
+}
+
+.itemAgendamento:last-child {
+  border-bottom: none;
+}
+
+.infoAgendamento {
+  flex: 1;
+  min-width: 0;
+}
+
+.nomeAgendamento {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.descAgendamento {
+  font-size: 11.5px;
+  color: var(--texto-3);
+  margin-top: 1px;
+}
+
+.direitaAgendamento {
+  text-align: right;
+  flex: none;
+}
+
+.horaAgendamento {
+  font-size: 11.5px;
+  color: var(--texto-2);
+  margin-bottom: 5px;
+  white-space: nowrap;
+}
+
+/* ---------- notificações ---------- */
+.itemNotificacao {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--borda-suave);
+}
+
+.itemNotificacao:last-child {
+  border-bottom: none;
+}
+
+.ponto {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+  margin-top: 5px;
+}
+
+.aviso {
+  background: var(--amarelo);
+}
+
+.info {
+  background: var(--azul);
+}
+
+.sucesso {
+  background: var(--verde-claro);
+}
+
+.erro {
+  background: var(--vermelho);
+}
+
+.tempo {
+  font-size: 11px;
+  color: var(--texto-3);
+  white-space: nowrap;
+  flex: none;
+  margin-top: 2px;
+}
+
+/* ---------- faixa de segurança ---------- */
+.faixa {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 24px;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  flex-wrap: wrap;
+}
+
+.faixaIcone {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--azul-claro);
+  color: var(--azul);
+  flex: none;
+}
+
+.faixaTexto {
+  flex: 1;
+  min-width: 220px;
+}
+
+.faixaTexto strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.faixaTexto p {
+  font-size: 12px;
+  color: var(--texto-3);
+  margin-top: 2px;
+}
+
+.faixaMarca {
+  text-align: right;
+}
+
+.faixaNome {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+
+.faixaNome span:first-child {
+  color: var(--azul-escuro);
+}
+
+.faixaNome span:last-child {
+  color: var(--azul);
+}
+
+.faixaSlogan {
+  font-size: 11.5px;
+  color: var(--texto-3);
+}
+
+/* ---------- responsivo ---------- */
+@media (max-width: 1400px) {
+  .gradeGraficos {
+    grid-template-columns: 1.4fr 1fr;
+  }
+
+  .colunaAcoes {
+    grid-column: 1 / -1;
+  }
+
+  .acoesGrade {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .gradeListas {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .gradeGraficos,
+  .gradeListas {
+    grid-template-columns: 1fr;
+  }
+
+  .acoesGrade {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .seletorPeriodo {
+    width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  .faixaMarca {
+    text-align: left;
+  }
+
+  .faixaNome {
+    display: block;
+  }
+}

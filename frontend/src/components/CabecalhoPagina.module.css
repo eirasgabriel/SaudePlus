@@ -1,0 +1,62 @@
+.topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.tituloLinha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icone {
+  color: var(--azul);
+}
+
+.titulo {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: var(--azul-escuro);
+  line-height: 1.1;
+}
+
+.subtitulo {
+  font-size: 14px;
+  color: var(--texto-2);
+  margin-top: 5px;
+}
+
+.data {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 16px;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-sm);
+  box-shadow: var(--sombra);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--texto-2);
+  white-space: nowrap;
+  flex: none;
+}
+
+.data svg {
+  color: var(--azul);
+}
+
+@media (max-width: 760px) {
+  .topo {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .titulo {
+    font-size: 25px;
+  }
+}
