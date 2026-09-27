@@ -1,0 +1,68 @@
+.pagina {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 2rem 1rem;
+}
+
+.conteudo {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.icone {
+  background: #dbeafe;
+  color: #2563eb;
+  padding: 0.75rem;
+  border-radius: 12px;
+  display: flex;
+}
+
+.titulo {
+  font-size: 1.5rem;
+  color: #0f172a;
+  margin: 0;
+}
+
+.subtitulo {
+  color: #64748b;
+  margin: 0.25rem 0 0 0;
+}
+
+.gridCards {
+  display: grid;
+  gap: 1rem;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.nomeClinica {
+  margin: 0 0 1rem 0;
+  color: #1e293b;
+}
+
+.info {
+  margin: 0.5rem 0;
+  color: #475569;
+}

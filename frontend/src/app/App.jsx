@@ -17,6 +17,12 @@ import RecuperarSenha from '../features/auth/pages/RecuperarSenha.jsx'
 import RedefinirSenha from '../features/auth/pages/RedefinirSenha.jsx'
 import Painel from '../features/painel/pages/Painel.jsx'
 import PainelMedicoConectado from '../features/medico/pages/PainelMedicoConectado.jsx'
+import PacienteDashboard from '../components/PacienteDashboard.jsx'
+import ConsultasPage from '../pages/ConsultasPage.jsx'
+import ExamesPage from '../pages/ExamesPage.jsx'
+import HistoricoPage from '../pages/HistoricoPage.jsx'
+import ClinicasPage from '../pages/ClinicasPage.jsx'
+import '../styles/area-paciente.css'
 import RouteEffects from './RouteEffects.jsx'
 import styles from './App.module.css'
 
@@ -72,7 +78,22 @@ export default function App() {
         {/* Fora do SomenteVisitante de propósito: o link do e-mail precisa funcionar com sessão aberta. */}
         <Route path="/redefinir-senha" element={<RedefinirSenha />} />
 
-        <Route path="/paciente" element={<RotaProtegida permitir={['PACIENTE']}><Painel /></RotaProtegida>} />
+        <Route
+          path="/paciente"
+          element={
+            <RotaProtegida permitir={['PACIENTE']}>
+              <div className="area-paciente">
+                <Outlet />
+              </div>
+            </RotaProtegida>
+          }
+        >
+          <Route index element={<PacienteDashboard />} />
+          <Route path="consultas" element={<ConsultasPage />} />
+          <Route path="exames" element={<ExamesPage />} />
+          <Route path="historico" element={<HistoricoPage />} />
+          <Route path="clinicas" element={<ClinicasPage />} />
+        </Route>
         <Route path="/medico" element={<RotaProtegida permitir={['MEDICO']}><PainelMedicoConectado /></RotaProtegida>} />
         <Route path="/admin" element={<RotaProtegida permitir={['ADMIN']}><Painel /></RotaProtegida>} />
       </Routes>
