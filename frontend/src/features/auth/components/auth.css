@@ -1,0 +1,1070 @@
+/* Telas de autenticacao: Login, Criar conta, Recuperar e Redefinir senha.
+   A pagina inteira e a tela — nao ha cartao flutuante. A barra do topo atravessa
+   a largura toda e o formulario fica numa coluna centralizada, para a linha de
+   texto e os campos nao esticarem em monitores largos. */
+
+
+
+.sp-auth {
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background:
+    radial-gradient(
+      100% 55% at 50% -8%,
+      #eff6ff 0%,
+      rgba(239, 246, 255, 0) 70%
+    ),
+    #ffffff;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   BARRA SUPERIOR
+   ========================================================= */
+
+.sp-auth__topo {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  box-sizing: border-box;
+
+  padding: 14px 32px;
+
+  border-bottom: 1px solid #dce8f7;
+
+  background: #ffffff;
+}
+
+.sp-auth__atalho {
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #0066ff;
+
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+.sp-auth__atalho:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   CONTEÚDO
+   ========================================================= */
+
+.sp-auth__conteudo {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
+
+  min-height: 0;
+}
+
+
+/* =========================================================
+   COLUNA CENTRAL
+   ========================================================= */
+
+.sp-auth__miolo {
+  width: 370px;
+  max-width: 370px;
+
+  box-sizing: border-box;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  margin-top: auto;
+  margin-bottom: auto;
+
+  padding: 4px 0 18px;
+}
+
+
+/* =========================================================
+   VOLTAR
+   ========================================================= */
+
+.sp-auth__voltar {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  margin-left: -6px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #0066ff;
+
+  cursor: pointer;
+
+  transition: background-color 0.15s ease;
+}
+
+.sp-auth__voltar:hover {
+  background: #eef5ff;
+}
+
+
+/* =========================================================
+   LOGO
+   ========================================================= */
+
+.sp-auth__logo {
+  display: block;
+
+  width: 175px;
+  max-width: 175px;
+
+  height: auto;
+
+  margin: 2px auto 0;
+}
+
+
+/* =========================================================
+   SLOGAN
+   ========================================================= */
+
+.sp-auth__slogan {
+  margin: 6px 0 0;
+
+  text-align: center;
+
+  font-size: 12px;
+
+  line-height: 1.3;
+
+  color: #6a7c95;
+}
+
+
+/* =========================================================
+   FORMULÁRIO
+   ========================================================= */
+
+.sp-form {
+  margin-top: 18px;
+}
+
+
+/* =========================================================
+   TÍTULO
+   ========================================================= */
+
+.sp-form__titulo {
+  margin: 0;
+
+  font-size: 25px;
+
+  font-weight: 700;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.3px;
+
+  color: #0f2341;
+}
+
+
+/* =========================================================
+   SUBTÍTULO
+   ========================================================= */
+
+.sp-form__subtitulo {
+  margin: 3px 0 0;
+
+  font-size: 13px;
+
+  line-height: 1.4;
+
+  color: #6a7c95;
+}
+
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.sp-form__campos {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 9px;
+
+  margin-top: 14px;
+}
+
+
+/* =========================================================
+   CAIXA DO CAMPO
+   ========================================================= */
+
+.sp-campo__caixa {
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  width: 100%;
+  height: 46px;
+
+  box-sizing: border-box;
+
+  padding: 0 11px 0 13px;
+
+  background: #ffffff;
+
+  border: 1px solid #d6e4fa;
+
+  border-radius: 11px;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+
+/* Campo selecionado */
+
+.sp-campo__caixa:focus-within {
+  border-color: #0066ff;
+
+  box-shadow:
+    0 0 0 3px rgba(0, 102, 255, 0.10);
+}
+
+
+/* Campo com erro */
+
+.sp-campo__caixa--erro {
+  border-color: #d93a3a;
+}
+
+.sp-campo__caixa--erro:focus-within {
+  box-shadow:
+    0 0 0 3px rgba(217, 58, 58, 0.10);
+}
+
+
+/* =========================================================
+   ÍCONE DO CAMPO
+   ========================================================= */
+
+.sp-campo__icone {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  margin-right: 8px;
+
+  color: #0066ff;
+}
+
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+
+.sp-campo__input {
+  flex: 1;
+
+  min-width: 0;
+
+  width: 100%;
+  height: 100%;
+
+  padding: 0;
+
+  border: 0;
+  outline: none;
+
+  background: transparent;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  color: #0f2341;
+}
+
+.sp-campo__input::placeholder {
+  color: #98a8be;
+}
+
+.sp-campo__input:disabled {
+  color: #6a7c95;
+}
+
+
+/* =========================================================
+   BOTÃO MOSTRAR SENHA
+   ========================================================= */
+
+.sp-campo__olho {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  width: 30px;
+  height: 30px;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: transparent;
+
+  color: #98a8be;
+
+  cursor: pointer;
+
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.sp-campo__olho:hover {
+  color: #0066ff;
+
+  background: #eef5ff;
+}
+
+
+/* =========================================================
+   AJUDA DO CAMPO
+   ========================================================= */
+
+.sp-campo__ajuda {
+  margin: 4px 0 0 3px;
+
+  font-size: 11px;
+
+  color: #6a7c95;
+}
+
+
+/* =========================================================
+   ERRO DO CAMPO
+   ========================================================= */
+
+.sp-campo__erro {
+  margin: 4px 0 0 3px;
+
+  font-size: 11px;
+
+  font-weight: 500;
+
+  color: #d93a3a;
+}
+
+
+/* =========================================================
+   OPÇÕES
+   ========================================================= */
+
+.sp-form__opcoes {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 9px;
+}
+
+
+/* =========================================================
+   CHECKBOX
+   ========================================================= */
+
+.sp-checkbox {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  font-size: 12px;
+
+  line-height: 1.3;
+
+  color: #0f2341;
+
+  cursor: pointer;
+
+  user-select: none;
+}
+
+.sp-checkbox input {
+  width: 17px;
+  height: 17px;
+
+  margin: 0;
+
+  accent-color: #0066ff;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   CHECKBOX DE TERMOS
+   ========================================================= */
+
+.sp-checkbox--termos {
+  display: flex;
+
+  align-items: flex-start;
+
+  margin-top: 14px;
+
+  font-size: 12px;
+}
+
+.sp-checkbox--termos label {
+  flex: 1;
+
+  min-width: 0;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+.sp-link-inline {
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  font-family: inherit;
+
+  font-size: inherit;
+
+  font-weight: 600;
+
+  color: #0066ff;
+
+  cursor: pointer;
+}
+
+.sp-link-inline:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   ESQUECEU A SENHA
+   ========================================================= */
+
+.sp-link-discreto {
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  font-family: inherit;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  color: #0066ff;
+
+  white-space: nowrap;
+
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+.sp-link-discreto:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   BOTÃO PRINCIPAL
+   ========================================================= */
+
+.sp-botao {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 46px;
+
+  box-sizing: border-box;
+
+  margin-top: 12px;
+
+  padding: 0 18px;
+
+  border: 0;
+
+  border-radius: 11px;
+
+  background: #0066ff;
+
+  box-shadow:
+    0 7px 18px rgba(0, 102, 255, 0.20);
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  color: #ffffff;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    transform 0.08s ease,
+    box-shadow 0.15s ease;
+}
+
+.sp-botao:hover:not(:disabled) {
+  background: #0059e6;
+
+  box-shadow:
+    0 9px 20px rgba(0, 102, 255, 0.25);
+}
+
+.sp-botao:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.sp-botao:disabled {
+  cursor: progress;
+
+  opacity: 0.7;
+
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   SEPARADOR
+   ========================================================= */
+
+.sp-separador {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin: 10px 0;
+
+  font-size: 12px;
+
+  color: #8b9bb3;
+}
+
+.sp-separador::before,
+.sp-separador::after {
+  content: "";
+
+  flex: 1;
+
+  height: 1px;
+
+  background: #e3ecf8;
+}
+
+
+/* =========================================================
+   LOGIN SOCIAL
+   ========================================================= */
+
+.sp-social {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+
+/* =========================================================
+   BOTÕES GOOGLE / APPLE
+   ========================================================= */
+
+.sp-botao--secundario {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 44px;
+
+  box-sizing: border-box;
+
+  margin-top: 0;
+
+  padding: 0 16px;
+
+  border: 1px solid #d6e4fa;
+
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  box-shadow: none;
+
+  font-family: inherit;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  color: #0f2341;
+
+  cursor: pointer;
+
+  text-decoration: none;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.sp-botao--secundario:hover:not(:disabled) {
+  background: #fafcff;
+
+  border-color: #b9cff0;
+}
+
+
+/* =========================================================
+   RODAPÉ
+   ========================================================= */
+
+.sp-rodape {
+  margin: 12px 0 0;
+
+  text-align: center;
+
+  font-size: 12px;
+
+  line-height: 1.4;
+
+  color: #6a7c95;
+}
+
+.sp-rodape a {
+  font-weight: 700;
+
+  color: #0066ff;
+
+  text-decoration: none;
+}
+
+.sp-rodape a:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   AVISOS
+   ========================================================= */
+
+.sp-aviso {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 9px;
+
+  margin-top: 12px;
+
+  padding: 10px 12px;
+
+  border-radius: 10px;
+
+  font-size: 12px;
+
+  line-height: 1.4;
+}
+
+.sp-aviso--erro {
+  background: #fdeeee;
+
+  color: #a92a2a;
+}
+
+.sp-aviso--info {
+  background: #eef5ff;
+
+  color: #0055cc;
+}
+
+
+/* =========================================================
+   DESTAQUE
+   ========================================================= */
+
+.sp-destaque {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 16px;
+
+  padding: 11px 13px;
+
+  border-radius: 13px;
+
+  background: #eaf3ff;
+}
+
+.sp-destaque__icone {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 50%;
+
+  background: #d7e9ff;
+
+  color: #0066ff;
+}
+
+.sp-destaque p {
+  margin: 0;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  line-height: 1.35;
+
+  color: #0055cc;
+}
+
+
+/* =========================================================
+   RESULTADO
+   ========================================================= */
+
+.sp-resultado {
+  margin-top: 22px;
+
+  text-align: center;
+}
+
+.sp-resultado__selo {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 65px;
+  height: 65px;
+
+  border-radius: 50%;
+}
+
+.sp-resultado--sucesso .sp-resultado__selo {
+  background: #e3f7ed;
+
+  color: #12855a;
+}
+
+.sp-resultado--info .sp-resultado__selo {
+  background: #eef5ff;
+
+  color: #0066ff;
+}
+
+.sp-resultado--erro .sp-resultado__selo {
+  background: #fdeeee;
+
+  color: #d93a3a;
+}
+
+.sp-resultado__titulo {
+  margin: 13px 0 0;
+
+  font-size: 22px;
+
+  font-weight: 700;
+
+  color: #0f2341;
+}
+
+.sp-resultado__texto {
+  max-width: 38ch;
+
+  margin: 7px auto 0;
+
+  font-size: 13px;
+
+  line-height: 1.45;
+
+  color: #6a7c95;
+}
+
+.sp-resultado__texto strong {
+  color: #0f2341;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 520px) {
+
+  .sp-auth__topo {
+    padding: 12px 20px;
+  }
+
+  .sp-auth__miolo {
+    width: calc(100% - 36px);
+
+    max-width: 370px;
+
+    padding: 4px 0 16px;
+  }
+
+  .sp-auth__logo {
+    width: 165px;
+
+    max-width: 165px;
+  }
+
+  .sp-auth__slogan {
+    font-size: 11px;
+  }
+
+  .sp-form {
+    margin-top: 16px;
+  }
+
+  .sp-form__titulo {
+    font-size: 23px;
+  }
+
+  .sp-form__subtitulo {
+    font-size: 12px;
+  }
+
+  .sp-campo__caixa {
+    height: 44px;
+  }
+
+  .sp-campo__input {
+    font-size: 12px;
+  }
+
+  .sp-botao {
+    height: 44px;
+
+    font-size: 13px;
+  }
+
+  .sp-botao--secundario {
+    height: 42px;
+
+    font-size: 12px;
+  }
+
+  .sp-separador {
+    margin: 8px 0;
+  }
+
+  .sp-rodape {
+    margin-top: 10px;
+
+    font-size: 11px;
+  }
+}
+
+
+/* =========================================================
+   TELAS MUITO BAIXAS
+   Evita que o formulário ultrapasse a tela.
+   ========================================================= */
+
+@media (max-height: 750px) and (min-width: 521px) {
+
+  .sp-auth__miolo {
+    padding-top: 2px;
+    padding-bottom: 10px;
+  }
+
+  .sp-auth__logo {
+    width: 155px;
+    max-width: 155px;
+  }
+
+  .sp-auth__slogan {
+    margin-top: 4px;
+
+    font-size: 11px;
+  }
+
+  .sp-form {
+    margin-top: 14px;
+  }
+
+  .sp-form__titulo {
+    font-size: 23px;
+  }
+
+  .sp-form__subtitulo {
+    font-size: 12px;
+  }
+
+  .sp-form__campos {
+    margin-top: 11px;
+
+    gap: 7px;
+  }
+
+  .sp-campo__caixa {
+    height: 43px;
+  }
+
+  .sp-form__opcoes {
+    margin-top: 7px;
+  }
+
+  .sp-botao {
+    height: 43px;
+
+    margin-top: 9px;
+  }
+
+  .sp-separador {
+    margin: 8px 0;
+  }
+
+  .sp-botao--secundario {
+    height: 41px;
+  }
+
+  .sp-social {
+    gap: 6px;
+  }
+
+  .sp-rodape {
+    margin-top: 8px;
+  }
+}
+
+
+/* =========================================================
+   TELAS MUITO PEQUENAS
+   ========================================================= */
+
+@media (max-height: 650px) {
+
+  .sp-auth__miolo {
+    padding-bottom: 6px;
+  }
+
+  .sp-auth__logo {
+    width: 140px;
+    max-width: 140px;
+  }
+
+  .sp-auth__slogan {
+    display: none;
+  }
+
+  .sp-form {
+    margin-top: 10px;
+  }
+
+  .sp-form__campos {
+    margin-top: 9px;
+
+    gap: 6px;
+  }
+
+  .sp-campo__caixa {
+    height: 40px;
+  }
+
+  .sp-form__opcoes {
+    margin-top: 6px;
+  }
+
+  .sp-botao {
+    height: 40px;
+
+    margin-top: 7px;
+  }
+
+  .sp-separador {
+    margin: 6px 0;
+  }
+
+  .sp-botao--secundario {
+    height: 38px;
+  }
+
+  .sp-social {
+    gap: 5px;
+  }
+
+  .sp-rodape {
+    margin-top: 6px;
+  }
+}
