@@ -1,0 +1,43 @@
+.grupo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  /* order alto: cai numa linha própria abaixo do título e da ação do Panel. */
+  order: 10;
+  width: 100%;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.opcao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease),
+    border-color var(--duration) var(--ease);
+}
+
+.opcao:hover {
+  border-color: var(--color-border-hover);
+  color: var(--color-navy-900);
+}
+
+.ativa {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  border-color: var(--color-divider);
+  font-weight: var(--fw-semibold);
+}
+
+.quantidade {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}

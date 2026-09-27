@@ -4,7 +4,7 @@ import { requisitar } from '../../services/http.js'
 
 /** POST /api/auth/login — serve para paciente, medico e admin. */
 export function autenticar({ email, senha }) {
-  return requisitar('/auth/login', {
+  return requisitar('/api/auth/login', {
     metodo: 'POST',
     corpo: { email, senha },
   })
@@ -15,7 +15,7 @@ export function autenticar({ email, senha }) {
  * O perfil e definido pelo servidor; nao existe rota publica para medico ou admin.
  */
 export function cadastrarPaciente({ nomeCompleto, email, senha, telefone, aceiteTermos }) {
-  return requisitar('/auth/cadastro', {
+  return requisitar('/api/auth/cadastro', {
     metodo: 'POST',
     corpo: { nomeCompleto, email, senha, telefone, aceiteTermos },
   })
@@ -28,7 +28,7 @@ export function cadastrarPaciente({ nomeCompleto, email, senha, telefone, aceite
  * não serve para descobrir quais e-mails estão cadastrados.
  */
 export function solicitarRecuperacaoDeSenha({ email }) {
-  return requisitar('/auth/recuperar-senha', {
+  return requisitar('/api/auth/recuperar-senha', {
     metodo: 'POST',
     corpo: { email },
   })
@@ -36,7 +36,7 @@ export function solicitarRecuperacaoDeSenha({ email }) {
 
 /** POST /api/auth/redefinir-senha — grava a nova senha usando o token do link. */
 export function redefinirSenha({ token, senha }) {
-  return requisitar('/auth/redefinir-senha', {
+  return requisitar('/api/auth/redefinir-senha', {
     metodo: 'POST',
     corpo: { token, senha },
   })
@@ -44,5 +44,5 @@ export function redefinirSenha({ token, senha }) {
 
 /** GET /api/auth/perfil — revalida o token guardado no navegador. */
 export function buscarPerfil() {
-  return requisitar('/auth/perfil', { autenticado: true })
+  return requisitar('/api/auth/perfil', { autenticado: true })
 }

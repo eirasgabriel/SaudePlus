@@ -1,0 +1,58 @@
+.cartao {
+  position: relative;
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  overflow: hidden;
+  background: linear-gradient(180deg, #E8F2FD 0%, #DCEBFB 100%);
+  border-radius: var(--radius-card);
+}
+
+.coluna {
+  flex-direction: column;
+}
+
+.linha {
+  flex-direction: row;
+  align-items: center;
+}
+
+.icone {
+  position: relative;
+  z-index: 1;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.conteudo {
+  position: relative;
+  z-index: 1;
+}
+
+.titulo {
+  font-size: var(--fs-card-title);
+  font-weight: var(--fw-bold);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--color-navy-900);
+}
+
+.texto {
+  margin-top: var(--space-2);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+/* Onda decorativa no rodapé do cartão. */
+.onda {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 62px;
+  background:
+    radial-gradient(120% 100% at 20% 100%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 60%),
+    radial-gradient(120% 100% at 85% 120%, rgba(150, 195, 245, 0.55) 0%, rgba(150, 195, 245, 0) 65%);
+  pointer-events: none;
+}

@@ -16,6 +16,7 @@ import Login from '../features/auth/pages/Login.jsx'
 import RecuperarSenha from '../features/auth/pages/RecuperarSenha.jsx'
 import RedefinirSenha from '../features/auth/pages/RedefinirSenha.jsx'
 import Painel from '../features/painel/pages/Painel.jsx'
+import PainelMedicoConectado from '../features/medico/pages/PainelMedicoConectado.jsx'
 import RouteEffects from './RouteEffects.jsx'
 import styles from './App.module.css'
 
@@ -72,7 +73,7 @@ export default function App() {
         <Route path="/redefinir-senha" element={<RedefinirSenha />} />
 
         <Route path="/paciente" element={<RotaProtegida permitir={['PACIENTE']}><Painel /></RotaProtegida>} />
-        <Route path="/medico" element={<RotaProtegida permitir={['MEDICO']}><Painel /></RotaProtegida>} />
+        <Route path="/medico" element={<RotaProtegida permitir={['MEDICO']}><PainelMedicoConectado /></RotaProtegida>} />
         <Route path="/admin" element={<RotaProtegida permitir={['ADMIN']}><Painel /></RotaProtegida>} />
       </Routes>
       <AvailabilityNotice ref={noticeRef} {...notice} />
