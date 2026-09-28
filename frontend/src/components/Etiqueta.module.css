@@ -1,0 +1,59 @@
+.etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--raio-pill);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.ponto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.sucesso {
+  background: var(--verde-bg);
+  color: var(--verde);
+}
+
+.info {
+  background: var(--azul-claro);
+  color: var(--azul);
+}
+
+.erro {
+  background: var(--vermelho-bg);
+  color: var(--vermelho);
+}
+
+.aviso {
+  background: var(--amarelo-bg);
+  color: var(--amarelo-texto);
+}
+
+.roxo {
+  background: var(--roxo-bg);
+  color: #7e22ce;
+}
+
+.ciano {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.rosa {
+  background: #fce7f3;
+  color: #be185d;
+}
+
+.neutro {
+  background: #f1f5f9;
+  color: var(--texto-2);
+}

@@ -1,0 +1,109 @@
+.grafico {
+  display: flex;
+  gap: 12px;
+  height: var(--altura, 240px);
+}
+
+.eixoY {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 11px;
+  color: var(--texto-3);
+  padding-bottom: 24px;
+  width: 62px;
+  flex: none;
+  white-space: nowrap;
+}
+
+.area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.plano {
+  position: relative;
+  flex: 1;
+  margin-bottom: 24px;
+}
+
+.grade {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.grade span {
+  height: 1px;
+  background: #f1f5fc;
+}
+
+.svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Os pontos ficam em HTML para não deformarem com o preserveAspectRatio="none" */
+.pontos {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ponto {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 2px solid var(--branco);
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: default;
+}
+
+.rotulosX {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--texto-2);
+  font-weight: 500;
+}
+
+.rotuloX {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* --- legenda --- */
+.legenda {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.legendaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--texto-2);
+  font-weight: 500;
+}
+
+.legendaCor {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex: none;
+}

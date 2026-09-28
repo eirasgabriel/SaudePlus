@@ -1,0 +1,177 @@
+/* =========================================================
+   SaúdePlus — Design Tokens
+   Importar UMA vez, em src/main.jsx, ANTES de global.css:
+     import './styles/tokens.css'
+   ========================================================= */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+:root {
+  /* --- Paleta oficial --- */
+  --azul: #0066ff;
+  --azul-hover: #0052cc;
+  --azul-escuro: #003d99;
+  --azul-medio: #2e86ff;
+  --azul-suave: #7fb2ff;
+  --azul-claro: #e8f0ff;
+  --azul-bg: #f2f7ff;
+
+  /* --- Status --- */
+  --verde: #16a34a;
+  --verde-claro: #34d399;
+  --verde-bg: #dcfce7;
+  --vermelho: #ef4444;
+  --vermelho-bg: #fee2e2;
+  --amarelo: #f59e0b;
+  --amarelo-bg: #fef3c7;
+  --amarelo-texto: #b45309;
+  --roxo: #a855f7;
+  --roxo-bg: #f3e8ff;
+  --ciano: #14b8a6;
+  --rosa: #ec4899;
+
+  /* --- Neutros --- */
+  --texto: #0f1f3d;
+  --texto-2: #5b6b85;
+  --texto-3: #94a3b8;
+  --borda: #e6eefb;
+  --borda-suave: #f4f8fe;
+  --branco: #ffffff;
+
+  /* --- Raios --- */
+  --raio-sm: 10px;
+  --raio: 16px;
+  --raio-lg: 20px;
+  --raio-pill: 999px;
+
+  /* --- Sombras --- */
+  --sombra: 0 1px 2px rgba(15, 31, 61, 0.04), 0 6px 18px rgba(15, 31, 61, 0.05);
+  --sombra-md: 0 2px 6px rgba(15, 31, 61, 0.06), 0 12px 28px rgba(15, 31, 61, 0.08);
+  --sombra-azul: 0 8px 24px rgba(0, 102, 255, 0.28);
+
+  /* --- Layout --- */
+  --sidebar-w: 232px;
+  --header-h: 82px;
+  --transicao: 0.18s ease;
+
+  /* =========================================================
+     Aliases em inglês (nomes canônicos para o merge entre branches)
+     -----------------------------------------------------------
+     Decisão adotada: manter os nomes em português como fonte da
+     verdade nos componentes do admin (menor risco, sem precisar
+     tocar nas 12 telas existentes) e expor aliases em inglês para
+     quem, nas outras branches, referenciar os tokens por esses
+     nomes. Basta importar este arquivo antes dos estilos delas.
+     ========================================================= */
+  --color-primary: var(--azul);
+  --color-primary-hover: var(--azul-hover);
+  --color-primary-dark: var(--azul-escuro);
+  --color-primary-medium: var(--azul-medio);
+  --color-primary-soft: var(--azul-suave);
+  --color-primary-light: var(--azul-claro);
+  --color-primary-bg: var(--azul-bg);
+
+  --color-success: var(--verde);
+  --color-success-light: var(--verde-claro);
+  --color-success-bg: var(--verde-bg);
+  --color-danger: var(--vermelho);
+  --color-danger-bg: var(--vermelho-bg);
+  --color-warning: var(--amarelo);
+  --color-warning-bg: var(--amarelo-bg);
+  --color-warning-text: var(--amarelo-texto);
+  --color-purple: var(--roxo);
+  --color-purple-bg: var(--roxo-bg);
+  --color-cyan: var(--ciano);
+  --color-pink: var(--rosa);
+
+  --color-text: var(--texto);
+  --color-text-2: var(--texto-2);
+  --color-text-3: var(--texto-3);
+  --color-border: var(--borda);
+  --color-border-soft: var(--borda-suave);
+  --color-white: var(--branco);
+
+  --radius-sm: var(--raio-sm);
+  --radius: var(--raio);
+  --radius-lg: var(--raio-lg);
+  --radius-pill: var(--raio-pill);
+
+  --shadow: var(--sombra);
+  --shadow-md: var(--sombra-md);
+  --shadow-primary: var(--sombra-azul);
+
+  --sidebar-width: var(--sidebar-w);
+  --header-height: var(--header-h);
+  --transition: var(--transicao);
+}
+
+@media (max-width: 900px) {
+  :root {
+    --sidebar-w: 76px;
+  }
+}
+
+/* =========================================================
+   Este arquivo NÃO tem reset global, de propósito.
+   -----------------------------------------------------------
+   As telas do paciente fazem o próprio reset escopado em
+   `.pagina` (com `:where()`), e um reset global daqui mudaria
+   a fonte, o fundo e os espaçamentos delas.
+
+   O reset da área administrativa fica escopado em `.app`,
+   dentro de layouts/AdminLayout.module.css.
+
+   Aqui ficam só: as variáveis de `:root` (que não pintam nada
+   sozinhas) e as classes de blindagem abaixo, que só agem em
+   quem as usa.
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =========================================================
+   Blindagem contra o global.css antigo
+   -----------------------------------------------------------
+   O global.css do projeto tem `svg { width:24px !important }` e
+   `img { max-width:60px !important; border-radius:50% }`, que
+   anulam o tamanho de TODOS os ícones e imagens.
+
+   O ideal é apagar essas duas regras (veja o README). Enquanto
+   elas existirem, as classes abaixo garantem que os ícones e as
+   fotos da área administrativa continuem com o tamanho correto:
+   seletor de classe (0,1,0) vence seletor de elemento (0,0,1)
+   quando ambos têm !important.
+   ========================================================= */
+.spIcone {
+  width: var(--sp-icone, 20px) !important;
+  height: var(--sp-icone, 20px) !important;
+  max-width: none !important;
+  max-height: none !important;
+  flex: none;
+  display: block;
+}
+
+.spImagem {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
+/* Para o logo: solta o limite de 60px e desfaz o recorte circular,
+   deixando o tamanho por conta do CSS do componente. */
+.spLogo {
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 0;
+  object-fit: contain;
+  display: block;
+}

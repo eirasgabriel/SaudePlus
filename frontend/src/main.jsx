@@ -1,0 +1,11 @@
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import App from './app/App'
+
+/* Tokens da paleta oficial — precisa vir ANTES do global.css */
+import './styles/tokens.css'
+import './styles/global.css'
+
+createRoot(document.getElementById('root')).render(
+  <App />
+)

@@ -1,0 +1,518 @@
+/* Estilos compartilhados pelas seis abas de Configurações. */
+
+.grade3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.gradePrincipal {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(290px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------- personalização (cores e logo) ---------- */
+.blocoLogo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px dashed var(--borda);
+  border-radius: var(--raio-sm);
+  background: var(--azul-bg);
+  flex-wrap: wrap;
+}
+
+.logoPreview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--azul-escuro);
+  flex: 1;
+  min-width: 140px;
+}
+
+.logoPreview span:last-child {
+  color: var(--azul);
+}
+
+.dicaArquivo {
+  font-size: 11px;
+  color: var(--texto-3);
+  width: 100%;
+}
+
+.campoCor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rotuloCor {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+
+.linhaCor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-sm);
+  background: var(--branco);
+}
+
+.amostra {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--borda);
+  flex: none;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.amostra::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.amostra::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+}
+
+.valorCor {
+  flex: 1;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto);
+  background: none;
+  text-transform: uppercase;
+}
+
+.valorCor:focus {
+  outline: none;
+}
+
+/* ---------- seleção de tema ---------- */
+.temas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tema {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 14px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--texto-2);
+  background: var(--branco);
+  transition: all var(--transicao);
+}
+
+.tema:hover {
+  border-color: var(--azul-suave);
+}
+
+.temaAtivo {
+  background: var(--azul-claro);
+  border-color: var(--azul);
+  color: var(--azul);
+}
+
+/* ---------- backup ---------- */
+.backup {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--raio-sm);
+  background: var(--azul-bg);
+  border: 1px solid var(--borda);
+  margin-bottom: 14px;
+}
+
+.backupIcone {
+  color: var(--azul);
+  flex: none;
+  margin-top: 2px;
+}
+
+.backupTexto {
+  flex: 1;
+  font-size: 12px;
+  color: var(--texto-2);
+}
+
+.backupData {
+  display: block;
+  font-weight: 700;
+  color: var(--texto);
+  margin-top: 2px;
+}
+
+.backupBotoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* ---------- papéis ---------- */
+.papel {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--borda-suave);
+}
+
+.papel:last-child {
+  border-bottom: none;
+}
+
+.papelIcone {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.papelTexto {
+  flex: 1;
+  min-width: 0;
+}
+
+.papelNome {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.papelDesc {
+  font-size: 11.5px;
+  color: var(--texto-3);
+  margin-top: 1px;
+}
+
+.papelQtd {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: var(--azul-claro);
+  color: var(--azul);
+  font-size: 12px;
+  font-weight: 700;
+  flex: none;
+}
+
+/* ---------- matriz de permissões ---------- */
+.matrizWrap {
+  overflow-x: auto;
+}
+
+.matriz {
+  width: 100%;
+  min-width: 380px;
+}
+
+.matriz th {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--texto-2);
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.matriz th:first-child {
+  text-align: left;
+  padding-left: 0;
+}
+
+.matriz td {
+  padding: 9px 4px;
+  text-align: center;
+  border-top: 1px solid var(--borda-suave);
+}
+
+.matriz td:first-child {
+  text-align: left;
+  padding-left: 0;
+}
+
+.moduloCelula {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+  color: var(--texto);
+  white-space: nowrap;
+}
+
+.moduloCelula svg {
+  color: var(--azul);
+}
+
+.marca {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  border: 1.5px solid var(--borda);
+  color: transparent;
+  transition: all var(--transicao);
+}
+
+.marcaAtiva {
+  background: var(--azul);
+  border-color: var(--azul);
+  color: #fff;
+}
+
+.marca:hover {
+  border-color: var(--azul-suave);
+}
+
+/* ---------- detalhes da clínica ---------- */
+.detalheTopo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--borda-suave);
+  margin-bottom: 14px;
+}
+
+.detalheIcone {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--azul-claro);
+  color: var(--azul);
+  flex: none;
+}
+
+.detalheNome {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--azul-escuro);
+}
+
+.detalheUnidade {
+  font-size: 12px;
+  color: var(--texto-3);
+  margin: 1px 0 6px;
+}
+
+.campoDetalhe {
+  display: flex;
+  gap: 11px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--borda-suave);
+  font-size: 12.5px;
+}
+
+.campoDetalhe:last-of-type {
+  border-bottom: none;
+}
+
+.campoIcone {
+  color: var(--azul);
+  flex: none;
+  margin-top: 1px;
+}
+
+.campoRotulo {
+  width: 92px;
+  flex: none;
+  color: var(--texto-2);
+}
+
+.campoValor {
+  flex: 1;
+  font-weight: 500;
+  color: var(--texto);
+  text-align: right;
+  word-break: break-word;
+}
+
+.vinculadas {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--borda-suave);
+}
+
+.vinculadaLinha {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 0;
+  font-size: 12.5px;
+}
+
+.vinculadaLinha svg {
+  color: var(--azul);
+}
+
+.vinculadaNome {
+  flex: 1;
+}
+
+.semSelecao {
+  padding: 30px 12px;
+  text-align: center;
+  color: var(--texto-3);
+  font-size: 13px;
+}
+
+/* ---------- horários de envio ---------- */
+.horarioLinha {
+  display: grid;
+  grid-template-columns: 62px 1fr 12px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+}
+
+.horarioRotulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+
+.horarioTraco {
+  text-align: center;
+  color: var(--texto-3);
+}
+
+/* ---------- status de segurança ---------- */
+.statusSeguro {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--raio-sm);
+  background: var(--verde-bg);
+  border: 1px solid #bbf7d0;
+  margin-bottom: 14px;
+}
+
+.statusIcone {
+  color: var(--verde);
+  flex: none;
+  margin-top: 1px;
+}
+
+.statusTitulo {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--verde);
+  margin-bottom: 2px;
+}
+
+.statusTexto {
+  font-size: 12px;
+  color: #15803d;
+  line-height: 1.45;
+}
+
+.statusLinha {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--borda-suave);
+  font-size: 12.5px;
+}
+
+.statusLinha:last-child {
+  border-bottom: none;
+}
+
+.statusLinha svg {
+  color: var(--verde);
+  flex: none;
+}
+
+.statusRotulo {
+  flex: 1;
+  color: var(--texto);
+}
+
+/* ---------- dicas ---------- */
+.dica {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  font-size: 12.5px;
+  color: var(--texto-2);
+  line-height: 1.45;
+}
+
+.dicaIcone {
+  color: var(--azul);
+  flex: none;
+  margin-top: 1px;
+}
+
+/* ---------- responsivo ---------- */
+@media (max-width: 1280px) {
+  .grade3 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .gradePrincipal {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .grade3 {
+    grid-template-columns: 1fr;
+  }
+
+  .temas,
+  .backupBotoes {
+    grid-template-columns: 1fr;
+  }
+
+  .horarioLinha {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .horarioTraco {
+    display: none;
+  }
+}
