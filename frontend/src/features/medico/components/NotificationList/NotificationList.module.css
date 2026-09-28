@@ -1,0 +1,61 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.item:last-child {
+  border-bottom: 0;
+}
+
+.icone {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-top: 2px;
+  border-radius: 8px;
+}
+
+/* Tons do ícone. Prefixados para não colidir com `.info`, que é o
+   bloco de texto ao lado. */
+.tomAlerta { color: #C0392B; background: #FBE3E0; }
+.tomSucesso { color: #0F6B4F; background: #DCF5EA; }
+.tomInfo { color: var(--color-primary); background: var(--color-primary-light); }
+
+.info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.titulo {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--color-navy-950);
+}
+
+.detalhe {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+}
+
+.quando {
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  color: var(--color-text-subtle);
+}
+
+.vazio {
+  padding: var(--space-5) var(--space-2);
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+  text-align: center;
+}

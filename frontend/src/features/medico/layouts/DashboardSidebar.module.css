@@ -1,0 +1,79 @@
+.lateral {
+  position: sticky;
+  top: calc(78px + var(--space-5));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  /* Sem altura fixa: a coluna acompanha o conteúdo e o cartão de rodapé
+     é empurrado pelo `margin-top: auto` só quando sobra espaço. */
+  max-height: calc(100vh - 78px - var(--space-8));
+  padding: var(--space-4) var(--space-3);
+  overflow-y: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Itens são <button> enquanto não há rota — daí o reset e o width: 100%,
+   que um <a> ganhava de graça por ser bloco. Viram <NavLink> sem mexer aqui. */
+.link {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 12px var(--space-4);
+  background: transparent;
+  border: 0;
+  text-align: left;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-button);
+  transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+
+.link:hover {
+  color: var(--color-primary);
+  background: var(--color-surface-muted);
+}
+
+.ativo {
+  color: var(--color-primary);
+  font-weight: var(--fw-semibold);
+  background: var(--color-primary-light);
+}
+
+.icone {
+  color: currentColor;
+}
+
+.cartao {
+  margin-top: auto;
+}
+
+@media (max-width: 1100px) {
+  .lateral {
+    position: static;
+    max-height: none;
+  }
+
+  .cartao {
+    display: none;
+  }
+
+  .lista {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .link {
+    padding: 10px var(--space-3);
+  }
+}

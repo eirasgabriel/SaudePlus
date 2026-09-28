@@ -1,0 +1,271 @@
+.cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-header);
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-height: 78px;
+  padding: var(--space-3) var(--space-6);
+}
+
+/* ---------- navegação ---------- */
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 auto;
+}
+
+/* Estes itens são <button> enquanto não há rota — daí o reset de
+   background e borda. Viram <NavLink> sem mudar nada neste arquivo. */
+.link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: transparent;
+  border: 0;
+  font-size: var(--fs-nav);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-button);
+  transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
+  white-space: nowrap;
+}
+
+.link:hover {
+  color: var(--color-primary);
+  background: var(--color-surface-muted);
+}
+
+.ativo {
+  color: var(--color-primary);
+  font-weight: var(--fw-semibold);
+}
+
+/* sublinhado do item ativo */
+.ativo::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  bottom: 2px;
+  left: 14px;
+  height: 2.5px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+}
+
+.linkIcone {
+  color: currentColor;
+}
+
+/* ---------- ações ---------- */
+.acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.botaoIcone {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-button);
+  transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+
+.botaoIcone:hover {
+  color: var(--color-primary);
+  background: var(--color-surface-muted);
+}
+
+.contador {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  font-size: 11px;
+  font-weight: var(--fw-bold);
+  color: #FFFFFF;
+  background: #E03B3B;
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-pill);
+}
+
+.divisor {
+  width: 1px;
+  height: 30px;
+  margin: 0 var(--space-2);
+  background: var(--color-border-strong);
+}
+
+/* Âncora do menu suspenso da conta. */
+.perfilArea {
+  position: relative;
+}
+
+.perfil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 6px 6px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-button);
+  transition: background var(--duration) var(--ease);
+}
+
+.perfil:hover {
+  background: var(--color-surface-muted);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  border-radius: 50%;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.perfilTexto {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+}
+
+.perfilNome {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--color-navy-950);
+  white-space: nowrap;
+}
+
+.perfilPapel {
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+}
+
+.perfilSeta {
+  color: var(--color-text-subtle);
+  transition: transform var(--duration) var(--ease);
+}
+
+.perfilSetaAberta {
+  transform: rotate(180deg);
+}
+
+/* ---------- painel de busca ---------- */
+.busca {
+  display: flex;
+  gap: var(--space-3);
+  padding: 0 var(--space-6) var(--space-4);
+}
+
+.busca input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  font: inherit;
+  font-size: var(--fs-small);
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-button);
+}
+
+.busca input::placeholder {
+  color: var(--color-text-subtle);
+}
+
+.buscaEnviar {
+  padding: 12px 22px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: #FFFFFF;
+  background: var(--color-primary);
+  border: 0;
+  border-radius: var(--radius-button);
+  transition: background var(--duration) var(--ease);
+}
+
+.buscaEnviar:hover {
+  background: var(--color-primary-hover);
+}
+
+/* ---------- responsivo ---------- */
+@media (max-width: 1280px) {
+  .barra {
+    gap: var(--space-4);
+  }
+
+  .link {
+    gap: 6px;
+    padding: 10px 9px;
+    font-size: var(--fs-small);
+  }
+
+  .ativo::after {
+    right: 9px;
+    left: 9px;
+  }
+}
+
+@media (max-width: 1100px) {
+  /* Com pouca largura o menu vira uma faixa rolável abaixo da marca,
+     em vez de espremer os rótulos até ficarem ilegíveis. */
+  .barra {
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .menu {
+    order: 3;
+    width: 100%;
+    margin: 0;
+    padding-bottom: 4px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .acoes {
+    margin-left: auto;
+  }
+
+  .perfilTexto {
+    display: none;
+  }
+
+  .busca {
+    padding: 0 var(--space-4) var(--space-3);
+  }
+}

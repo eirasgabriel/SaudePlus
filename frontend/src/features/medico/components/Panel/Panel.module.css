@@ -1,0 +1,104 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* Linha 1: grupo do título à esquerda, ação à direita, separados por
+   `space-between`. Margem automática não serve aqui — num container com
+   flex-wrap ela absorve o espaço livre e joga a ação para a linha de baixo.
+   Um `aside` (o filtro da agenda) usa `order` alto e cai numa linha só dele. */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+}
+
+/* flex-basis 0 de propósito: o flex-wrap decide a quebra pelo tamanho-base
+   dos itens, antes de encolher qualquer um. Com base automática um título
+   longo empurraria a ação para a linha de baixo; com base 0 o grupo só
+   ocupa o que sobra e é o título que corta com reticências. */
+.tituloGrupo {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.icone {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* Recebe foco por código (irAtePainel) — sem contorno próprio, o
+   :focus-visible global cuida da moldura quando vem do teclado. */
+.titulo:focus {
+  outline: none;
+}
+
+.titulo {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* 17px em vez do token de 18px: o cabeçalho precisa caber título e ação
+     numa linha só na coluna estreita (“Exames pendentes” é o pior caso). */
+  font-size: 17px;
+  font-weight: var(--fw-semibold);
+  color: var(--color-navy-950);
+  letter-spacing: -0.01em;
+}
+
+.acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  order: 5;
+  padding: 4px 2px;
+  white-space: nowrap;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--color-primary);
+  transition: color var(--duration) var(--ease);
+}
+
+.acao:hover {
+  color: var(--color-primary-hover);
+}
+
+.acaoIcone {
+  transition: transform var(--duration) var(--ease);
+}
+
+.acao:hover .acaoIcone {
+  transform: translateX(3px);
+}
+
+.corpo {
+  padding: 0 var(--space-5) var(--space-5);
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-wrap: wrap;
+    padding: var(--space-4) var(--space-4) var(--space-3);
+  }
+
+  .corpo {
+    padding: 0 var(--space-4) var(--space-4);
+  }
+}
