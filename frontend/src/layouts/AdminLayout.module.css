@@ -227,6 +227,78 @@
 
 .chevron {
   color: var(--texto-3);
+  transition: transform var(--transicao);
+}
+
+.chevronAberto {
+  transform: rotate(180deg);
+}
+
+.perfilWrap {
+  position: relative;
+}
+
+.menuPerfil {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra-md);
+  padding: 8px;
+  display: grid;
+  gap: 2px;
+  z-index: 60;
+}
+
+.menuPerfilCabecalho {
+  padding: 10px 12px 12px;
+  border-bottom: 1px solid var(--borda-suave);
+  margin-bottom: 6px;
+}
+
+.menuPerfilNome {
+  display: block;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--texto);
+}
+
+.menuPerfilEmail {
+  display: block;
+  font-size: 12px;
+  color: var(--texto-3);
+  margin-top: 2px;
+}
+
+.itemMenuPerfil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--raio-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--texto-2);
+  text-align: left;
+  transition: background var(--transicao), color var(--transicao);
+}
+
+.itemMenuPerfil:hover {
+  background: var(--azul-bg);
+  color: var(--azul);
+}
+
+.itemMenuPerfilSair {
+  color: var(--vermelho);
+}
+
+.itemMenuPerfilSair:hover {
+  background: var(--vermelho-bg);
+  color: var(--vermelho);
 }
 
 /* =========================================================

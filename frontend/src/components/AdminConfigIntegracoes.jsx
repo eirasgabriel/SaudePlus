@@ -83,7 +83,7 @@ export default function AdminConfigIntegracoes() {
                 tom={i.tom}
                 titulo={i.titulo}
                 descricao={i.descricao}
-                aoClicar={() => {}}
+                aoClicar={() => window.alert(`Integração "${i.titulo}"\n\n${i.descricao}\n\nConfiguração em preparação.`)}
               />
             ))}
           </Lista>

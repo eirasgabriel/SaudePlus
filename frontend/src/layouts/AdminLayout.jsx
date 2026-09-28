@@ -1,14 +1,46 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import Icone from "../components/Icone";
 import Avatar from "../components/Avatar";
-import { itensMenu, itensTopo, usuarioLogado } from "../services/dadosAdminNavegacao";
+import { itensMenu, itensTopo, usuarioLogado as usuarioPadrao } from "../services/dadosAdminNavegacao";
+import { obterUsuarioLogado, logout } from "../features/auth/auth.api";
 import estilos from "./AdminLayout.module.css";
 
 /**
  * Casca da área administrativa: cabeçalho + menu lateral + <Outlet />.
  * Cada página é renderizada no lugar do Outlet pelas rotas filhas.
  */
-export default function AdminLayout({ usuario = usuarioLogado }) {
+export default function AdminLayout() {
+  const navigate = useNavigate();
+  const [menuAberto, setMenuAberto] = useState(false);
+  const menuRef = useRef(null);
+
+  /* O usuário real fica salvo no navegador desde o login; os campos que
+     faltarem (foto, notificações) caem para o mock de demonstração. */
+  const sessao = obterUsuarioLogado();
+  const usuario = {
+    ...usuarioPadrao,
+    ...(sessao
+      ? { nome: sessao.nome, cargo: sessao.cargo, email: sessao.email }
+      : {}),
+  };
+
+  useEffect(() => {
+    function aoClicarFora(evento) {
+      if (menuRef.current && !menuRef.current.contains(evento.target)) {
+        setMenuAberto(false);
+      }
+    }
+    document.addEventListener("mousedown", aoClicarFora);
+    return () => document.removeEventListener("mousedown", aoClicarFora);
+  }, []);
+
+  function sair() {
+    logout();
+    setMenuAberto(false);
+    navigate("/login", { replace: true });
+  }
+
   /* `end` só no Dashboard, senão "/admin" ficaria ativo em todas as rotas filhas */
   const classeTopo = ({ isActive }) =>
     `${estilos.navItem} ${isActive ? estilos.navAtivo : ""}`;
@@ -61,14 +93,60 @@ export default function AdminLayout({ usuario = usuarioLogado }) {
             )}
           </button>
 
-          <button type="button" className={estilos.perfil}>
-            <Avatar nome={usuario.nome} foto={usuario.foto} cor="var(--azul)" tam={40} />
-            <span className={estilos.perfilTexto}>
-              <span className={estilos.perfilNome}>{usuario.nome}</span>
-              <span className={estilos.perfilCargo}>{usuario.cargo}</span>
-            </span>
-            <Icone nome="chevronBaixo" tam={17} className={estilos.chevron} />
-          </button>
+          <div className={estilos.perfilWrap} ref={menuRef}>
+            <button
+              type="button"
+              className={estilos.perfil}
+              onClick={() => setMenuAberto((aberto) => !aberto)}
+              aria-haspopup="menu"
+              aria-expanded={menuAberto}
+            >
+              <Avatar nome={usuario.nome} foto={usuario.foto} cor="var(--azul)" tam={40} />
+              <span className={estilos.perfilTexto}>
+                <span className={estilos.perfilNome}>{usuario.nome}</span>
+                <span className={estilos.perfilCargo}>{usuario.cargo}</span>
+              </span>
+              <Icone
+                nome="chevronBaixo"
+                tam={17}
+                className={`${estilos.chevron} ${menuAberto ? estilos.chevronAberto : ""}`}
+              />
+            </button>
+
+            {menuAberto && (
+              <div className={estilos.menuPerfil} role="menu">
+                <div className={estilos.menuPerfilCabecalho}>
+                  <span className={estilos.menuPerfilNome}>{usuario.nome}</span>
+                  {usuario.email && (
+                    <span className={estilos.menuPerfilEmail}>{usuario.email}</span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  className={estilos.itemMenuPerfil}
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuAberto(false);
+                    navigate("/admin/configuracoes");
+                  }}
+                >
+                  <Icone nome="engrenagem" tam={17} />
+                  Configurações
+                </button>
+
+                <button
+                  type="button"
+                  className={`${estilos.itemMenuPerfil} ${estilos.itemMenuPerfilSair}`}
+                  role="menuitem"
+                  onClick={sair}
+                >
+                  <Icone nome="sair" tam={17} />
+                  Sair
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 

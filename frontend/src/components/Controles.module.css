@@ -242,6 +242,20 @@
   background: #d9e8ff;
 }
 
+.perigo {
+  background: var(--vermelho-bg);
+  color: var(--vermelho);
+}
+
+.perigo:hover {
+  background: #fecaca;
+}
+
+.botao:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .blocoTotal {
   width: 100%;
 }

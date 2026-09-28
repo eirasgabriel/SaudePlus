@@ -60,10 +60,14 @@ os contratos da API. Essas classes serão criadas conforme as funcionalidades.
 `config`, `security` e `exception` reservam espaço para configuração, segurança
 e tratamento compartilhado de erros.
 
-A base inclui Spring MVC e validação. Ainda não há endpoints de negócio,
-autenticação, JPA, driver de banco ou Flyway. `db/migration` é uma pasta reservada,
-não um mecanismo de migração já ativo. Instruções de execução em
-[backend/README.md](../backend/README.md).
+A base inclui Spring MVC, Bean Validation, Spring Data JPA, Spring Security
+com JWT e um banco H2 em memória (populado por `security/DataSeeder` ao
+subir a aplicação). Os endpoints de negócio (autenticação, usuários,
+clínicas, profissionais, exames e agendamentos) já estão implementados
+com CRUD completo — veja o contrato em [docs/api.md](api.md).
+`db/migration` continua reservada para quando o projeto migrar de
+`ddl-auto: update` para migrações versionadas com Flyway. Instruções de
+execução em [backend/README.md](../backend/README.md).
 
 O front-end consome a API por HTTP; não acessa o banco diretamente. Autorização e
 regras de disponibilidade devem ser garantidas no servidor e no banco quando

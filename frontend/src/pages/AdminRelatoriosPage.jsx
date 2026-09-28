@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import CartaoMetrica from "../components/CartaoMetrica";
 import Cartao from "../components/Cartao";
@@ -8,13 +8,14 @@ import GraficoBarras from "../components/GraficoBarras";
 import BarrasHorizontais from "../components/BarrasHorizontais";
 import { Seletor, Botao, Campo } from "../components/Controles";
 import Icone from "../components/Icone";
+import { listarRelatorios } from "../features/relatorios/relatorios.api";
 import {
-  metricas,
-  porEspecialidade,
-  evolucaoAtendimentos,
-  porFaixaEtaria,
-  relatoriosDisponiveis,
-  resumoPeriodo,
+  metricas as metricasMock,
+  porEspecialidade as porEspecialidadeMock,
+  evolucaoAtendimentos as evolucaoMock,
+  porFaixaEtaria as faixaMock,
+  relatoriosDisponiveis as relatoriosMock,
+  resumoPeriodo as resumoMock,
   opcoesProfissional,
   opcoesUnidade,
   opcoesStatus,
@@ -36,7 +37,45 @@ export default function AdminRelatoriosPage() {
     especialidade: "todas",
     formato: "pdf",
   });
+  const [metricas, setMetricas] = useState(metricasMock);
+  const [porEspecialidade, setPorEspecialidade] = useState(porEspecialidadeMock);
+  const [evolucaoAtendimentos, setEvolucaoAtendimentos] = useState(evolucaoMock);
+  const [porFaixaEtaria, setPorFaixaEtaria] = useState(faixaMock);
+  const [relatoriosDisponiveis, setRelatoriosDisponiveis] = useState(relatoriosMock);
+  const [resumoPeriodo, setResumoPeriodo] = useState(resumoMock);
   const [gerando, definirGerando] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    let ativo = true;
+
+    listarRelatorios()
+      .then((dados) => {
+        if (!ativo) return;
+
+        if (dados?.metricas?.length) setMetricas(dados.metricas);
+        if (dados?.porEspecialidade) setPorEspecialidade(dados.porEspecialidade);
+        if (dados?.evolucaoAtendimentos) setEvolucaoAtendimentos(dados.evolucaoAtendimentos);
+        if (dados?.porFaixaEtaria?.length) setPorFaixaEtaria(dados.porFaixaEtaria);
+        if (dados?.relatoriosDisponiveis?.length) setRelatoriosDisponiveis(dados.relatoriosDisponiveis);
+        if (dados?.resumoPeriodo?.length) setResumoPeriodo(dados.resumoPeriodo);
+      })
+      .catch(() => {
+        if (ativo) {
+          setMetricas(metricasMock);
+          setPorEspecialidade(porEspecialidadeMock);
+          setEvolucaoAtendimentos(evolucaoMock);
+          setPorFaixaEtaria(faixaMock);
+          setRelatoriosDisponiveis(relatoriosMock);
+          setResumoPeriodo(resumoMock);
+        }
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => { ativo = false; };
+  }, []);
 
   function atualizar(chave, valor) {
     definirFiltros((atuais) => ({ ...atuais, [chave]: valor }));
@@ -64,6 +103,10 @@ export default function AdminRelatoriosPage() {
           />
         }
       />
+
+      {carregando && (
+        <div style={{ marginBottom: 16, color: "var(--texto-3)" }}>Carregando relatórios...</div>
+      )}
 
       <section
         className={`${comum.metricas} ${comum.metricas5}`}

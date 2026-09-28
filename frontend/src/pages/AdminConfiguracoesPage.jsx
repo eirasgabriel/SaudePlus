@@ -1,7 +1,9 @@
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import Abas from "../components/Abas";
-import { abas } from "../services/dadosAdminConfiguracoes";
+import { abas as abasMock } from "../services/dadosAdminConfiguracoes";
+import { listarConfiguracoes } from "../features/configuracoes/configuracoes.api";
 
 import AbaGeral from "../components/AdminConfigGeral";
 import AbaUsuarios from "../components/AdminConfigUsuarios";
@@ -36,7 +38,37 @@ const subtitulos = {
  */
 export default function AdminConfiguracoesPage() {
   const [parametros, definirParametros] = useSearchParams();
-  const aba = conteudos[parametros.get("aba")] ? parametros.get("aba") : "geral";
+  const [abas, setAbas] = useState(abasMock);
+  const [subtitulosApi, setSubtitulosApi] = useState(subtitulos);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    let ativo = true;
+
+    listarConfiguracoes()
+      .then((dados) => {
+        if (!ativo) return;
+        if (dados?.abas?.length) setAbas(dados.abas);
+        if (dados?.subtitulos) setSubtitulosApi({ ...subtitulos, ...dados.subtitulos });
+      })
+      .catch(() => {
+        if (ativo) {
+          setAbas(abasMock);
+          setSubtitulosApi(subtitulos);
+        }
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  const aba = useMemo(() => {
+    return conteudos[parametros.get("aba")] ? parametros.get("aba") : "geral";
+  }, [parametros]);
   const Conteudo = conteudos[aba];
 
   function trocarAba(id) {
@@ -47,10 +79,14 @@ export default function AdminConfiguracoesPage() {
     <>
       <CabecalhoPagina
         titulo="Configurações"
-        subtitulo={subtitulos[aba]}
+        subtitulo={subtitulosApi[aba] ?? subtitulos[aba]}
         icone="engrenagem"
         data={new Date(2026, 8, 15)}
       />
+
+      {carregando && (
+        <div style={{ marginBottom: 16, color: "var(--texto-3)" }}>Carregando configurações...</div>
+      )}
 
       <Abas abas={abas} ativa={aba} aoTrocar={trocarAba} />
 

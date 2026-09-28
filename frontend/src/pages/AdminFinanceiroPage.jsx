@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import CartaoMetrica from "../components/CartaoMetrica";
 import Cartao from "../components/Cartao";
@@ -8,13 +8,14 @@ import GraficoLinha, { LegendaLinha } from "../components/GraficoLinha";
 import GraficoRosca from "../components/GraficoRosca";
 import { Tabela, CelulaDupla } from "../components/Tabela";
 import { Seletor } from "../components/Controles";
+import { listarFinanceiro } from "../features/financeiro/financeiro.api";
 import {
-  metricas,
-  evolucaoFinanceira,
-  formasPagamento,
-  transacoes,
-  statusTransacao,
-  acoesRapidas,
+  metricas as metricasMock,
+  evolucaoFinanceira as evolucaoMock,
+  formasPagamento as formasPagamentoMock,
+  transacoes as transacoesMock,
+  statusTransacao as statusMock,
+  acoesRapidas as acoesMock,
   opcoesPeriodoFinanceiro,
 } from "../services/dadosAdminFinanceiro";
 import comum from "../styles/adminComum.module.css";
@@ -35,6 +36,44 @@ const emReais = (n) => `R$ ${n.toLocaleString("pt-BR")}`;
 export default function AdminFinanceiroPage() {
   const [periodo, definirPeriodo] = useState("7d");
   const [verTodas, definirVerTodas] = useState(false);
+  const [metricas, setMetricas] = useState(metricasMock);
+  const [evolucaoFinanceira, setEvolucaoFinanceira] = useState(evolucaoMock);
+  const [formasPagamento, setFormasPagamento] = useState(formasPagamentoMock);
+  const [transacoes, setTransacoes] = useState(transacoesMock);
+  const [statusTransacao, setStatusTransacao] = useState(statusMock);
+  const [acoesRapidas, setAcoesRapidas] = useState(acoesMock);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    let ativo = true;
+
+    listarFinanceiro()
+      .then((dados) => {
+        if (!ativo) return;
+
+        if (dados?.metricas?.length) setMetricas(dados.metricas);
+        if (dados?.evolucaoFinanceira) setEvolucaoFinanceira(dados.evolucaoFinanceira);
+        if (dados?.formasPagamento) setFormasPagamento(dados.formasPagamento);
+        if (dados?.transacoes?.length) setTransacoes(dados.transacoes);
+        if (dados?.statusTransacao) setStatusTransacao(dados.statusTransacao);
+        if (dados?.acoesRapidas?.length) setAcoesRapidas(dados.acoesRapidas);
+      })
+      .catch(() => {
+        if (ativo) {
+          setMetricas(metricasMock);
+          setEvolucaoFinanceira(evolucaoMock);
+          setFormasPagamento(formasPagamentoMock);
+          setTransacoes(transacoesMock);
+          setStatusTransacao(statusMock);
+          setAcoesRapidas(acoesMock);
+        }
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => { ativo = false; };
+  }, []);
 
   const visiveis = verTodas ? transacoes : transacoes.slice(0, 5);
 
@@ -46,6 +85,10 @@ export default function AdminFinanceiroPage() {
         icone="banco"
         data={new Date(2026, 8, 15)}
       />
+
+      {carregando && (
+        <div style={{ marginBottom: 16, color: "var(--texto-3)" }}>Carregando financeiro...</div>
+      )}
 
       <section className={comum.metricas} aria-label="Indicadores financeiros">
         {metricas.map((m) => (
@@ -134,7 +177,9 @@ export default function AdminFinanceiroPage() {
                 titulo={a.titulo}
                 descricao={a.descricao}
                 comSeta
-                aoClicar={() => {}}
+                aoClicar={() =>
+                  window.alert(`${a.titulo}\n\n${a.descricao}\n\nEssa funcionalidade estará disponível em breve.`)
+                }
               />
             ))}
           </Lista>

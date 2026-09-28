@@ -18,3 +18,11 @@ Thumbs.db
 # Java / Maven
 target/
 *.class
+frontend/node_modules/
+node_modules/
+backend/target/
+frontend/node_modules/
+node_modules/
+dist/
+.env
+.env.local

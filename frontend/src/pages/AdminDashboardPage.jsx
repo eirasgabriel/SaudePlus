@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import CartaoMetrica from "../components/CartaoMetrica";
@@ -10,23 +10,88 @@ import GraficoBarras from "../components/GraficoBarras";
 import GraficoRosca from "../components/GraficoRosca";
 import { Seletor } from "../components/Controles";
 import { Tabela, CelulaDupla } from "../components/Tabela";
+import { listarAgendamentos } from "../features/agendamentos/agendamentos.api";
+import { listarClinicas } from "../features/clinicas/clinicas.api";
+import { obterUsuarioLogado } from "../features/auth/auth.api";
 import {
   metricas,
   agendamentosPorMes,
   periodosGrafico,
   tiposAtendimento,
   acoesRapidas,
-  clinicasMaisAcessadas,
-  ultimosAgendamentos,
+  clinicasMaisAcessadas as clinicasMock,
+  ultimosAgendamentos as ultimosMock,
   statusAgendamentoDashboard,
   notificacoes,
 } from "../services/dadosAdminDashboard";
 import comum from "../styles/adminComum.module.css";
 import estilos from "./AdminDashboardPage.module.css";
 
-export default function AdminDashboardPage({ usuario = { nome: "Admin Master" } }) {
+export default function AdminDashboardPage() {
+  const usuario = obterUsuarioLogado() ?? { nome: "Admin Master" };
   const [periodo, definirPeriodo] = useState("9m");
+  const [agendamentos, setAgendamentos] = useState([]);
+  const [clinicas, setClinicas] = useState(clinicasMock);
+  const [carregando, setCarregando] = useState(true);
   const primeiroNome = usuario.nome.split(" ")[0];
+
+  useEffect(() => {
+    let ativo = true;
+
+    Promise.allSettled([listarAgendamentos(), listarClinicas()])
+      .then(([agendamentosResult, clinicasResult]) => {
+        if (!ativo) return;
+
+        const listaAgendamentos = agendamentosResult.status === "fulfilled"
+          ? Array.isArray(agendamentosResult.value) ? agendamentosResult.value : []
+          : [];
+
+        const listaClinicas = clinicasResult.status === "fulfilled"
+          ? Array.isArray(clinicasResult.value) ? clinicasResult.value : []
+          : [];
+
+        setAgendamentos(listaAgendamentos);
+        setClinicas(
+          listaClinicas.length
+            ? listaClinicas.map((item, index) => ({
+                id: item.id ?? index + 1,
+                nome: item.nome ?? "Clínica",
+                endereco: `${item.endereco ?? "Endereço não informado"} - ${item.cidade ?? "Saquarema"}`,
+                agendamentos: 120 + index * 40,
+                status: item.status ?? "ativa",
+              }))
+            : clinicasMock
+        );
+      })
+      .catch(() => {
+        if (ativo) {
+          setAgendamentos([]);
+          setClinicas(clinicasMock);
+        }
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  const ultimosAgendamentos = useMemo(() => {
+    if (agendamentos.length === 0) return ultimosMock;
+
+    return agendamentos.slice(0, 5).map((item, index) => ({
+      id: item.id ?? index + 1,
+      paciente: item.paciente ?? "Paciente",
+      tipo: item.tipo ?? "Consulta",
+      medico: item.medico ?? "Médico",
+      data: item.data ?? "15/09",
+      hora: item.hora ?? "08:00",
+      status: item.status === "pendente" ? "em_atendimento" : item.status ?? "confirmado",
+      foto: undefined,
+    }));
+  }, [agendamentos]);
 
   return (
     <>
@@ -40,6 +105,11 @@ export default function AdminDashboardPage({ usuario = { nome: "Admin Master" } 
         className={`${comum.metricas} ${comum.metricas5}`}
         aria-label="Indicadores gerais"
       >
+        {carregando && (
+          <div style={{ color: "var(--texto-3)", padding: "8px 0" }}>
+            Carregando indicadores...
+          </div>
+        )}
         {metricas.map((m) => (
           <CartaoMetrica key={m.id} {...m} />
         ))}
@@ -113,7 +183,7 @@ export default function AdminDashboardPage({ usuario = { nome: "Admin Master" } 
         >
           <div className={estilos.tabelaWrap}>
             <Tabela colunas={["#", "Clínica", "Endereço", "Agendamentos (mês)", "Status"]}>
-              {clinicasMaisAcessadas.map((c, i) => (
+              {clinicas.map((c, i) => (
                 <tr key={c.id}>
                   <td className={estilos.indice}>{i + 1}</td>
                   <td>
@@ -121,10 +191,12 @@ export default function AdminDashboardPage({ usuario = { nome: "Admin Master" } 
                   </td>
                   <td className={estilos.enderecoCelula}>{c.endereco}</td>
                   <td className={estilos.numeroCelula}>
-                    {c.agendamentos.toLocaleString("pt-BR")}
+                    {Number(c.agendamentos ?? 0).toLocaleString("pt-BR")}
                   </td>
                   <td>
-                    <Etiqueta variante="sucesso">Ativa</Etiqueta>
+                    <Etiqueta variante={c.status === "ativa" ? "sucesso" : "info"}>
+                      {c.status === "ativa" ? "Ativa" : "Em análise"}
+                    </Etiqueta>
                   </td>
                 </tr>
               ))}

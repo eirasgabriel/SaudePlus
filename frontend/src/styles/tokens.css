@@ -52,6 +52,56 @@
   --sidebar-w: 232px;
   --header-h: 82px;
   --transicao: 0.18s ease;
+
+  /* =========================================================
+     Aliases em inglês (nomes canônicos para o merge entre branches)
+     -----------------------------------------------------------
+     Decisão adotada: manter os nomes em português como fonte da
+     verdade nos componentes do admin (menor risco, sem precisar
+     tocar nas 12 telas existentes) e expor aliases em inglês para
+     quem, nas outras branches, referenciar os tokens por esses
+     nomes. Basta importar este arquivo antes dos estilos delas.
+     ========================================================= */
+  --color-primary: var(--azul);
+  --color-primary-hover: var(--azul-hover);
+  --color-primary-dark: var(--azul-escuro);
+  --color-primary-medium: var(--azul-medio);
+  --color-primary-soft: var(--azul-suave);
+  --color-primary-light: var(--azul-claro);
+  --color-primary-bg: var(--azul-bg);
+
+  --color-success: var(--verde);
+  --color-success-light: var(--verde-claro);
+  --color-success-bg: var(--verde-bg);
+  --color-danger: var(--vermelho);
+  --color-danger-bg: var(--vermelho-bg);
+  --color-warning: var(--amarelo);
+  --color-warning-bg: var(--amarelo-bg);
+  --color-warning-text: var(--amarelo-texto);
+  --color-purple: var(--roxo);
+  --color-purple-bg: var(--roxo-bg);
+  --color-cyan: var(--ciano);
+  --color-pink: var(--rosa);
+
+  --color-text: var(--texto);
+  --color-text-2: var(--texto-2);
+  --color-text-3: var(--texto-3);
+  --color-border: var(--borda);
+  --color-border-soft: var(--borda-suave);
+  --color-white: var(--branco);
+
+  --radius-sm: var(--raio-sm);
+  --radius: var(--raio);
+  --radius-lg: var(--raio-lg);
+  --radius-pill: var(--raio-pill);
+
+  --shadow: var(--sombra);
+  --shadow-md: var(--sombra-md);
+  --shadow-primary: var(--sombra-azul);
+
+  --sidebar-width: var(--sidebar-w);
+  --header-height: var(--header-h);
+  --transition: var(--transicao);
 }
 
 @media (max-width: 900px) {

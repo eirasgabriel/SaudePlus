@@ -123,7 +123,7 @@ export default function AdminConfigNotificacoes() {
                 icone={m.icone}
                 titulo={m.titulo}
                 comSeta
-                aoClicar={() => {}}
+                aoClicar={() => window.alert(`Editor do modelo "${m.titulo}" em preparação.`)}
               />
             ))}
           </Lista>

@@ -1,19 +1,53 @@
+import { useEffect, useState } from "react";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import Cartao from "../components/Cartao";
 import Acordeao from "../components/Acordeao";
 import ItemLista, { Lista } from "../components/ItemLista";
 import Icone from "../components/Icone";
 import { Botao } from "../components/Controles";
+import { listarSuporte } from "../features/suporte/suporte.api";
 import {
-  canais,
-  perguntasFrequentes,
-  horarioAtendimento,
-  linksUteis,
+  canais as canaisMock,
+  perguntasFrequentes as perguntasMock,
+  horarioAtendimento as horarioMock,
+  linksUteis as linksMock,
 } from "../services/dadosAdminSuporte";
 import comum from "../styles/adminComum.module.css";
 import estilos from "./AdminSuportePage.module.css";
 
 export default function AdminSuportePage() {
+  const [canais, setCanais] = useState(canaisMock);
+  const [perguntasFrequentes, setPerguntasFrequentes] = useState(perguntasMock);
+  const [horarioAtendimento, setHorarioAtendimento] = useState(horarioMock);
+  const [linksUteis, setLinksUteis] = useState(linksMock);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    let ativo = true;
+
+    listarSuporte()
+      .then((dados) => {
+        if (!ativo) return;
+        if (dados?.canais?.length) setCanais(dados.canais);
+        if (dados?.perguntasFrequentes?.length) setPerguntasFrequentes(dados.perguntasFrequentes);
+        if (dados?.horarioAtendimento) setHorarioAtendimento(dados.horarioAtendimento);
+        if (dados?.linksUteis?.length) setLinksUteis(dados.linksUteis);
+      })
+      .catch(() => {
+        if (ativo) {
+          setCanais(canaisMock);
+          setPerguntasFrequentes(perguntasMock);
+          setHorarioAtendimento(horarioMock);
+          setLinksUteis(linksMock);
+        }
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => { ativo = false; };
+  }, []);
+
   return (
     <>
       <CabecalhoPagina
@@ -22,6 +56,10 @@ export default function AdminSuportePage() {
         icone="suporte"
         data={new Date(2026, 8, 15)}
       />
+
+      {carregando && (
+        <div style={{ marginBottom: 16, color: "var(--texto-3)" }}>Carregando suporte...</div>
+      )}
 
       {/* ---------- canais de atendimento ---------- */}
       <section className={estilos.canais} aria-label="Canais de atendimento">
@@ -33,15 +71,20 @@ export default function AdminSuportePage() {
             <h2 className={estilos.canalTitulo}>{canal.titulo}</h2>
             <p className={estilos.canalTexto}>{canal.descricao}</p>
 
-            {canal.acao.href ? (
+            {canal.acao?.href ? (
               <a href={canal.acao.href} className={estilos.canalLink}>
                 <Botao variante={canal.acao.variante} icone={canal.acao.icone} blocoTotal>
                   {canal.acao.rotulo}
                 </Botao>
               </a>
             ) : (
-              <Botao variante={canal.acao.variante} icone={canal.acao.icone} blocoTotal>
-                {canal.acao.rotulo}
+              <Botao
+                variante={canal.acao?.variante ?? "primario"}
+                icone={canal.acao?.icone ?? "chat"}
+                blocoTotal
+                onClick={() => window.alert(`${canal.titulo}\n\nO chat em tempo real estará disponível em breve. Enquanto isso, envie um e-mail para suporte@saudeplus.com.br.`)}
+              >
+                {canal.acao?.rotulo ?? "Ver mais"}
               </Botao>
             )}
           </article>
@@ -70,7 +113,9 @@ export default function AdminSuportePage() {
                   conosco!
                 </p>
               </div>
-              <Botao icone="chat">Falar com o Suporte</Botao>
+              <a href="mailto:suporte@saudeplus.com.br">
+                <Botao icone="chat">Falar com o Suporte</Botao>
+              </a>
             </div>
           </Cartao>
         </div>
@@ -107,7 +152,9 @@ export default function AdminSuportePage() {
                   titulo={link.titulo}
                   descricao={link.descricao}
                   comSeta
-                  aoClicar={() => {}}
+                  aoClicar={() =>
+                    window.alert(`${link.titulo}\n\n${link.descricao}\n\nConteúdo em preparação.`)
+                  }
                 />
               ))}
             </Lista>
