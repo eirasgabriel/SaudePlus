@@ -1,9 +1,8 @@
 # API SaúdePlus
 
-> **Status: a implementar.** Este repositório contém apenas o front-end. Este
-> documento é a especificação que o back-end precisa cumprir para as telas de
-> autenticação funcionarem. Enquanto não existir uma API respondendo, o login
-> mostra *"Não foi possível falar com o servidor"* — o comportamento esperado.
+> **Status: implementado** em `backend/src/main/java/br/com/saudeplus/auth/` e
+> `security/`. Os testes de `AuthApiTest` cobrem este contrato. Se a API não
+> estiver no ar, o login mostra *"Não foi possível falar com o servidor"*.
 
 Base: `http://localhost:8080`. Todas as respostas são JSON com charset UTF-8.
 
@@ -94,7 +93,7 @@ Público. Requisição:
   "tipo": "Bearer",
   "expiraEmSegundos": 28800,
   "usuario": {
-    "id": 3,
+    "id": "0b9c6f3e-5a51-4c8e-9f2d-6f1d2a7c4b10",
     "nomeCompleto": "Maria Souza",
     "email": "maria@exemplo.com",
     "telefone": "(24) 99999-0000",
@@ -191,7 +190,7 @@ aplicação para revalidar o token guardado no navegador.
 
 ```json
 {
-  "id": 3,
+  "id": "0b9c6f3e-5a51-4c8e-9f2d-6f1d2a7c4b10",
   "nomeCompleto": "Maria Souza",
   "email": "maria@exemplo.com",
   "telefone": "(24) 99999-0000",
@@ -199,7 +198,40 @@ aplicação para revalidar o token guardado no navegador.
 }
 ```
 
-Erros: `401` token ausente, inválido ou expirado.
+Erros: `401` token ausente, inválido ou expirado, ou conta desativada depois do
+login. Papel e situação da conta são relidos do banco a cada requisição, então
+bloquear uma conta derruba o token já emitido.
+
+Ids são UUID e trafegam como string.
+
+---
+
+## `PUT /api/auth/perfil`
+
+Atualiza os dados do próprio usuário. Exige `Authorization`. E-mail e perfil
+não mudam por aqui.
+
+```json
+{ "nomeCompleto": "Maria Souza Lima", "telefone": "(21) 98888-7777", "fotoUrl": "https://..." }
+```
+
+`nomeCompleto` segue a regra do cadastro; `telefone` e `fotoUrl` (https, até 500
+caracteres) são opcionais e, vazios, apagam o valor. `200 OK` com o mesmo corpo
+de `GET /api/auth/perfil`.
+
+---
+
+## `PUT /api/auth/senha`
+
+Troca a senha de quem está logado. Exige `Authorization`.
+
+```json
+{ "senhaAtual": "umaSenhaForte1", "novaSenha": "outraSenha99" }
+```
+
+`200 OK` com `{ "mensagem": "Senha alterada com sucesso." }`. Senha atual errada
+devolve `400` com `campos.senhaAtual`, e não `401`: o front trata `401` como
+sessão expirada e faria logout.
 
 ---
 
@@ -213,6 +245,7 @@ Todas as falhas usam o mesmo corpo (`ErroResposta`):
   "status": 400,
   "erro": "Dados inválidos",
   "mensagem": "Confira os campos destacados e tente novamente.",
+  "caminho": "/api/auth/cadastro",
   "campos": {
     "email": "Informe um e-mail válido",
     "senha": "A senha deve ter entre 8 e 72 caracteres"
@@ -228,21 +261,26 @@ mensagem — é o que o formulário usa para destacar o input correspondente.
 | `400` | validação de entrada |
 | `401` | credenciais inválidas, token ausente/expirado |
 | `403` | conta desativada, ou perfil sem permissão para a rota |
-| `409` | e-mail já cadastrado |
+| `404` | recurso ou rota inexistente |
+| `409` | e-mail já cadastrado, horário já reservado |
+| `422` | regra de negócio violada |
+| `500` | erro inesperado (detalhes só no log do servidor) |
 
 ---
 
 ## Autorização por prefixo
 
-Prefixos reservados para as próximas funcionalidades:
+Regras aplicadas em `security/SecurityConfig.java`:
 
 | Prefixo | Exigência |
 | --- | --- |
 | `/api/auth/login`, `/api/auth/cadastro` | público |
 | `/api/auth/recuperar-senha`, `/api/auth/redefinir-senha` | público |
+| `/api/publico/**` | público (busca de profissionais, especialidades, unidades) |
 | `/api/admin/**` | perfil `ADMIN` |
 | `/api/medico/**` | perfil `MEDICO` |
 | `/api/paciente/**` | perfil `PACIENTE` |
+| `/api/medicos/**`, `/api/agendamentos/**`, `/api/pacientes/**`, `/api/clinicas/**` | perfil `MEDICO` (rotas antigas do painel; migram para `/api/medico/**`) |
 | qualquer outra | autenticado |
 
 As proteções de rota no React são apenas conveniência de navegação. A autorização
@@ -252,18 +290,18 @@ que vale é esta, no servidor.
 
 ## Limitações conhecidas
 
-- **Nenhum endpoint existe ainda**: este repositório tem só o front-end. Até a API
-  subir, todas as telas de autenticação mostram o erro de conexão.
-- **Envio de e-mail**: sem SMTP, o link de recuperação precisa sair no log do
-  servidor. Vale isolar o envio atrás de uma interface, para trocar por um
-  provedor real sem mexer nas regras de negócio.
-- **Tokens JWT não são revogáveis**: numa autenticação stateless, trocar a senha
-  não invalida um token já emitido — ele continua valendo até expirar. Resolver
-  isso exige uma lista de revogação ou tokens curtos com refresh.
+- **Envio de e-mail**: sem SMTP, o link de recuperação sai no log do servidor
+  (`notificacoes/EnvioEmailNoLog`). Trocar por um provedor real é implementar
+  a interface `EnvioEmail`.
+- **Troca de senha não derruba tokens já emitidos**: bloquear a conta derruba
+  (a situação é relida a cada requisição), mas trocar a senha não — o token
+  antigo vale até expirar. Resolver exige lista de revogação ou refresh token.
+- **Tempo de resposta da recuperação**: e-mail existente grava o token e monta
+  o e-mail; inexistente só consulta. A diferença de tempo é pequena, mas existe.
 - **Sem limite de tentativas**: nem o login nem o pedido de recuperação têm
   throttling. Vale adicionar antes de expor a API na internet.
 - **Login social (Google/Apple)** e os documentos de **Termos de Uso** e
   **Política de Privacidade** não existem: os botões estão no layout e avisam que
   o recurso está por vir.
-- As demais funcionalidades (profissionais, clínicas, exames, agendamentos)
-  continuam sem endpoints.
+- **Conta inicial de médico** ainda não tem perfil com CRM e especialidades; ele
+  entra junto com o catálogo de profissionais.

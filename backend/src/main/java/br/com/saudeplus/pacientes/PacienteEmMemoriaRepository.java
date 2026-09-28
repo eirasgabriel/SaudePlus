@@ -8,17 +8,17 @@ import org.springframework.stereotype.Repository;
 import br.com.saudeplus.dados.DadosDemonstracao;
 
 @Repository
-public class PacienteEmMemoriaRepository implements PacienteRepository {
+public class PacienteEmMemoriaRepository implements PacienteAcompanhadoRepository {
 
-    private final List<Paciente> pacientes = DadosDemonstracao.pacientes();
+    private final List<PacienteAcompanhado> pacientes = DadosDemonstracao.pacientes();
 
     @Override
-    public List<Paciente> porMedico(String medicoId) {
+    public List<PacienteAcompanhado> porMedico(String medicoId) {
         return pacientes.stream().filter(paciente -> paciente.medicoId().equals(medicoId)).toList();
     }
 
     @Override
-    public Optional<Paciente> porId(String id) {
+    public Optional<PacienteAcompanhado> porId(String id) {
         return pacientes.stream().filter(paciente -> paciente.id().equals(id)).findFirst();
     }
 }

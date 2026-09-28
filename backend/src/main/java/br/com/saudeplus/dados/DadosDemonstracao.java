@@ -10,7 +10,7 @@ import br.com.saudeplus.clinicas.Unidade;
 import br.com.saudeplus.exames.Exame;
 import br.com.saudeplus.notificacoes.Notificacao;
 import br.com.saudeplus.notificacoes.TipoNotificacao;
-import br.com.saudeplus.pacientes.Paciente;
+import br.com.saudeplus.pacientes.PacienteAcompanhado;
 import br.com.saudeplus.profissionais.Medico;
 
 /**
@@ -55,16 +55,16 @@ public final class DadosDemonstracao {
                 "#"));
     }
 
-    public static List<Paciente> pacientes() {
+    public static List<PacienteAcompanhado> pacientes() {
         return List.of(
-                new Paciente("ana-paula-ferreira", "Ana Paula Ferreira", 32, "Consulta de rotina", MEDICO_ID),
-                new Paciente("joao-gabriel-santos", "João Gabriel Santos", 5, "Pediatria", MEDICO_ID),
-                new Paciente("mariana-costa", "Mariana Costa", 28, "Retorno - Exames", MEDICO_ID),
-                new Paciente("carlos-eduardo-lima", "Carlos Eduardo Lima", 45, "Clínica geral", MEDICO_ID),
-                new Paciente("fernanda-alves", "Fernanda Alves", 60, "Consulta de rotina", MEDICO_ID),
-                new Paciente("roberto-silva", "Roberto Silva", 51, "Consulta retorno", MEDICO_ID),
-                new Paciente("juliana-rocha", "Juliana Rocha", 37, "Consulta de rotina", MEDICO_ID),
-                new Paciente("lucas-martins", "Lucas Martins", 24, "Clínica geral", MEDICO_ID));
+                new PacienteAcompanhado("ana-paula-ferreira", "Ana Paula Ferreira", 32, "Consulta de rotina", MEDICO_ID),
+                new PacienteAcompanhado("joao-gabriel-santos", "João Gabriel Santos", 5, "Pediatria", MEDICO_ID),
+                new PacienteAcompanhado("mariana-costa", "Mariana Costa", 28, "Retorno - Exames", MEDICO_ID),
+                new PacienteAcompanhado("carlos-eduardo-lima", "Carlos Eduardo Lima", 45, "Clínica geral", MEDICO_ID),
+                new PacienteAcompanhado("fernanda-alves", "Fernanda Alves", 60, "Consulta de rotina", MEDICO_ID),
+                new PacienteAcompanhado("roberto-silva", "Roberto Silva", 51, "Consulta retorno", MEDICO_ID),
+                new PacienteAcompanhado("juliana-rocha", "Juliana Rocha", 37, "Consulta de rotina", MEDICO_ID),
+                new PacienteAcompanhado("lucas-martins", "Lucas Martins", 24, "Clínica geral", MEDICO_ID));
     }
 
     public static List<Consulta> consultas() {

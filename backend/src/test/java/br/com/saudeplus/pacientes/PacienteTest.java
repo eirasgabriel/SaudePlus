@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 class PacienteTest {
 
     private static String iniciaisDe(String nome) {
-        return new Paciente("id", nome, 30, "Consulta", "med-1").iniciais();
+        return new PacienteAcompanhado("id", nome, 30, "Consulta", "med-1").iniciais();
     }
 
     @Test

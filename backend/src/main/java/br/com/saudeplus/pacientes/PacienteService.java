@@ -10,9 +10,9 @@ import br.com.saudeplus.pacientes.dto.PacienteResposta;
 @Service
 public class PacienteService {
 
-    private final PacienteRepository pacientes;
+    private final PacienteAcompanhadoRepository pacientes;
 
-    public PacienteService(PacienteRepository pacientes) {
+    public PacienteService(PacienteAcompanhadoRepository pacientes) {
         this.pacientes = pacientes;
     }
 

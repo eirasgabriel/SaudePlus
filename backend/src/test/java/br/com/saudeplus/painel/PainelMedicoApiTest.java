@@ -1,5 +1,6 @@
 package br.com.saudeplus.painel;
 
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -8,16 +9,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import br.com.saudeplus.TesteDeIntegracao;
+import br.com.saudeplus.security.JwtService;
+import br.com.saudeplus.usuarios.UsuarioRepository;
 
 /**
  * Testa a API de ponta a ponta com os repositórios em memória reais, sem
- * mock nenhum, contra o Postgres do Testcontainers.
+ * mock nenhum, autenticado como a conta inicial de médico.
  *
  * O MockMvc é montado a partir do contexto web para não depender do
  * @AutoConfigureMockMvc, que muda de módulo entre versões do Spring Boot.
@@ -30,11 +34,22 @@ class PainelMedicoApiTest {
     @Autowired
     private WebApplicationContext contexto;
 
+    @Autowired
+    private JwtService jwt;
+
+    @Autowired
+    private UsuarioRepository usuarios;
+
     private MockMvc mockMvc;
 
     private MockMvc mvc() {
         if (mockMvc == null) {
-            mockMvc = MockMvcBuilders.webAppContextSetup(contexto).build();
+            // Toda requisição sai com o token da conta inicial de médico.
+            String token = jwt.emitir(usuarios.findByEmail("medico@saudeplus.com").orElseThrow()).token();
+            mockMvc = MockMvcBuilders.webAppContextSetup(contexto)
+                    .apply(springSecurity())
+                    .defaultRequest(get("/").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                    .build();
         }
         return mockMvc;
     }

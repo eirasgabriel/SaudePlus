@@ -36,6 +36,24 @@ springdoc:
 saudeplus:
   fuso-horario: America/Sao_Paulo
   front-url: ${FRONT_URL:http://localhost:5173}
+  jwt:
+    # HS256 exige ao menos 32 bytes. Sem valor aqui de propósito: dev e test
+    # definem um segredo público abaixo; prod precisa de JWT_SEGREDO.
+    segredo: ${JWT_SEGREDO:}
+    validade: 8h
+  redefinicao-senha:
+    validade: 30m
+  # Contas criadas na inicialização se o e-mail ainda não existir. Conta com
+  # senha em branco é ignorada, então prod só cria o que vier por ambiente.
+  contas-iniciais:
+    admin:
+      email: ${SEED_ADMIN_EMAIL:admin@saudeplus.com}
+      senha: ${SEED_ADMIN_SENHA:}
+      nome: Administrador SaudePlus
+    medico:
+      email: ${SEED_MEDICO_EMAIL:medico@saudeplus.com}
+      senha: ${SEED_MEDICO_SENHA:}
+      nome: Dr. Carlos Andrade
 
 ---
 spring:
@@ -53,6 +71,30 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+
+saudeplus:
+  jwt:
+    segredo: ${JWT_SEGREDO:dev-somente-local-troque-em-producao-0123456789}
+  contas-iniciais:
+    admin:
+      senha: ${SEED_ADMIN_SENHA:Admin@SaudePlus2026}
+    medico:
+      senha: ${SEED_MEDICO_SENHA:Medico@SaudePlus2026}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+
+saudeplus:
+  jwt:
+    segredo: ${JWT_SEGREDO:dev-somente-local-troque-em-producao-0123456789}
+  contas-iniciais:
+    admin:
+      senha: ${SEED_ADMIN_SENHA:Admin@SaudePlus2026}
+    medico:
+      senha: ${SEED_MEDICO_SENHA:Medico@SaudePlus2026}
 
 ---
 spring:

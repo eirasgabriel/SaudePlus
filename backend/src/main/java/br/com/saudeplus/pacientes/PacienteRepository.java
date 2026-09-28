@@ -1,11 +1,11 @@
 package br.com.saudeplus.pacientes;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface PacienteRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
 
-    List<Paciente> porMedico(String medicoId);
+public interface PacienteRepository extends JpaRepository<Paciente, UUID> {
 
-    Optional<Paciente> porId(String id);
+    Optional<Paciente> findByUsuarioId(UUID usuarioId);
 }

@@ -1,5 +1,6 @@
 package br.com.saudeplus.exception;
 
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -32,6 +33,25 @@ public class TratadorDeErros {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErroResposta> rotaInexistente(NoResourceFoundException excecao, WebRequest requisicao) {
         return responder(HttpStatus.NOT_FOUND, "Rota não encontrada.", requisicao);
+    }
+
+    @ExceptionHandler(NaoAutorizadoException.class)
+    public ResponseEntity<ErroResposta> naoAutorizado(NaoAutorizadoException excecao, WebRequest requisicao) {
+        return responder(HttpStatus.UNAUTHORIZED, excecao.getMessage(), requisicao);
+    }
+
+    @ExceptionHandler(AcessoProibidoException.class)
+    public ResponseEntity<ErroResposta> acessoProibido(AcessoProibidoException excecao, WebRequest requisicao) {
+        return responder(HttpStatus.FORBIDDEN, excecao.getMessage(), requisicao);
+    }
+
+    @ExceptionHandler(RequisicaoInvalidaException.class)
+    public ResponseEntity<ErroResposta> requisicaoInvalida(RequisicaoInvalidaException excecao, WebRequest requisicao) {
+        Map<String, String> campos = excecao.getCampo() == null
+                ? Map.of()
+                : Map.of(excecao.getCampo(), excecao.getMessage());
+        return ResponseEntity.badRequest().body(new ErroResposta(
+                Instant.now(), 400, excecao.getTitulo(), excecao.getMessage(), caminho(requisicao), campos));
     }
 
     @ExceptionHandler(ConflitoException.class)

@@ -1,37 +1,72 @@
 package br.com.saudeplus.pacientes;
 
-/** Paciente sob acompanhamento de um profissional. */
-public record Paciente(
-        String id,
-        String nome,
-        int idade,
-        String motivo,
-        String medicoId) {
+import java.time.LocalDate;
+import java.time.Period;
+import java.util.UUID;
 
-    /**
-     * Iniciais para o avatar: primeiro e último nome, ignorando partículas
-     * em minúsculo ("Maria da Silva" vira "MS"). Mesma regra do front-end,
-     * para o avatar não mudar conforme quem calcula.
-     */
-    public String iniciais() {
-        if (nome == null || nome.isBlank()) {
-            return "";
-        }
-        String[] partes = nome.trim().split("\\s+");
-        java.util.List<String> relevantes = new java.util.ArrayList<>();
-        for (String parte : partes) {
-            if (parte.length() > 2 || Character.isUpperCase(parte.charAt(0))) {
-                relevantes.add(parte);
-            }
-        }
-        if (relevantes.isEmpty()) {
-            return "";
-        }
-        char primeira = relevantes.get(0).charAt(0);
-        if (relevantes.size() == 1) {
-            return String.valueOf(Character.toUpperCase(primeira));
-        }
-        char ultima = relevantes.get(relevantes.size() - 1).charAt(0);
-        return ("" + Character.toUpperCase(primeira) + Character.toUpperCase(ultima));
+import br.com.saudeplus.comum.EntidadeComId;
+import br.com.saudeplus.usuarios.Usuario;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+
+/**
+ * Perfil de paciente de um {@link Usuario}. Nasce junto com a conta no
+ * cadastro público; dados clínicos e de convênio são preenchidos depois.
+ */
+@Entity
+@Table(name = "pacientes")
+public class Paciente extends EntidadeComId {
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    private Usuario usuario;
+
+    @Column(name = "data_nascimento")
+    private LocalDate dataNascimento;
+
+    @Column(length = 20)
+    private String sexo;
+
+    // Vira associação com Convenio quando o catálogo ganhar entidade (fase 2).
+    @Column(name = "convenio_id")
+    private UUID convenioId;
+
+    @Column(name = "numero_carteirinha", length = 40)
+    private String numeroCarteirinha;
+
+    protected Paciente() {
+    }
+
+    public Paciente(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    /** Idade em anos completos na data informada, ou `null` sem data de nascimento. */
+    public Integer idadeEm(LocalDate data) {
+        return dataNascimento == null ? null : Period.between(dataNascimento, data).getYears();
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public LocalDate getDataNascimento() {
+        return dataNascimento;
+    }
+
+    public String getSexo() {
+        return sexo;
+    }
+
+    public UUID getConvenioId() {
+        return convenioId;
+    }
+
+    public String getNumeroCarteirinha() {
+        return numeroCarteirinha;
     }
 }

@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 
 import br.com.saudeplus.agendamentos.dto.ConsultaResposta;
 import br.com.saudeplus.exception.RecursoNaoEncontradoException;
-import br.com.saudeplus.pacientes.Paciente;
-import br.com.saudeplus.pacientes.PacienteRepository;
+import br.com.saudeplus.pacientes.PacienteAcompanhado;
+import br.com.saudeplus.pacientes.PacienteAcompanhadoRepository;
 
 /**
  * Regras da agenda do dia.
@@ -23,9 +23,9 @@ import br.com.saudeplus.pacientes.PacienteRepository;
 public class AgendaService {
 
     private final ConsultaRepository consultas;
-    private final PacienteRepository pacientes;
+    private final PacienteAcompanhadoRepository pacientes;
 
-    public AgendaService(ConsultaRepository consultas, PacienteRepository pacientes) {
+    public AgendaService(ConsultaRepository consultas, PacienteAcompanhadoRepository pacientes) {
         this.consultas = consultas;
         this.pacientes = pacientes;
     }
@@ -75,7 +75,7 @@ public class AgendaService {
 
     private ConsultaResposta paraResposta(Consulta consulta) {
         String nome = pacientes.porId(consulta.pacienteId())
-                .map(Paciente::nome)
+                .map(PacienteAcompanhado::nome)
                 .orElse("Paciente");
         return ConsultaResposta.de(consulta, nome);
     }

@@ -1,6 +1,6 @@
 package br.com.saudeplus.pacientes.dto;
 
-import br.com.saudeplus.pacientes.Paciente;
+import br.com.saudeplus.pacientes.PacienteAcompanhado;
 
 /** `iniciais` vai pronto para o avatar não depender de quem renderiza. */
 public record PacienteResposta(
@@ -10,7 +10,7 @@ public record PacienteResposta(
         String motivo,
         String iniciais) {
 
-    public static PacienteResposta de(Paciente paciente) {
+    public static PacienteResposta de(PacienteAcompanhado paciente) {
         return new PacienteResposta(
                 paciente.id(),
                 paciente.nome(),
