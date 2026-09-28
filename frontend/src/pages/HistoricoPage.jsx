@@ -3,17 +3,36 @@ import { Link } from 'react-router-dom';
 import { mockHistory } from '../services/dadosficticios';
 import estilos from './HistoricoPage.module.css';
 
-/* 
-   FORMATADORES E APOIO
-   */
-
 const paraData = (valor) => (valor instanceof Date ? valor : new Date(valor));
 const capitalizar = (texto) => texto.charAt(0).toUpperCase() + texto.slice(1);
+const classes = (...lista) => lista.filter(Boolean).join(' ');
 
-const formatoLongo = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+const formatoDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit' });
+const formatoMes = new Intl.DateTimeFormat('pt-BR', { month: 'short' });
 const formatoHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' });
-const formatoCompleto = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeStyle: 'short' });
-const formatoAno = new Intl.DateTimeFormat('pt-BR', { year: 'numeric' });
+const formatoExtenso = new Intl.DateTimeFormat('pt-BR', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+const mesAbreviado = (valor) => capitalizar(formatoMes.format(paraData(valor)).replace('.', ''));
+const dataPorExtenso = (valor) => capitalizar(formatoExtenso.format(paraData(valor)));
+
+// O tipo vem da API em `type`. Cada tom reaproveita a cor da seção
+// correspondente do app: consulta em azul, exame em verde e procedimento no roxo.
+const TIPOS = {
+  consulta: { rotulo: 'Consulta', tom: 'consulta' },
+  exame: { rotulo: 'Exame', tom: 'exame' },
+  procedimento: { rotulo: 'Procedimento', tom: 'procedimento' },
+};
+
+const tipoDe = (atendimento) =>
+  TIPOS[atendimento.type?.toLowerCase()] ?? {
+    rotulo: capitalizar(atendimento.type ?? 'Atendimento'),
+    tom: 'neutro',
+  };
 
 const propsSvg = {
   viewBox: '0 0 24 24',
@@ -25,6 +44,20 @@ const propsSvg = {
   'aria-hidden': true,
   focusable: 'false',
 };
+
+const IconeCalendario = ({ className }) => (
+  <svg {...propsSvg} className={className}>
+    <rect x="3" y="4.5" width="18" height="17" rx="2.5" />
+    <path d="M8 2.5v4M16 2.5v4M3 9.5h18" />
+  </svg>
+);
+
+const IconeRelogio = ({ className }) => (
+  <svg {...propsSvg} className={className}>
+    <circle cx="12" cy="12" r="9.5" />
+    <path d="M12 6.5V12l3.5 2" />
+  </svg>
+);
 
 const IconePino = ({ className }) => (
   <svg {...propsSvg} className={className}>
@@ -40,88 +73,113 @@ const IconeUsuario = ({ className }) => (
   </svg>
 );
 
-const IconeEncaminhamento = ({ className }) => (
+const IconeNota = ({ className }) => (
   <svg {...propsSvg} className={className}>
     <path d="M14 2.5H6.5A2 2 0 0 0 4.5 4.5v15a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V8z" />
     <path d="M14 2.5V8h5.5M8.5 13h7M8.5 17h4" />
   </svg>
 );
 
-/* 
-   CARTÃO DE ATENDIMENTO
-   Campos vindos de mockHistory: dateTime, clinic, specialty,
-   professional, summary, outcome.
-    */
+const IconeDesfecho = ({ className }) => (
+  <svg {...propsSvg} className={className} strokeWidth="2">
+    <path d="M4.5 12.5l5 5 10-11" />
+  </svg>
+);
 
 function CartaoAtendimento({ atendimento }) {
   const quando = paraData(atendimento.dateTime);
+  const tipo = tipoDe(atendimento);
 
   return (
-    <li className={estilos.item}>
-      <span className={estilos.marcador} aria-hidden="true" />
+    <li className={estilos.cartao}>
+      {/* Topo: selo de data, identificação e tipo */}
+      <div className={estilos.topo}>
+        <span className={estilos.selo} aria-hidden="true">
+          <span className={estilos.seloDia}>{formatoDia.format(quando)}</span>
+          <span className={estilos.seloMes}>{mesAbreviado(quando)}</span>
+        </span>
 
-      <article className={estilos.cartaoItem}>
-        <div className={estilos.linhaTopo}>
+        <div className={estilos.identificacao}>
           <h3 className={estilos.especialidade}>{atendimento.specialty}</h3>
-          <time className={estilos.quando} dateTime={atendimento.dateTime}>
-            <span aria-hidden="true">
-              {capitalizar(formatoLongo.format(quando))} · {formatoHora.format(quando)}
-            </span>
-            <span className={estilos.somenteLeitor}>{formatoCompleto.format(quando)}</span>
+          <p className={estilos.profissional}>
+            <IconeUsuario className={estilos.profissionalIcone} />
+            <span>{atendimento.professional}</span>
+          </p>
+        </div>
+
+        <span className={classes(estilos.tipo, estilos[tipo.tom])}>
+          <span className={estilos.tipoPonto} aria-hidden="true" />
+          {tipo.rotulo}
+        </span>
+      </div>
+
+      {/* Detalhes */}
+      <div className={estilos.detalhes}>
+        <div className={estilos.linha}>
+          <IconeCalendario className={estilos.linhaIcone} />
+          <time className={estilos.linhaValor} dateTime={atendimento.dateTime}>
+            {dataPorExtenso(quando)}
           </time>
         </div>
 
-        <p className={estilos.resumo}>{atendimento.summary}</p>
-
-        <div className={estilos.detalhes}>
-          <p className={estilos.meta}>
-            <IconeUsuario className={estilos.metaIcone} />
-            <span>{atendimento.professional}</span>
-          </p>
-          <p className={estilos.meta}>
-            <IconePino className={estilos.metaIcone} />
-            <span>{atendimento.clinic}</span>
-          </p>
+        <div className={estilos.linha}>
+          <IconeRelogio className={estilos.linhaIcone} />
+          <span className={estilos.linhaValor}>
+            <span className={estilos.horario}>{formatoHora.format(quando)}</span>
+          </span>
         </div>
 
-        {atendimento.outcome && (
+        <div className={classes(estilos.linha, estilos.linhaLarga)}>
+          <IconePino className={estilos.linhaIcone} />
+          <span className={estilos.linhaValor}>
+            <span className={estilos.local}>{atendimento.clinic}</span>
+            {atendimento.address && (
+              <span className={estilos.endereco}>{atendimento.address}</span>
+            )}
+          </span>
+        </div>
+
+        {atendimento.summary && (
+          <div className={classes(estilos.linha, estilos.linhaLarga)}>
+            <IconeNota className={estilos.linhaIcone} />
+            <p className={estilos.linhaValor}>{atendimento.summary}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Rodapé: desfecho do atendimento */}
+      {atendimento.outcome && (
+        <div className={estilos.rodape}>
           <p className={estilos.desfecho}>
-            <IconeEncaminhamento className={estilos.desfechoIcone} />
+            <IconeDesfecho className={estilos.desfechoIcone} />
             <span>{atendimento.outcome}</span>
           </p>
-        )}
-      </article>
+        </div>
+      )}
     </li>
   );
 }
-
-/* 
-   PÁGINA
-   Rota: /historico
-    */
 
 export default function HistoricoPage({ historico = mockHistory }) {
   /* Agrupa por ano, do atendimento mais recente para o mais antigo */
   const porAno = useMemo(() => {
     const ordenado = [...historico].sort(
-      (a, b) => paraData(b.dateTime) - paraData(a.dateTime),
+      (a, b) => paraData(b.dateTime) - paraData(a.dateTime)
     );
 
     const grupos = new Map();
     for (const atendimento of ordenado) {
-      const ano = formatoAno.format(paraData(atendimento.dateTime));
+      const ano = paraData(atendimento.dateTime).getFullYear().toString();
       if (!grupos.has(ano)) grupos.set(ano, []);
       grupos.get(ano).push(atendimento);
     }
     return [...grupos.entries()];
   }, [historico]);
 
-  const total = historico.length;
-
   return (
     <div className={estilos.pagina}>
       <div className={estilos.conteudo}>
-        <Link to="/" className={estilos.voltar}>
+        <Link to="/paciente" className={estilos.voltar}>
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M19.5 12h-15M11 5.5 4.5 12l6.5 6.5" />
           </svg>
@@ -143,7 +201,7 @@ export default function HistoricoPage({ historico = mockHistory }) {
           </div>
         </header>
 
-        {total > 0 ? (
+        {porAno.length > 0 ? (
           porAno.map(([ano, atendimentos]) => (
             <section key={ano} className={estilos.secao} aria-labelledby={`ano-${ano}`}>
               <div className={estilos.secaoCabecalho}>
@@ -153,7 +211,7 @@ export default function HistoricoPage({ historico = mockHistory }) {
                 </span>
               </div>
 
-              <ul className={estilos.linhaDoTempo}>
+              <ul className={estilos.lista}>
                 {atendimentos.map((atendimento) => (
                   <CartaoAtendimento key={atendimento.id} atendimento={atendimento} />
                 ))}

@@ -1,5 +1,10 @@
 /* 
-   Página de histórico (placeholder)
+   Página de histórico
+
+   Mesma estrutura de cartão da ConsultasPage e da ExamesPage,
+   no tom roxo.
+   Escala de espaçamento: 4 · 6 · 10 · 14 · 18 · 22 px
+
    Os tokens ficam no wrapper .pagina para não colidir com
    variáveis globais do restante da aplicação.
    */
@@ -7,20 +12,37 @@
 .pagina {
   /* Paleta oficial */
   --primary: #0066ff;
-  --purple: #7b4dff;
-  --purple-bg: #ece5ff;
+  --primary-100: #dceaff;
   --navy: #0a2463;
   --text: #1f2a44;
   --muted: #667085;
   --border: #e3ecf8;
   --surface: #ffffff;
-  --radius-lg: 20px;
-  --shadow: 0 6px 24px rgba(16, 68, 160, 0.06);
-  --font: 'Nunito Sans', 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
 
   /* Tom desta seção */
-  --tom: var(--purple);
-  --tom-fundo: var(--purple-bg);
+  --tom: #7b4dff;
+  --tom-fundo: #ece5ff;
+  --tom-escuro: #6a35f0; /* usado em texto sobre --tom-fundo: passa em AA */
+  --tom-borda: #ddd3fb;
+
+  /* Tipos de atendimento — cada um reaproveita a cor da sua seção */
+  --consulta: #0a4fc9;
+  --consulta-bg: #dceaff;
+  --consulta-borda: rgba(10, 79, 201, 0.2);
+
+  --exame: #0c7a45;
+  --exame-bg: #e2f7eb;
+  --exame-borda: rgba(12, 122, 69, 0.22);
+
+  --procedimento: #6a35f0;
+  --procedimento-bg: #ece5ff;
+  --procedimento-borda: rgba(106, 53, 240, 0.22);
+
+  --radius: 16px;
+  --radius-lg: 20px;
+  --pill: 999px;
+  --shadow: 0 6px 24px rgba(16, 68, 160, 0.06);
+  --font: 'Nunito Sans', 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
 
   width: 100%;
   min-height: 100vh;
@@ -40,6 +62,7 @@
 
 :where(.pagina) h1,
 :where(.pagina) h2,
+:where(.pagina) h3,
 :where(.pagina) p,
 :where(.pagina) ul,
 :where(.pagina) li {
@@ -62,7 +85,7 @@
   padding: 32px 24px 48px;
 }
 
-/* Voltar  */
+/*  Voltar  */
 .voltar {
   display: inline-flex;
   align-items: center;
@@ -132,63 +155,303 @@
   color: var(--muted);
 }
 
-/* Cartão  */
-.cartao {
-  margin-top: 28px;
-  padding: 26px 28px 28px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+/* Seções (um grupo por ano) */
+.secao {
+  margin-top: 34px;
 }
 
-.cartaoTitulo {
+.secaoCabecalho {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.secaoTitulo {
   font-size: 17px;
   font-weight: 700;
   color: var(--navy);
 }
 
-.cartaoTexto {
-  margin-top: 8px;
-  font-size: 14px;
+.contador {
+  font-size: 13px;
   color: var(--muted);
 }
 
 .lista {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 18px;
+  gap: 14px;
 }
 
-.lista li {
-  position: relative;
-  padding-left: 26px;
+.vazio {
+  padding: 22px;
+  border: 1px dashed #cddcf0;
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/*
+   CARTÃO DE ATENDIMENTO
+    */
+
+.cartao {
+  padding: 18px 22px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.cartao:hover {
+  border-color: var(--tom-borda);
+  box-shadow: 0 12px 30px rgba(86, 44, 190, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Topo  */
+.topo {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+/* Selo de data: só dia e mês. A data por extenso fica nos detalhes. */
+.selo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 60px;
+  padding: 10px 0 11px;
+  border-radius: 14px;
+  background: var(--tom-fundo);
+  color: #4a2ea6;
+}
+
+.seloDia {
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* respiro entre o dia e o mês dentro do selo */
+.seloMes {
+  margin-top: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.identificacao {
+  flex: 1;
+  min-width: 0;
+  /* alinha a primeira linha do texto com o topo óptico do selo */
+  padding-top: 2px;
+}
+
+.especialidade {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--navy);
+}
+
+.profissional {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.profissionalIcone {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--tom);
+}
+
+/*  Badge do tipo de atendimento */
+.tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  padding: 6px 13px 6px 11px;
+  border: 1px solid transparent;
+  border-radius: var(--pill);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.tipoPonto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.consulta {
+  background: var(--consulta-bg);
+  border-color: var(--consulta-borda);
+  color: var(--consulta);
+}
+
+.exame {
+  background: var(--exame-bg);
+  border-color: var(--exame-borda);
+  color: var(--exame);
+}
+
+.procedimento {
+  background: var(--procedimento-bg);
+  border-color: var(--procedimento-borda);
+  color: var(--procedimento);
+}
+
+.neutro {
+  background: #eef2f7;
+  border-color: rgba(102, 112, 133, 0.2);
+  color: var(--muted);
+}
+
+/*  Detalhes  */
+.detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Coluna fixa para o ícone: todas as linhas alinham no mesmo eixo */
+.linha {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+}
+
+/* 2px alinha o ícone de 18px ao centro óptico da 1ª linha de texto
+   (caixa de linha de 21px: (21 - 18) / 2 ≈ 2) */
+.linhaIcone {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--tom);
+}
+
+.linhaValor {
   font-size: 14px;
   line-height: 1.5;
   color: var(--text);
 }
 
-.lista li::before {
-  content: '';
-  position: absolute;
-  top: 7px;
-  left: 4px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--tom);
+.horario {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--navy);
 }
 
-/* Responsividade  */
+/* Nome da unidade e endereço em linhas separadas, com respiro entre eles */
+.local {
+  display: block;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.endereco {
+  display: block;
+  margin-top: 5px;
+  font-size: 13.5px;
+  color: var(--muted);
+}
+
+/* Rodapé: desfecho  */
+.rodape {
+  margin-top: 16px;
+}
+
+.desfecho {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 100%;
+  padding: 10px 16px;
+  border: 1px solid var(--tom-borda);
+  border-radius: 12px;
+  background: var(--tom-fundo);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #4a2ea6;
+}
+
+.desfechoIcone {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+}
+
+/* Responsividade */
+
+/* Com largura sobrando, data e horário dividem a mesma faixa
+   e as demais linhas ocupam a largura inteira. */
+@media (min-width: 640px) {
+  .detalhes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 28px;
+  }
+
+  .linhaLarga {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 720px) {
   .conteudo { padding: 20px 16px 36px; }
+
   .cabecalho { gap: 16px; }
   .icone { width: 50px; height: 50px; }
   .icone svg { width: 24px; height: 24px; }
   .titulo { font-size: 24px; }
   .subtitulo { font-size: 15px; }
-  .cartao { padding: 20px 18px 22px; }
+
+  .cartao { padding: 16px 16px 18px; }
+
+  /* O badge do tipo desce para a própria linha, abaixo do nome */
+  .topo {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    column-gap: 14px;
+    row-gap: 12px;
+  }
+
+  .selo { width: 52px; }
+  .seloDia { font-size: 20px; }
+  .identificacao { padding-top: 0; }
+  .especialidade { font-size: 16px; }
+
+  .tipo {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .detalhes { margin-top: 14px; padding-top: 14px; }
+  .linha { column-gap: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,21 +1,7 @@
-/* 
-   SaúdePlus · Dashboard do Paciente
-   Sumário:
-   1. Tokens e reset escopado
-   2. Grade da página
-   3. Cabeçalho
-   4. Menu lateral
-   5. Boas-vindas
-   6. Cards de atalho
-   7. Painéis e links
-   8. Faixa de segurança
-   9. Agende sua consulta
-   10. Acesso rápido
-   11. Informações da unidade
-   12. Responsividade (sempre no fim do arquivo)
-    */
+/* Estilos do painel do paciente. As media queries ficam no fim do arquivo
+   para que nenhuma regra base sobrescreva um ajuste responsivo por vir depois. */
 
-/* Tokens e reset escopado  */
+/* Tokens e reset escopado */
 /* Os tokens ficam no wrapper .pagina para não colidir com
    variáveis globais do restante da aplicação. */
 .pagina {
@@ -103,7 +89,7 @@
   border-radius: 10px;
 }
 
-/* Grade da página  */
+/* Grade da página */
 .app {
   max-width: 1536px;
   margin: 0 auto;
@@ -132,8 +118,9 @@
   min-width: 0;
 }
 
-/* Cabeçalho  */
+/* Cabeçalho */
 .cabecalho {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 24px;
@@ -403,7 +390,7 @@
   height: 110px;
 }
 
-/* Boas-vindas  */
+/* Boas-vindas */
 .boasVindas {
   position: relative;
   overflow: hidden;
@@ -647,7 +634,7 @@
   height: 44px;
 }
 
-/* Agende sua consulta*/
+/* Agende sua consulta */
 .agendar {
   position: relative;
   overflow: hidden;
@@ -723,7 +710,7 @@
   stroke-width: 1.5;
 }
 
-/*  Acesso rápido  */
+/* Acesso rápido */
 .acessoLista {
   margin-bottom: -12px;
 }
@@ -766,7 +753,7 @@
   color: var(--primary);
 }
 
-/* Informações da unidade  */
+/* Informações da unidade */
 .unidade {
   display: flex;
   align-items: flex-start;
@@ -810,9 +797,263 @@
   margin-top: 14px;
 }
 
-/* ---------- 12. Responsividade ---------- */
+/* Busca no cabeçalho */
+
+.busca {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.campoBusca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 340px;
+  padding: 9px 10px 9px 16px;
+  border: 1px solid var(--primary);
+  border-radius: var(--pill);
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.12);
+}
+
+.campoBuscaIcone {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: var(--primary);
+}
+
+.entradaBusca {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+}
+
+.entradaBusca::placeholder {
+  color: var(--muted);
+}
+
+/* O X nativo do input[type=search] muda de navegador para navegador, então
+   usamos o nosso e escondemos o padrão. */
+.entradaBusca::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.limparBusca {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--navy);
+}
+
+.limparBusca:hover {
+  background: var(--primary-50);
+  color: var(--primary);
+}
+
+.limparBusca svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 2.2;
+}
+
+/* Com a busca aberta o campo precisa da largura que o menu ocupava. */
+.menuTopoOculto {
+  display: none;
+}
+
+/* Faixa de resultados da busca */
+
+.faixaBusca {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  border: 1px solid #cfe1fb;
+  border-radius: var(--radius);
+  background: var(--primary-50);
+  font-size: 14px;
+  color: #0a4fc9;
+}
+
+.limparFaixa {
+  flex-shrink: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.limparFaixa:hover {
+  color: var(--primary-700);
+}
+
+/* Painel de notificações */
+
+.notificacoes {
+  position: relative;
+}
+
+.painelNotificacoes {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 60;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 44px rgba(8, 30, 84, 0.18);
+  animation: surgirPainel 0.16s ease-out;
+}
+
+.painelCabecalhoNot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.painelTituloNot {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.marcarLidas {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.marcarLidas:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.listaNotificacoes {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.notItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s ease;
+}
+
+.listaNotificacoes li:last-child .notItem {
+  border-bottom: 0;
+}
+
+.notItem:hover {
+  background: #fafcff;
+}
+
+/* A faixa azul à esquerda marca o que não foi lido sem depender só do ponto,
+   que passa despercebido para quem não distingue bem tons de azul. */
+.notItemNaoLida {
+  box-shadow: inset 3px 0 0 var(--primary);
+  background: #f7fbff;
+}
+
+.notIcone {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--primary-100);
+  color: var(--primary);
+}
+
+.notIcone svg {
+  width: 19px;
+  height: 19px;
+}
+
+.notTexto {
+  flex: 1;
+  min-width: 0;
+}
+
+.notTitulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--navy);
+}
+
+.notPonto {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.notResumo {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.notQuando {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #93a0b5;
+}
+
+.notVazio {
+  padding: 24px 18px;
+  font-size: 13.5px;
+  text-align: center;
+  color: var(--muted);
+}
+
+@keyframes surgirPainel {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.somenteLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Responsividade */
 @media (max-width: 1400px) {
   .grade { grid-template-columns: 220px minmax(0, 1fr) 330px; }
+  .campoBusca { width: 280px; }
 
   .menuTopo { margin-left: 12px; }
   .linkMenuTopo { padding: 10px 12px; }
@@ -853,6 +1094,29 @@
 
 @media (max-width: 720px) {
   .app { padding: 10px 12px 20px; }
+
+  /* No celular não há espaço para o campo e o painel ao lado dos ícones, então
+     os dois descem como faixas de largura total, presas ao cabeçalho. */
+  .busca,
+  .notificacoes { position: static; }
+
+  .campoBusca {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 12px;
+    right: 12px;
+    z-index: 55;
+    width: auto;
+  }
+
+  .painelNotificacoes {
+    top: calc(100% + 8px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+  }
+  .faixaBusca { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 16px; }
   .painelDireito,
   .gradeAtalhos { grid-template-columns: minmax(0, 1fr); }
 

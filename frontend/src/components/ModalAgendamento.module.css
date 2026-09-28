@@ -1,31 +1,27 @@
-/* 
-   Modal de agendamento
-
-   Renderizado em portal no <body>, fora da árvore do
-   PacienteDashboard — por isso repete os tokens no .fundo, em vez
-   de herdá-los do .pagina.
-    */
-
+/* O modal é renderizado em portal no <body>, fora da árvore do
+   PacienteDashboard, então os tokens precisam ser declarados aqui —
+   não há .pagina acima dele para herdar. */
 .fundo {
-  /* Paleta oficial */
   --primary: #0066ff;
   --primary-700: #0052d6;
   --primary-100: #dceaff;
   --primary-50: #eef5ff;
 
-  /* Neutros */
   --navy: #0a2463;
   --text: #1f2a44;
   --muted: #667085;
   --border: #e3ecf8;
   --surface: #ffffff;
 
-  /* Status */
-  --danger: #d92544;
-  --danger-bg: #ffe5ea;
+  --sucesso: #0c7a45;
+  --sucesso-bg: #e2f7eb;
+  --sucesso-borda: rgba(12, 122, 69, 0.22);
 
-  /* Forma */
-  --radius: 16px;
+  /* Tom escurecido para que o texto de erro passe em AA sobre fundo claro. */
+  --perigo: #c41d3a;
+  --perigo-bg: #ffe5ea;
+
+  --radius: 14px;
   --radius-lg: 20px;
   --pill: 999px;
 
@@ -69,10 +65,9 @@
   border-radius: 10px;
 }
 
-/*  Caixa  */
 .dialogo {
   width: 100%;
-  max-width: 520px;
+  max-width: 540px;
   margin: auto;
   overflow: hidden;
   background: var(--surface);
@@ -81,13 +76,12 @@
   animation: surgirDialogo 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 
-/* Cabeçalho  */
 .cabecalho {
   position: relative;
   display: flex;
   align-items: flex-start;
   gap: 18px;
-  padding: 24px 24px 20px;
+  padding: 24px 24px 22px;
   color: #fff;
   background:
     radial-gradient(120% 90% at 100% 100%, rgba(255, 255, 255, 0.14) 0 40%, transparent 41%),
@@ -113,7 +107,8 @@
 .textoCabecalho {
   flex: 1;
   min-width: 0;
-  padding-right: 32px;
+  /* Reserva o espaço do botão de fechar para o texto não passar por baixo dele. */
+  padding-right: 34px;
 }
 
 .titulo {
@@ -155,18 +150,17 @@
   height: 18px;
 }
 
-/* Formulário  */
 .formulario {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 22px;
   padding: 24px;
 }
 
 .campo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
   min-width: 0;
 }
 
@@ -176,12 +170,18 @@
   color: var(--navy);
 }
 
+.ajuda {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
 .select,
 .input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 13px 15px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius);
   background: #fafcff;
   font-family: inherit;
   font-size: 14px;
@@ -189,19 +189,19 @@
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
+/* A seta nativa do select muda muito entre navegadores, então desenhamos a nossa. */
 .select {
-  /* seta própria, já que o select nativo varia muito entre navegadores */
   appearance: none;
-  padding-right: 40px;
+  padding-right: 42px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230a2463' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 14px center;
+  background-position: right 15px center;
   background-size: 18px;
   cursor: pointer;
 }
 
 .select:hover:not(:disabled),
-.input:hover {
+.input:hover:not(:disabled) {
   border-color: #c9ddf7;
 }
 
@@ -211,49 +211,105 @@
   border-color: var(--primary);
 }
 
-.select:disabled {
+.select:disabled,
+.input:disabled {
   color: var(--muted);
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .campoInvalido {
-  border-color: var(--danger);
+  border-color: var(--perigo);
   background: #fffafb;
 }
 
 .erro {
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--danger);
+  color: var(--perigo);
 }
 
-.aviso {
-  padding: 14px 16px;
-  border: 1px dashed #cddcf0;
-  border-radius: 12px;
+.erroEnvio {
+  padding: 12px 16px;
+  border: 1px solid rgba(196, 29, 58, 0.25);
+  border-radius: var(--radius);
+  background: var(--perigo-bg);
   font-size: 13px;
-  color: var(--muted);
+  font-weight: 600;
+  color: var(--perigo);
 }
 
-/*  Horários  */
-.horarios {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
-  gap: 10px;
+/* Atalhos com as próximas datas livres do profissional. */
+.datas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.horario {
-  padding: 11px 8px;
+.data {
+  padding: 9px 14px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--pill);
   background: #fafcff;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--navy);
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.data:hover {
+  border-color: var(--primary);
+  background: var(--primary-50);
+  color: var(--primary);
+}
+
+.dataAtiva,
+.dataAtiva:hover {
+  border-color: var(--primary);
+  background: var(--primary-100);
+  color: var(--primary-700);
+}
+
+.blocoHorarios {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 5px;
+}
+
+.periodo {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.periodoRotulo {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.horarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+}
+
+.horario {
+  padding: 13px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fafcff;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--navy);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.12s ease;
 }
 
 .horario:hover {
@@ -262,34 +318,56 @@
   color: var(--primary);
 }
 
+.horario:active {
+  transform: scale(0.97);
+}
+
 .horarioAtivo,
 .horarioAtivo:hover {
   border-color: var(--primary);
   background: var(--primary);
   color: #fff;
+  box-shadow: 0 6px 16px rgba(0, 102, 255, 0.28);
 }
 
-/* Resumo  */
+.aviso {
+  padding: 15px 16px;
+  border: 1px dashed #cddcf0;
+  border-radius: var(--radius);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
 .resumo {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
   padding: 14px 16px;
-  border: 1px solid #cfe1fb;
-  border-radius: 12px;
-  background: var(--primary-50);
+  border: 1px solid var(--sucesso-borda);
+  border-radius: var(--radius);
+  background: var(--sucesso-bg);
   font-size: 13.5px;
   line-height: 1.5;
-  color: #0a4fc9;
+  color: var(--sucesso);
 }
 
 .resumo strong {
-  font-weight: 700;
+  font-weight: 800;
 }
 
-/* Ações  */
+.resumoIcone {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
 .acoes {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding-top: 4px;
+  padding-top: 2px;
 }
 
 .botaoPrimario,
@@ -298,13 +376,13 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 12px 24px;
+  padding: 13px 26px;
   border-radius: var(--pill);
   font-family: inherit;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .botaoPrimario {
@@ -314,12 +392,12 @@
   box-shadow: 0 8px 20px rgba(0, 102, 255, 0.28);
 }
 
-.botaoPrimario:hover {
+.botaoPrimario:hover:not(:disabled) {
   background: var(--primary-700);
   box-shadow: 0 12px 26px rgba(0, 102, 255, 0.34);
 }
 
-.botaoPrimario:active {
+.botaoPrimario:active:not(:disabled) {
   transform: scale(0.98);
 }
 
@@ -329,9 +407,16 @@
   color: var(--navy);
 }
 
-.botaoSecundario:hover {
+.botaoSecundario:hover:not(:disabled) {
   background: var(--primary-50);
   border-color: #c9ddf7;
+}
+
+.botaoPrimario:disabled,
+.botaoSecundario:disabled {
+  cursor: progress;
+  opacity: 0.7;
+  box-shadow: none;
 }
 
 .iconeBotao {
@@ -339,7 +424,6 @@
   height: 18px;
 }
 
-/*  Animação  */
 @keyframes surgirFundo {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -350,23 +434,25 @@
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Responsividade  */
+/* No celular o diálogo vira uma folha ancorada na base, que é onde o polegar alcança. */
 @media (max-width: 720px) {
   .fundo {
-    padding: 0;
     align-items: flex-end;
+    padding: 0;
   }
 
   .dialogo {
     max-width: none;
+    max-height: 92vh;
     margin: 0;
+    overflow-y: auto;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     animation: subirDialogo 0.24s cubic-bezier(0.2, 0.8, 0.3, 1);
   }
 
   .cabecalho { padding: 20px 20px 18px; }
-  .formulario { padding: 20px; gap: 18px; }
-  .horarios { grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); }
+  .formulario { gap: 20px; padding: 20px; }
+  .horarios { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
 
   .acoes { flex-direction: column-reverse; }
   .botaoPrimario,
