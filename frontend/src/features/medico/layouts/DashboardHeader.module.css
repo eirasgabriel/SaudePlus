@@ -23,12 +23,16 @@
   margin: 0 auto;
 }
 
+/* Estes itens são <button> enquanto não há rota — daí o reset de
+   background e borda. Viram <NavLink> sem mudar nada neste arquivo. */
 .link {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
+  background: transparent;
+  border: 0;
   font-size: var(--fs-nav);
   font-weight: var(--fw-medium);
   color: var(--color-text-muted);
@@ -113,6 +117,11 @@
   background: var(--color-border-strong);
 }
 
+/* Âncora do menu suspenso da conta. */
+.perfilArea {
+  position: relative;
+}
+
 .perfil {
   display: flex;
   align-items: center;
@@ -168,6 +177,11 @@
 
 .perfilSeta {
   color: var(--color-text-subtle);
+  transition: transform var(--duration) var(--ease);
+}
+
+.perfilSetaAberta {
+  transform: rotate(180deg);
 }
 
 /* ---------- painel de busca ---------- */

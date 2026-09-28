@@ -21,11 +21,17 @@
   gap: 4px;
 }
 
+/* Itens são <button> enquanto não há rota — daí o reset e o width: 100%,
+   que um <a> ganhava de graça por ser bloco. Viram <NavLink> sem mexer aqui. */
 .link {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: var(--space-3);
   padding: 12px var(--space-4);
+  background: transparent;
+  border: 0;
+  text-align: left;
   font-size: var(--fs-small);
   font-weight: var(--fw-medium);
   color: var(--color-text-muted);

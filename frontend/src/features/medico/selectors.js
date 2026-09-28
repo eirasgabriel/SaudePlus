@@ -78,9 +78,18 @@ export function resumoDoDia(agenda = AGENDA, exames = EXAMES_PENDENTES) {
   };
 }
 
-/** Filtra a agenda por status. `null` ou "todas" devolve tudo. */
+/**
+ * Filtra a agenda.
+ *
+ * Além dos status, aceita dois filtros que não são status:
+ * - "todas"     devolve tudo (o mesmo que não filtrar);
+ * - "pendentes" devolve o que ainda não começou, que é exatamente o número
+ *               do cartão "Próximas consultas" — assim o cartão e o filtro
+ *               nunca mostram contas diferentes.
+ */
 export function filtrarAgenda(agenda, status) {
   if (!status || status === "todas") return agenda;
+  if (status === "pendentes") return proximasConsultas(agenda);
   return agenda.filter((consulta) => consulta.status === status);
 }
 

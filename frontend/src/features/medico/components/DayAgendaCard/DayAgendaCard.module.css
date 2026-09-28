@@ -1,7 +1,9 @@
 .cartao {
   padding: var(--space-5);
   color: var(--color-text-on-dark);
-  background: linear-gradient(135deg, #1F7CF5 0%, #0A5BD6 55%, #0A4FC0 100%);
+  /* Degradê derivado do azul da cartilha (±9% de luminosidade sobre
+     --color-primary), no espírito do "azul em degradê" que ela descreve. */
+  background: linear-gradient(135deg, #1787FF 0%, #0070E8 55%, #0057B5 100%);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
 }

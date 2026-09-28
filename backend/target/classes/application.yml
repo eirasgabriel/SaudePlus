@@ -1,6 +1,0 @@
-spring:
-  application:
-    name: saudeplus
-
-server:
-  port: ${SERVER_PORT:8080}

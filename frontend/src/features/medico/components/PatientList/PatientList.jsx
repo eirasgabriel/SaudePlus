@@ -1,8 +1,14 @@
 import { ChevronRightIcon } from "../../../../components/icons/Icons.jsx";
+import LinkDestino from "../../navegacao/LinkDestino.jsx";
 import { iniciais } from "../../selectors.js";
 import styles from "./PatientList.module.css";
 
-/** Lista de pacientes do médico. As iniciais do avatar vêm do nome. */
+/**
+ * Lista de pacientes do médico. As iniciais do avatar vêm do nome.
+ *
+ * Cada linha é um link para /medico/pacientes/:pacienteId. Enquanto o
+ * prontuário não existir, o clique abre o aviso dizendo o destino.
+ */
 export default function PatientList({ pacientes = [], limite }) {
   const visiveis = typeof limite === "number" ? pacientes.slice(0, limite) : pacientes;
 
@@ -21,9 +27,15 @@ export default function PatientList({ pacientes = [], limite }) {
             </span>
           </div>
 
-          <a href="#" className={styles.link} aria-label={`Abrir prontuário de ${nome}`}>
+          <LinkDestino
+            destino="prontuario"
+            parametros={{ pacienteId: id }}
+            detalhe={nome}
+            className={styles.link}
+            aria-label={`Abrir prontuário de ${nome}`}
+          >
             <ChevronRightIcon size={18} />
-          </a>
+          </LinkDestino>
         </li>
       ))}
     </ul>

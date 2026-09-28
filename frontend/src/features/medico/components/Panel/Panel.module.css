@@ -44,6 +44,12 @@
   color: var(--color-primary);
 }
 
+/* Recebe foco por código (irAtePainel) — sem contorno próprio, o
+   :focus-visible global cuida da moldura quando vem do teclado. */
+.titulo:focus {
+  outline: none;
+}
+
 .titulo {
   min-width: 0;
   overflow: hidden;

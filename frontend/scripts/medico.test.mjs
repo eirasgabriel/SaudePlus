@@ -9,6 +9,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { AGENDA, EXAMES_PENDENTES, NOTIFICACOES, PACIENTES, STATUS_CONSULTA } from "../src/features/medico/data/medico.js";
+import { caminhoDe, ROTAS, ROTAS_ATIVAS, rotuloDe } from "../src/features/medico/rotas.js";
 import {
   agendaComPacientes,
   contagemPorStatus,
@@ -69,6 +70,17 @@ describe("selectors", () => {
     }
 
     assert.equal(filtrarAgenda(AGENDA, "status-inexistente").length, 0);
+  });
+
+  test('o filtro "pendentes" bate exatamente com o cartão Próximas consultas', () => {
+    // Os dois precisam sair da mesma regra: o cartão dizer 4 e o filtro
+    // mostrar 2 linhas seria o tipo de divergência que ninguém percebe.
+    const { proximasConsultas: doCartao } = resumoDoDia(AGENDA, EXAMES_PENDENTES);
+    const doFiltro = filtrarAgenda(AGENDA, "pendentes");
+
+    assert.equal(doFiltro.length, doCartao);
+    assert.ok(doFiltro.every(({ status }) => !STATUS_CONSULTA[status].concluida));
+    assert.ok(doFiltro.every(({ status }) => status !== "em_andamento"));
   });
 
   test("toda consulta aponta para um paciente cadastrado", () => {
@@ -161,9 +173,11 @@ describe("página", () => {
     const resumo = resumoDoDia(AGENDA, EXAMES_PENDENTES);
     assert.ok(html.includes(`de ${resumo.consultasHoje}`));
     assert.ok(html.includes(`a partir das ${resumo.primeiroHorarioPendente}`));
-    assert.ok(html.includes(`aria-label="Consultas hoje: ${resumo.consultasHoje}. Ver detalhes"`));
-    assert.ok(html.includes(`aria-label="Pacientes atendidos: ${resumo.pacientesAtendidos}. Ver detalhes"`));
-    assert.ok(html.includes(`aria-label="Exames pendentes: ${resumo.examesPendentes}. Ver detalhes"`));
+    // O nome acessível junta rótulo, número e ação: "8" sozinho não diz
+    // para onde o controle leva.
+    assert.ok(html.includes(`aria-label="Consultas hoje: ${resumo.consultasHoje}. Ver a agenda do dia"`));
+    assert.ok(html.includes(`aria-label="Pacientes atendidos: ${resumo.pacientesAtendidos}. Ver as consultas já realizadas"`));
+    assert.ok(html.includes(`aria-label="Exames pendentes: ${resumo.examesPendentes}. Ver os exames aguardando resultado"`));
   });
 
   test("a agenda renderiza uma linha por consulta do dia", () => {
@@ -198,5 +212,103 @@ describe("página", () => {
   test("o filtro da agenda começa em Todas", () => {
     assert.ok(html.includes('aria-label="Filtrar agenda por status"'));
     assert.ok(/aria-pressed="true"[^>]*>Todas/.test(html) || /Todas/.test(html));
+  });
+
+  test("nenhum controle ficou com href=# apontando para lugar nenhum", () => {
+    assert.ok(!html.includes('href="#"'), "todo destino deve ter o caminho real no href");
+  });
+
+  test("o que navega é link, com o caminho futuro já no href", () => {
+    assert.ok(html.includes('href="/medico"'), "a marca leva ao início do painel");
+    assert.ok(html.includes('href="/medico/agenda"'), "menu superior e lateral");
+    assert.ok(html.includes('href="/medico/pacientes"'), '"Ver todos" leva à listagem');
+    assert.ok(html.includes('href="/medico/consultas/ag-1"'), "linha da agenda leva ao detalhe");
+    assert.ok(
+      html.includes('href="/medico/pacientes/ana-paula-ferreira"'),
+      "linha do paciente leva ao prontuário",
+    );
+  });
+
+  test('o filtro oferece "Próximas", o mesmo recorte do cartão do topo', () => {
+    assert.ok(html.includes("Próximas"));
+  });
+
+  test("o menu da conta começa fechado", () => {
+    assert.ok(!html.includes('role="menu"'));
+  });
+
+  test("Ver no mapa aponta para um endereço externo real", () => {
+    assert.ok(html.includes("google.com/maps"));
+    assert.ok(html.includes('rel="noopener noreferrer"'));
+  });
+
+  test("o rodapé compartilhado entra uma vez só", () => {
+    assert.equal(vezes(/<footer\b/g), 1);
+    assert.equal(vezes(/<h1\b/g), 1, "o rodapé usa h2, não pode criar um segundo h1");
+  });
+
+  test("o rodapé traz os links legais que faltavam no sistema", () => {
+    // Num sistema de saúde isso não é decoração: a tela afirma "Seus dados
+    // estão seguros" e até aqui não havia para onde apontar.
+    for (const rotulo of ["Política de Privacidade", "Termos de Uso", "Acessibilidade"]) {
+      assert.ok(html.includes(rotulo), `faltou "${rotulo}" no rodapé`);
+    }
+    assert.ok(html.includes('href="/privacidade"'));
+  });
+
+  test("o rodapé aponta para as páginas que já existem", () => {
+    assert.ok(html.includes('href="/ajuda"'));
+    assert.ok(html.includes('href="/sobre-nos"'));
+    assert.ok(html.includes('href="/como-funciona"'));
+  });
+
+  test("o rodapé deixa claro que não é um serviço em operação", () => {
+    assert.ok(html.includes("Projeto acadêmico em desenvolvimento"));
+  });
+});
+
+/* ------------------------------------------------------------------
+   Rotas reservadas — o mapa que o painel usa para os destinos futuros.
+   ------------------------------------------------------------------ */
+describe("rotas", () => {
+  test("as rotas do painel ficam sob /medico", () => {
+    // "ajuda" e "sair" são os dois destinos fora da área do médico: a página
+    // de Ajuda é a do site institucional, e sair leva ao login.
+    const foraDoPainel = new Set(["ajuda", "sair"]);
+    for (const [chave, { caminho }] of Object.entries(ROTAS)) {
+      if (foraDoPainel.has(chave)) continue;
+      assert.ok(caminho.startsWith("/medico"), `${chave} deveria ficar sob /medico: ${caminho}`);
+    }
+    assert.equal(ROTAS.ajuda.caminho, "/ajuda", "deve reaproveitar a página do site institucional");
+  });
+
+  test("toda rota tem rótulo, usado no aviso e no nome acessível", () => {
+    for (const [chave, { rotulo }] of Object.entries(ROTAS)) {
+      assert.ok(rotulo && rotulo.length > 0, `${chave} está sem rótulo`);
+    }
+  });
+
+  test("caminhoDe troca os parâmetros do molde", () => {
+    assert.equal(
+      caminhoDe("prontuario", { pacienteId: "ana-paula-ferreira" }),
+      "/medico/pacientes/ana-paula-ferreira",
+    );
+    assert.equal(caminhoDe("consulta", { consultaId: "ag-1" }), "/medico/consultas/ag-1");
+    assert.equal(caminhoDe("agenda"), "/medico/agenda");
+  });
+
+  test("caminhoDe escapa o valor em vez de montar URL quebrada", () => {
+    assert.equal(caminhoDe("prontuario", { pacienteId: "a b/c" }), "/medico/pacientes/a%20b%2Fc");
+  });
+
+  test("destino desconhecido não quebra a tela", () => {
+    assert.equal(caminhoDe("nao-existe"), "");
+    assert.equal(rotuloDe("nao-existe"), "Em breve");
+  });
+
+  test("as rotas seguem desligadas — ligar é decisão da equipe", () => {
+    // Este teste falha de propósito quando alguém virar a chave, para o
+    // passo a passo de `rotas.js` ser conferido junto.
+    assert.equal(ROTAS_ATIVAS, false);
   });
 });
