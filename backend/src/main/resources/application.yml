@@ -1,6 +1,65 @@
 spring:
   application:
     name: saudeplus
+  profiles:
+    default: dev
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/saudeplus}
+    username: ${DB_USUARIO:saudeplus}
+    password: ${DB_SENHA:saudeplus}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # O schema é do Flyway; o Hibernate só confere se as entidades batem.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    locations: classpath:db/migration
+  docker:
+    compose:
+      enabled: false
+  jackson:
+    time-zone: UTC
 
 server:
   port: ${SERVER_PORT:8080}
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+saudeplus:
+  fuso-horario: America/Sao_Paulo
+  front-url: ${FRONT_URL:http://localhost:5173}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  docker:
+    compose:
+      enabled: true
+      file: compose.yaml
+      lifecycle-management: start-only
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USUARIO}
+    password: ${DB_SENHA}

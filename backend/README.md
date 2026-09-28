@@ -1,15 +1,18 @@
 # Back-end SaúdePlus
 
-Base Java 21 + Spring Boot 4.1.1, gerada com o Spring Initializr, usando Maven.
-Inclui Spring MVC, validação de entrada e um teste de carregamento do contexto.
-Ainda não há endpoints de negócio, autenticação ou banco de dados configurados.
+Java 21 + Spring Boot 4.1.1 com Maven, PostgreSQL 17 e migrações com Flyway.
+O painel do médico ainda lê repositórios em memória. A troca para JPA e a
+autenticação por JWT seguem as fases do plano de backend.
 
 ## Pré-requisitos
 
-Instale um JDK 21 e configure `JAVA_HOME` para a pasta do JDK e seu `bin` no PATH.
-Confirme com `java -version`. Não é necessário instalar Maven separadamente:
-o Maven Wrapper incluído baixa a versão configurada em `.mvn/wrapper/`.
-A primeira execução precisa de internet para baixar Maven e dependências.
+- **JDK 21**, com `JAVA_HOME` configurado. Confirme com `java -version`.
+  Não precisa instalar Maven: o Maven Wrapper incluído baixa a versão certa.
+- **Docker Desktop rodando.** No perfil `dev`, o Spring Boot sobe o Postgres
+  do `compose.yaml` sozinho, e os testes de integração usam Testcontainers.
+
+A primeira execução precisa de internet para baixar Maven, dependências e a
+imagem do Postgres.
 
 ## Executar no PowerShell
 
@@ -20,41 +23,55 @@ cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
-O servidor usa a porta 8080 por padrão. Como ainda não há controllers, uma
-requisição à raiz pode retornar 404. Para alterar a porta na sessão atual:
+O perfil padrão é `dev`. Ele faz três coisas:
+
+- sobe o container `postgres` do `compose.yaml` (e o deixa rodando);
+- aplica as migrações de `src/main/resources/db/migration/`;
+- libera o Swagger em http://localhost:8080/swagger-ui.html.
+
+O servidor usa a porta 8080. Para mudar a porta na sessão atual:
 
 ```powershell
 $env:SERVER_PORT = '8081'
 .\mvnw.cmd spring-boot:run
 ```
 
+### Variáveis de ambiente
+
+| Variável | Padrão (dev) | Uso |
+| --- | --- | --- |
+| `DB_URL` | `jdbc:postgresql://localhost:5432/saudeplus` | URL JDBC do banco |
+| `DB_USUARIO` / `DB_SENHA` | `saudeplus` / `saudeplus` | credenciais do banco |
+| `SERVER_PORT` | `8080` | porta HTTP |
+| `FRONT_URL` | `http://localhost:5173` | base dos links enviados por e-mail |
+
+O perfil `prod` não tem valores padrão para o banco: as três variáveis `DB_*`
+são obrigatórias. O Spring Boot não lê arquivos `.env`.
+
 ## Testar e empacotar
 
-Dentro de `backend/`:
+Dentro de `backend/`, com o Docker rodando:
 
 ```powershell
 .\mvnw.cmd verify
 java -jar target/saudeplus-0.0.1-SNAPSHOT.jar
 ```
 
+Testes de integração usam `@TesteDeIntegracao`, que sobe a aplicação inteira
+contra um Postgres descartável do Testcontainers.
+
 No Linux/macOS, use `sh ./mvnw verify` ou `sh ./mvnw spring-boot:run`.
 
 ## Organização
 
-- `src/main/java/br/com/saudeplus/`: classe principal e pacotes Java por domínio.
-- `config/`: configuração compartilhada da aplicação.
-- `security/`: futura configuração de segurança, filtros e autorização.
-- `exception/`: futuras exceções e tratamento centralizado de erros HTTP.
-- `auth/`, `profissionais/`, `clinicas/`, `exames/`, `agendamentos/`: funcionalidades.
-- `agendamentos/dto/`: espaço reservado para contratos de entrada e saída.
-- `src/main/resources/application.yml`: configuração do Spring Boot.
-- `src/main/resources/db/migration/`: espaço reservado para migrations; Flyway ainda não foi adicionado.
-- `src/test/java/br/com/saudeplus/`: testes automatizados.
+- `src/main/java/br/com/saudeplus/`: pacotes por domínio (controller → service → repository, DTOs em `dto/`).
+- `comum/`: base das entidades JPA (`EntidadeBase`, id UUID) e o envelope `Pagina<T>`.
+- `config/`: CORS, `Clock` no fuso de negócio e metadados do OpenAPI.
+- `exception/`: exceções de domínio e o tratador que gera o corpo de erro de `docs/api.md`.
+- `security/`, `auth/`: autenticação JWT (próxima fase).
+- `src/main/resources/db/migration/`: `V1__schema.sql` (schema completo) e `V2__seed_referencia.sql` (especialidades, convênios, tipos de exame, permissões e configurações).
 
-Criar controllers, services, repositories, entidades e DTOs quando suas regras
-forem implementadas. As pastas `security` e `auth` não implementam segurança por si só.
-Escolher banco, driver e persistência antes de adicionar JPA e Flyway.
-O Spring Boot não carrega arquivos `.env` automaticamente; use variáveis de ambiente.
+Regras de schema: toda mudança no banco é uma migração nova (`V3__...sql`);
+nunca edite uma migração já aplicada. O Hibernate só valida (`ddl-auto: validate`).
 
 Consulte [a arquitetura](../docs/arquitetura.md) e o [contrato da API](../docs/api.md).
-Fonte da base: https://start.spring.io/

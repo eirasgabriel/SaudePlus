@@ -1,9 +1,9 @@
 package br.com.saudeplus;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+/** Sobe o contexto completo: valida as migrações e o mapeamento das entidades. */
+@TesteDeIntegracao
 class SaudePlusApplicationTests {
 
 	@Test

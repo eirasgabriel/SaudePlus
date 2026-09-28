@@ -8,20 +8,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import br.com.saudeplus.TesteDeIntegracao;
+
 /**
- * Testa a API de ponta a ponta com os repositórios em memória reais — sem
- * mock nenhum, já que não há banco para isolar.
+ * Testa a API de ponta a ponta com os repositórios em memória reais, sem
+ * mock nenhum, contra o Postgres do Testcontainers.
  *
  * O MockMvc é montado a partir do contexto web para não depender do
  * @AutoConfigureMockMvc, que muda de módulo entre versões do Spring Boot.
  */
-@SpringBootTest
+@TesteDeIntegracao
 class PainelMedicoApiTest {
 
     private static final String MEDICO = "med-1";
@@ -132,13 +133,13 @@ class PainelMedicoApiTest {
     }
 
     @Test
-    @DisplayName("PATCH sem status devolve 422 com o campo apontado")
+    @DisplayName("PATCH sem status devolve 400 com o campo apontado")
     void statusObrigatorio() throws Exception {
         mvc().perform(patch("/api/agendamentos/{id}/status", "ag-8")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.campos[0].campo").value("status"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.campos.status").exists());
     }
 
     @Test

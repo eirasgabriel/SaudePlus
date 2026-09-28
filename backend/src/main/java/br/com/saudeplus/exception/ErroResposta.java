@@ -1,34 +1,35 @@
 package br.com.saudeplus.exception;
 
-import java.time.OffsetDateTime;
-import java.util.List;
+import java.time.Instant;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
- * Corpo único de erro da API: toda falha sai neste formato, para o cliente
- * não precisar adivinhar a forma da resposta. `campos` só é preenchido em
- * erro de validação; nos demais casos vai como lista vazia, nunca ausente.
+ * Corpo único de erro da API (contrato em `docs/api.md`): toda falha sai
+ * neste formato, para o cliente não precisar adivinhar a forma da resposta.
+ *
+ * `campos` mapeia nome do campo para mensagem e só aparece em erro de
+ * validação — é o que os formulários usam para destacar o input.
  */
 public record ErroResposta(
-        OffsetDateTime momento,
+        Instant timestamp,
         int status,
         String erro,
         String mensagem,
         String caminho,
-        List<CampoInvalido> campos) {
-
-    public record CampoInvalido(String campo, String mensagem) {
-    }
+        @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, String> campos) {
 
     public static ErroResposta de(int status, String erro, String mensagem, String caminho) {
-        return new ErroResposta(OffsetDateTime.now(), status, erro, mensagem, caminho, List.of());
+        return new ErroResposta(Instant.now(), status, erro, mensagem, caminho, Map.of());
     }
 
-    public static ErroResposta validacao(String caminho, List<CampoInvalido> campos) {
+    public static ErroResposta validacao(String caminho, Map<String, String> campos) {
         return new ErroResposta(
-                OffsetDateTime.now(),
-                422,
-                "Unprocessable Entity",
-                "Alguns campos estão inválidos.",
+                Instant.now(),
+                400,
+                "Dados inválidos",
+                "Confira os campos destacados e tente novamente.",
                 caminho,
                 campos);
     }
