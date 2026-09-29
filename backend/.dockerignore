@@ -1,3 +1,11 @@
-target
-.git
-.vscode
+# Nada daqui vai para o contexto de build: menos bytes enviados ao daemon e,
+# principalmente, nenhum artefato da máquina de quem builda dentro da imagem.
+target/
+dados/
+.git/
+.gitignore
+*.md
+compose.yaml
+.idea/
+.vscode/
+*.iml
