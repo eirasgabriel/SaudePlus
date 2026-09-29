@@ -1,60 +1,73 @@
 # Back-end SaúdePlus
 
-Base Java 21 + Spring Boot 4.1.1, gerada com o Spring Initializr, usando Maven.
-Inclui Spring MVC, validação de entrada e um teste de carregamento do contexto.
-Ainda não há endpoints de negócio, autenticação ou banco de dados configurados.
+Java 21 + Spring Boot 4.1.1 (Maven). Implementa a autenticação descrita em
+[../docs/api.md](../docs/api.md): cadastro de paciente, login para os três perfis,
+recuperação e redefinição de senha e perfil do usuário logado.
+
+## Contas e perfis
+
+| Perfil | Como a conta nasce |
+| --- | --- |
+| `PACIENTE` | cria a própria conta e senha em `POST /api/auth/cadastro` |
+| `MEDICO` | **uma conta única**, criada na inicialização |
+| `ADMIN` | **uma conta única**, criada na inicialização |
+
+Credenciais de desenvolvimento (as mesmas de `docs/api.md`):
+
+| Perfil | E-mail | Senha |
+| --- | --- | --- |
+| ADMIN | `admin@saudeplus.com` | `Admin@SaudePlus2026` |
+| MEDICO | `medico@saudeplus.com` | `Medico@SaudePlus2026` |
+
+O seed só cria a conta se o e-mail ainda não existe; reiniciar não sobrescreve uma
+senha já trocada. Não existe rota pública que crie médico ou admin, e o campo `role`
+enviado no cadastro é ignorado.
 
 ## Pré-requisitos
 
-Instale um JDK 21 e configure `JAVA_HOME` para a pasta do JDK e seu `bin` no PATH.
-Confirme com `java -version`. Não é necessário instalar Maven separadamente:
-o Maven Wrapper incluído baixa a versão configurada em `.mvn/wrapper/`.
-A primeira execução precisa de internet para baixar Maven e dependências.
+JDK 21 com `JAVA_HOME` configurado. O Maven Wrapper baixa o Maven; a primeira
+execução precisa de internet.
 
-## Executar no PowerShell
-
-A partir da raiz do repositório:
+## Executar
 
 ```powershell
 cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
-O servidor usa a porta 8080 por padrão. Como ainda não há controllers, uma
-requisição à raiz pode retornar 404. Para alterar a porta na sessão atual:
+No Linux/macOS: `sh ./mvnw spring-boot:run`. Sobe na porta 8080 com H2 em arquivo
+(`backend/data/`), sem instalar banco. O front (`npm run dev`) já faz proxy de `/api`.
 
-```powershell
-$env:SERVER_PORT = '8081'
-.\mvnw.cmd spring-boot:run
-```
+Ao pedir "Esqueci a senha", o link de redefinição aparece **no console da API**
+(`[E-MAIL SIMULADO]`), porque ainda não há SMTP.
 
-## Testar e empacotar
-
-Dentro de `backend/`:
+## Testar
 
 ```powershell
 .\mvnw.cmd verify
-java -jar target/saudeplus-0.0.1-SNAPSHOT.jar
 ```
 
-No Linux/macOS, use `sh ./mvnw verify` ou `sh ./mvnw spring-boot:run`.
+Os testes (`src/test/`) usam H2 em memória (perfil `test`) e cobrem cadastro, login
+das contas fixas, autorização por perfil e recuperação de senha.
+
+## Variáveis de ambiente
+
+O Spring Boot não lê arquivos `.env`; defina as variáveis no ambiente.
+
+| Variável | Padrão | Uso |
+| --- | --- | --- |
+| `SERVER_PORT` | `8080` | porta |
+| `JWT_SECRET` | chave de dev | segredo HS256, mínimo 32 caracteres. **Obrigatório trocar fora do desenvolvimento** |
+| `JWT_EXPIRACAO_HORAS` | `8` | validade do token |
+| `DB_URL` / `DB_USER` / `DB_PASSWORD` | H2 em arquivo | ex.: `jdbc:postgresql://localhost:5432/saudeplus` |
+| `CORS_ORIGENS` | `http://localhost:5173` | origens do front, separadas por vírgula |
+| `FRONT_URL` | `http://localhost:5173` | base do link de recuperação |
+| `RECUPERACAO_VALIDADE_MINUTOS` | `30` | validade do link |
+| `ADMIN_EMAIL` / `ADMIN_SENHA` / `ADMIN_NOME` | valores de dev | conta do admin |
+| `MEDICO_EMAIL` / `MEDICO_SENHA` / `MEDICO_NOME` | valores de dev | conta do médico |
 
 ## Organização
 
-- `src/main/java/br/com/saudeplus/`: classe principal e pacotes Java por domínio.
-- `config/`: configuração compartilhada da aplicação.
-- `security/`: futura configuração de segurança, filtros e autorização.
-- `exception/`: futuras exceções e tratamento centralizado de erros HTTP.
-- `auth/`, `profissionais/`, `clinicas/`, `exames/`, `agendamentos/`: funcionalidades.
-- `agendamentos/dto/`: espaço reservado para contratos de entrada e saída.
-- `src/main/resources/application.yml`: configuração do Spring Boot.
-- `src/main/resources/db/migration/`: espaço reservado para migrations; Flyway ainda não foi adicionado.
-- `src/test/java/br/com/saudeplus/`: testes automatizados.
-
-Criar controllers, services, repositories, entidades e DTOs quando suas regras
-forem implementadas. As pastas `security` e `auth` não implementam segurança por si só.
-Escolher banco, driver e persistência antes de adicionar JPA e Flyway.
-O Spring Boot não carrega arquivos `.env` automaticamente; use variáveis de ambiente.
-
-Consulte [a arquitetura](../docs/arquitetura.md) e o [contrato da API](../docs/api.md).
-Fonte da base: https://start.spring.io/
+Veja [../docs/arquitetura.md](../docs/arquitetura.md). Resumo: `auth/` (regras e
+API), `security/` (JWT e perfis), `config/` (propriedades e seed), `exception/`
+(erros no formato único) e `db/migration/` (Flyway).

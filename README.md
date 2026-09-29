@@ -108,29 +108,32 @@ A nossa equipe é composta de 6 Alunos de Engenharia de Software, da Universidad
 ## Stack Técnica do Projeto - 
 
 > **Front-End:** React + Vite.js + React Router <br>
-> **Back-End:** a definir <br>
-> **Banco de Dados:** a definir <br> 
+> **Back-End:** Java 21 + Spring Boot 4 + Spring Security (JWT) — pasta [backend/](backend/README.md) <br>
+> **Banco de Dados:** H2 em arquivo (desenvolvimento) ou PostgreSQL, com migrations Flyway <br> 
 > **Mobile:** <br>
 > **Autenticação:** JWT via cabeçalho `Authorization` — contrato em [docs/api.md](docs/api.md) <br>
 > **Cache:** <br>
 
 ### O que já existe
 
-Este repositório contém **apenas o front-end**. As telas de Login, Criar conta,
-Recuperar senha e Nova senha estão prontas, com validação, mensagens de erro e de
-sucesso e proteção de rotas por perfil.
+- **Front-end** (`frontend/`): Login, Criar conta, Recuperar senha e Nova senha, com
+  validação, mensagens e proteção de rotas por perfil.
+- **Back-end** (`backend/`): API de autenticação em `/api/auth/*` (cadastro de
+  paciente, login, recuperação e redefinição de senha, perfil), JWT, autorização por
+  perfil e contas fixas de médico e admin criadas na inicialização. Contrato em
+  [docs/api.md](docs/api.md).
 
-Elas chamam `/api/auth/*`. Como ainda não há uma API no ar, tentar entrar mostra
-*"Não foi possível falar com o servidor"* — é o esperado. O que o back-end precisa
-implementar está especificado em [docs/api.md](docs/api.md).
+Para rodar: suba a API (`cd backend && ./mvnw spring-boot:run`) e o front
+(`cd frontend && npm install && npm run dev`). Profissionais, clínicas, exames e
+agendamentos ainda não têm endpoints.
 
 ### Perfis e acesso
 
 | Perfil | Como a conta é criada |
 | --- | --- |
 | Paciente | cadastro público na tela **Criar conta** |
-| Profissional de saúde | criada pelo servidor na inicialização — **não há cadastro** |
-| Administração | criada pelo servidor na inicialização — **não há cadastro** |
+| Profissional de saúde | conta única criada pelo servidor na inicialização — **não há cadastro** |
+| Administração | conta única criada pelo servidor na inicialização — **não há cadastro** |
 
 Os três entram pela mesma tela de login. As credenciais combinadas para médico e
 admin estão em [docs/api.md](docs/api.md).

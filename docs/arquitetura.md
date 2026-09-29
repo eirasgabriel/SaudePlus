@@ -1,8 +1,7 @@
 # Arquitetura do SaúdePlus
 
-O repositório mantém uma aplicação: `frontend/` (React + Vite). O back-end ainda
-não existe aqui — o front conversa com ele por HTTP, e o contrato que essa API
-precisa cumprir está em [api.md](api.md).
+O repositório tem duas aplicações: `frontend/` (React + Vite) e `backend/` (Spring
+Boot). O front conversa com a API por HTTP; o contrato está em [api.md](api.md).
 
 ## Front-end
 
@@ -32,19 +31,23 @@ faz proxy de `/api` para a API na porta 8080 durante o desenvolvimento.
 
 ## Back-end
 
-O back-end não faz parte deste repositório. O que ele precisa entregar está
-especificado em [api.md](api.md): as rotas de `/api/auth/*`, os corpos de
-requisição e resposta, o formato único de erro, os códigos HTTP e as contas fixas
-de médico e admin que o servidor deve criar na inicialização.
+Java 21, Spring Boot 4, Maven. Pacotes em `backend/src/main/java/br/com/saudeplus/`:
 
-A linguagem e o framework ficam em aberto. O que o front assume é só isto:
+- `auth/`: entidades `Usuario` e `TokenRedefinicaoSenha`, repositórios, `AuthService`
+  (regras), `AuthController` (`/api/auth/*`), `dto/` e a porta `EnviadorDeEmail`
+  (por ora `LogEnviadorDeEmail` escreve o link no console).
+- `security/`: `SecurityConfig` (rotas públicas, perfil por prefixo, CORS, stateless),
+  `JwtConfig` e `JwtService` (JWT HS256 assinado com `JWT_SECRET`).
+- `config/`: `SaudePlusProperties` (configuração tipada) e `ContasIniciais` (seed de
+  médico e admin, só se o e-mail ainda não existir).
+- `exception/`: `ApiException` e `GlobalExceptionHandler`, que devolvem sempre o
+  formato `{ timestamp, status, erro, mensagem, campos? }`.
+- `clinicas/`, `exames/`, `profissionais/`, `agendamentos/`: reservados, sem código ainda.
+- `src/main/resources/db/migration/`: migrations Flyway (`V1` cria usuários e tokens).
+  O esquema é do Flyway; o Hibernate não altera tabelas (`ddl-auto: none`).
 
-- respostas JSON em UTF-8;
-- autenticação por JWT no cabeçalho `Authorization: Bearer <token>`;
-- erros no formato `{ timestamp, status, erro, mensagem, campos? }`, onde `campos`
-  mapeia nome do campo para a mensagem de validação — é o que destaca o input
-  errado no formulário;
-- CORS liberado para a origem do front.
+Banco: H2 em arquivo (`backend/data/`) por padrão, PostgreSQL via `DB_URL`,
+`DB_USER` e `DB_PASSWORD`. O SQL das migrations é portável entre os dois.
 
 ## Regra de acesso por perfil
 

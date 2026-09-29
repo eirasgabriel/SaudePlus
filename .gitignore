@@ -14,3 +14,7 @@ coverage/
 # Operating system files
 .DS_Store
 Thumbs.db
+
+# Back-end (Maven) e banco H2 de desenvolvimento
+backend/target/
+backend/data/

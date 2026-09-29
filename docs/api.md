@@ -1,9 +1,7 @@
 # API SaúdePlus
 
-> **Status: a implementar.** Este repositório contém apenas o front-end. Este
-> documento é a especificação que o back-end precisa cumprir para as telas de
-> autenticação funcionarem. Enquanto não existir uma API respondendo, o login
-> mostra *"Não foi possível falar com o servidor"* — o comportamento esperado.
+> **Status: implementado** em `backend/` (pacote `br.com.saudeplus.auth`). Este
+> documento é o contrato que o front-end e o back-end seguem.
 
 Base: `http://localhost:8080`. Todas as respostas são JSON com charset UTF-8.
 
@@ -252,8 +250,10 @@ que vale é esta, no servidor.
 
 ## Limitações conhecidas
 
-- **Nenhum endpoint existe ainda**: este repositório tem só o front-end. Até a API
-  subir, todas as telas de autenticação mostram o erro de conexão.
+- **Só a autenticação existe**: os prefixos `/api/admin`, `/api/medico` e
+  `/api/paciente` já são protegidos por perfil, mas ainda não têm controllers.
+- **Conta desativada não derruba token já emitido**: `/api/auth/perfil` recusa, mas
+  as demais rotas só notam a desativação quando o token expirar.
 - **Envio de e-mail**: sem SMTP, o link de recuperação precisa sair no log do
   servidor. Vale isolar o envio atrás de uma interface, para trocar por um
   provedor real sem mexer nas regras de negócio.
@@ -267,3 +267,5 @@ que vale é esta, no servidor.
   o recurso está por vir.
 - As demais funcionalidades (profissionais, clínicas, exames, agendamentos)
   continuam sem endpoints.
+- O `token` de `redefinir-senha` é enviado no corpo (não na URL), e o link só sai no
+  log do servidor (`LogEnviadorDeEmail`).

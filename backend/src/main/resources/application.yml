@@ -2,5 +2,57 @@ spring:
   application:
     name: saudeplus
 
+  datasource:
+    # Padrao de desenvolvimento: H2 em arquivo (pasta backend/data/, ignorada pelo git).
+    # Para PostgreSQL:
+    #   DB_URL=jdbc:postgresql://localhost:5432/saudeplus DB_USER=... DB_PASSWORD=...
+    url: ${DB_URL:jdbc:h2:file:./data/saudeplus}
+    username: ${DB_USER:sa}
+    password: ${DB_PASSWORD:}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # O esquema e responsabilidade do Flyway (db/migration).
+      ddl-auto: none
+
+  flyway:
+    enabled: true
+
+  jackson:
+    deserialization:
+      # Campos desconhecidos sao ignorados. Importante: um "role": "ADMIN" enviado
+      # no cadastro nao pode nem ser lido.
+      fail-on-unknown-properties: false
+
 server:
   port: ${SERVER_PORT:8080}
+
+saudeplus:
+  jwt:
+    # HS256 exige pelo menos 32 bytes. O valor padrao vale SOMENTE para desenvolvimento:
+    # em qualquer ambiente exposto defina JWT_SECRET.
+    secret: ${JWT_SECRET:dev-only-troque-esta-chave-em-producao-0123456789}
+    expiracao-horas: ${JWT_EXPIRACAO_HORAS:8}
+
+  cors:
+    origens: ${CORS_ORIGENS:http://localhost:5173}
+
+  front:
+    url: ${FRONT_URL:http://localhost:5173}
+
+  recuperacao:
+    validade-minutos: ${RECUPERACAO_VALIDADE_MINUTOS:30}
+
+  # Contas fixas criadas na inicializacao, somente se o e-mail ainda nao existir.
+  # Medico e admin NAO possuem cadastro publico. Os valores padrao sao os de
+  # desenvolvimento documentados em docs/api.md; em ambiente exposto use variaveis.
+  contas-iniciais:
+    admin:
+      nome: ${ADMIN_NOME:Administrador SaudePlus}
+      email: ${ADMIN_EMAIL:admin@saudeplus.com}
+      senha: ${ADMIN_SENHA:Admin@SaudePlus2026}
+    medico:
+      nome: ${MEDICO_NOME:Dr. Carlos Andrade}
+      email: ${MEDICO_EMAIL:medico@saudeplus.com}
+      senha: ${MEDICO_SENHA:Medico@SaudePlus2026}
