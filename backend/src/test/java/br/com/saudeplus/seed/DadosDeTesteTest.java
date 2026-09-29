@@ -44,7 +44,7 @@ class DadosDeTesteTest {
     @Test
     @DisplayName("cria médicos e pacientes de teste com senha padrão em hash")
     void cria() {
-        assertTrue(usuarios.existsByEmail("paciente@teste.com"));
+        assertTrue(usuarios.existsByEmail("paciente@saudeplus.com"));
         assertTrue(usuarios.existsByEmail("medico2@exemplo.com"));
         assertTrue(usuarios.existsByEmail("medico3@exemplo.com"));
         IntStream.rangeClosed(2, 10).forEach(n -> assertTrue(usuarios.existsByEmail("paciente" + n + "@exemplo.com")));

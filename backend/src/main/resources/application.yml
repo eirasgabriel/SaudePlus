@@ -80,11 +80,11 @@ saudeplus:
   # sobrescrevem uma conta existente.
   contas-iniciais:
     admin:
-      email: ${SEED_ADMIN_EMAIL:admin@teste.com}
+      email: ${SEED_ADMIN_EMAIL:admin@saudeplus.com}
       senha: ${SEED_ADMIN_SENHA:}
       nome: Administrador SaudePlus
     medico:
-      email: ${SEED_MEDICO_EMAIL:medico@teste.com}
+      email: ${SEED_MEDICO_EMAIL:medico@saudeplus.com}
       senha: ${SEED_MEDICO_SENHA:}
       nome: Dr. Carlos Andrade
       perfil:
@@ -94,7 +94,7 @@ saudeplus:
         unidade: ${SEED_MEDICO_UNIDADE:}
     # Criado por seed/DadosDeTeste, junto com os demais pacientes de teste.
     paciente:
-      email: ${SEED_PACIENTE_EMAIL:paciente@teste.com}
+      email: ${SEED_PACIENTE_EMAIL:paciente@saudeplus.com}
       senha: ${SEED_PACIENTE_SENHA:}
 
 ---

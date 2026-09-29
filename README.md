@@ -159,9 +159,14 @@ Abra http://localhost:5173. Contas de desenvolvimento:
 
 | Perfil | E-mail | Senha |
 | --- | --- | --- |
-| Administração | `admin@saudeplus.com` | `Admin@SaudePlus2026` |
-| Profissional | `medico@saudeplus.com` | `Medico@SaudePlus2026` |
-| Paciente de demonstração | `ana.ferreira@demo.saudeplus.com` | `Demo@SaudePlus2026` |
+| Administração | `admin@saudeplus.com` | `teste@saudeplus` |
+| Profissional | `medico@saudeplus.com` | `teste@saudeplus` |
+| Paciente inicial | `paciente@saudeplus.com` | `teste@saudeplus` |
+
+Essas contas são criadas com status ativo quando o backend inicia no perfil
+`dev`. O frontend sozinho não autentica: mantenha a API e o banco rodando.
+As variáveis `SEED_*` podem substituir essas credenciais. Contas existentes
+mantêm a senha e o status já salvos, inclusive após reiniciar o servidor.
 
 Ou crie um paciente na tela **Criar conta**. Detalhes, variáveis de ambiente e
 testes estão em [backend/README.md](backend/README.md) e

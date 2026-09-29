@@ -42,8 +42,12 @@ inicialização, se ainda não existirem, com a senha gravada em BCrypt:
 
 | Perfil | E-mail | Senha | Nome |
 | --- | --- | --- | --- |
-| `ADMIN` | `admin@saudeplus.com` | `Admin@SaudePlus2026` | Administrador SaudePlus |
-| `MEDICO` | `medico@saudeplus.com` | `Medico@SaudePlus2026` | Dr. Carlos Andrade |
+| `ADMIN` | `admin@saudeplus.com` | `teste@saudeplus` | Administrador SaudePlus |
+| `MEDICO` | `medico@saudeplus.com` | `teste@saudeplus` | Dr. Carlos Andrade |
+
+Esses são os padrões do perfil `dev`, com `SEED_ENABLED=true`. O paciente
+inicial também é criado: `paciente@saudeplus.com`, senha `teste@saudeplus`.
+O perfil `test` usa credenciais próprias para os testes automatizados.
 
 São credenciais de **desenvolvimento** e estão versionadas aqui, então valem como
 públicas. Em qualquer ambiente exposto, leia e-mail e senha de variáveis de

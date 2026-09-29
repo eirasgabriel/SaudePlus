@@ -20,6 +20,11 @@ services:
       db:
         condition: service_healthy
     environment:
+      # O banco já é gerenciado por este Compose; não tente executar Docker
+      # de dentro da imagem Java. Este ambiente é de desenvolvimento local.
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DOCKER_COMPOSE_ENABLED: "false"
+      SEED_ENABLED: "true"
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/saudeplus
       SPRING_DATASOURCE_USERNAME: saudeplus
       SPRING_DATASOURCE_PASSWORD: saudeplus123

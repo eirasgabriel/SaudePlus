@@ -51,9 +51,9 @@ $env:SERVER_PORT = '8081'
 | `JWT_SEGREDO` | segredo público de desenvolvimento | chave HS256 do token (≥ 32 bytes) |
 | `SEED_ENABLED` | `true` em dev, `false` nos demais | liga as contas iniciais e os dados de teste |
 | `SEED_SENHA_PADRAO` | `teste@saudeplus` | senha de toda conta de teste cuja `SEED_*_SENHA` não veio |
-| `SEED_ADMIN_EMAIL` / `SEED_ADMIN_SENHA` | `admin@teste.com` / senha padrão | conta inicial de admin |
-| `SEED_MEDICO_EMAIL` / `SEED_MEDICO_SENHA` | `medico@teste.com` / senha padrão | conta inicial de médico |
-| `SEED_PACIENTE_EMAIL` / `SEED_PACIENTE_SENHA` | `paciente@teste.com` / senha padrão | conta principal de paciente |
+| `SEED_ADMIN_EMAIL` / `SEED_ADMIN_SENHA` | `admin@saudeplus.com` / senha padrão | conta inicial de admin |
+| `SEED_MEDICO_EMAIL` / `SEED_MEDICO_SENHA` | `medico@saudeplus.com` / senha padrão | conta inicial de médico |
+| `SEED_PACIENTE_EMAIL` / `SEED_PACIENTE_SENHA` | `paciente@saudeplus.com` / senha padrão | conta principal de paciente |
 | `SEED_MEDICO_CRM` / `SEED_MEDICO_CRM_UF` | `112.233` / `RJ` | CRM do perfil do médico inicial (sem CRM, o perfil não é criado) |
 | `SEED_MEDICO_ESPECIALIDADE` / `SEED_MEDICO_UNIDADE` | `clinico-geral` / `Clínica da Família – Centro` (só dev) | especialidade (slug) e unidade (nome) do médico inicial |
 
