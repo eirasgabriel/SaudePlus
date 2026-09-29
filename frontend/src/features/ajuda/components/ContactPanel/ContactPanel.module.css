@@ -1,0 +1,123 @@
+.panel {
+  padding: var(--section-padding);
+  border-radius: 16px;
+  color: #fff;
+  background:
+    radial-gradient(90% 80% at 100% 0%, rgba(40, 120, 240, 0.5) 0%, transparent 55%),
+    linear-gradient(160deg, #073A9E 0%, #052C82 60%, #06348F 100%);
+  box-shadow: var(--shadow-card);
+}
+
+.title {
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.03em;
+}
+.title span { color: var(--color-accent); }
+
+.description {
+  margin-top: 8px;
+  max-width: 330px;
+  font-size: 15px;
+  line-height: 19px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.channels {
+  margin-top: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.channel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 68px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 10px;
+  color: var(--color-navy-950);
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+.channel:hover { transform: translateX(3px); box-shadow: 0 10px 24px rgba(2, 20, 80, 0.25); }
+
+.icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: var(--fw-semibold);
+}
+
+.text {
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--color-text-muted);
+}
+
+.detail {
+  font-size: 13px;
+  line-height: 17px;
+  color: var(--color-primary);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 14px 0 12px;
+  border-radius: var(--radius-pill);
+  background: #E6F6EE;
+  color: #1B8A55;
+  font-size: 13px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1FA463;
+}
+
+.hours {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--color-text-muted);
+}
+
+.arrow {
+  flex-shrink: 0;
+  margin-left: 14px;
+  color: var(--color-primary);
+}
+
+@media (max-width: 560px) {
+  .panel { padding: 22px 16px; }
+  .channel { flex-wrap: wrap; gap: 8px 14px; padding: 12px 14px; }
+  .body { flex-basis: calc(100% - 62px); }
+  .status,
+  .hours { margin-left: 62px; }
+  .arrow { display: none; }
+  .hours { flex-direction: row; gap: 6px; }
+}
+.channel { width: 100%; border: 0; text-align: left; font: inherit; }

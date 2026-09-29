@@ -1,0 +1,1027 @@
+/* Tokens (--sp-*) e classes .sp-* das telas de autenticação.
+   Vieram do global.css da branch feature/dashboard-login; os resets de
+   elemento (html, body, a, button...) ficaram no global.css da homepage. */
+
+
+
+:root {
+  /* Cores principais — apelidos da rampa de tokens.css, para as telas de
+     login e cadastro usarem o mesmo azul do resto do sistema. */
+  --sp-primary: var(--color-primary);
+  --sp-primary-dark: var(--color-primary-hover);
+  --sp-primary-light: #E6F1FD;
+
+  /* Cores do sistema */
+  --sp-blue-dark: #0f2341;
+  --sp-blue-text: #24354f;
+  --sp-text: #1f2937;
+  --sp-text-secondary: #6a7c95;
+  --sp-text-muted: #8b9bb3;
+
+  /* Fundos */
+  --sp-background: #ffffff;
+  --sp-background-light: #f7faff;
+  --sp-background-blue: #eef5ff;
+
+  /* Bordas */
+  --sp-border: #dce8f7;
+  --sp-border-light: #e3ecf8;
+  --sp-border-input: #d6e4fa;
+
+  /* Estados */
+  --sp-success: #12855a;
+  --sp-success-bg: #e3f7ed;
+
+  --sp-danger: #d93a3a;
+  --sp-danger-bg: #fdeeee;
+
+  --sp-warning: #c77b00;
+  --sp-warning-bg: #fff5df;
+
+  --sp-info: var(--color-primary);
+  --sp-info-bg: #eef5ff;
+
+  /* Raios */
+  --sp-radius-sm: 8px;
+  --sp-radius-md: 11px;
+  --sp-radius-lg: 13px;
+  --sp-radius-xl: 16px;
+  --sp-radius-2xl: 20px;
+
+  /* Sombras */
+  --sp-shadow-sm:
+    0 2px 6px rgba(15, 35, 65, 0.06);
+
+  --sp-shadow-md:
+    0 6px 16px rgba(15, 35, 65, 0.08);
+
+  --sp-shadow-lg:
+    0 10px 28px rgba(15, 35, 65, 0.10);
+
+  --sp-shadow-primary:
+    0 8px 20px rgba(0, 112, 232, 0.20);
+
+  /* Transições */
+  --sp-transition:
+    all 0.15s ease;
+
+  /* Larguras */
+  --sp-content-max-width: 1200px;
+
+  /* Fonte */
+  --sp-font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+
+/* =========================================================
+   CONTAINER
+   ========================================================= */
+
+.sp-container {
+  width: 100%;
+
+  max-width: var(--sp-content-max-width);
+
+  margin-left: auto;
+  margin-right: auto;
+
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+
+/* =========================================================
+   TIPOGRAFIA
+   ========================================================= */
+
+.sp-title {
+  margin: 0;
+
+  font-size: 28px;
+
+  font-weight: 700;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.4px;
+
+  color: var(--sp-blue-dark);
+}
+
+
+.sp-title-lg {
+  margin: 0;
+
+  font-size: 32px;
+
+  font-weight: 700;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.5px;
+
+  color: var(--sp-blue-dark);
+}
+
+
+.sp-title-sm {
+  margin: 0;
+
+  font-size: 22px;
+
+  font-weight: 700;
+
+  line-height: 1.25;
+
+  color: var(--sp-blue-dark);
+}
+
+
+.sp-subtitle {
+  margin: 5px 0 0;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  color: var(--sp-text-secondary);
+}
+
+
+.sp-text-muted {
+  color: var(--sp-text-muted);
+}
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+.sp-link {
+  color: var(--sp-primary);
+
+  font-weight: 600;
+
+  text-decoration: none;
+
+  transition: var(--sp-transition);
+}
+
+
+.sp-link:hover {
+  color: var(--sp-primary-dark);
+
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   BOTÕES GERAIS
+   ========================================================= */
+
+.sp-btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  min-height: 42px;
+
+  padding: 0 18px;
+
+  border: 1px solid transparent;
+
+  border-radius: var(--sp-radius-md);
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  line-height: 1;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.08s ease;
+}
+
+
+/* Botão principal */
+
+.sp-btn-primary {
+  color: #ffffff;
+
+  background: var(--sp-primary);
+
+  box-shadow: var(--sp-shadow-primary);
+}
+
+
+.sp-btn-primary:hover {
+  background: var(--sp-primary-dark);
+
+  box-shadow:
+    0 9px 22px rgba(0, 112, 232, 0.25);
+}
+
+
+.sp-btn-primary:active {
+  transform: translateY(1px);
+}
+
+
+/* Botão secundário */
+
+.sp-btn-secondary {
+  color: var(--sp-blue-dark);
+
+  background: #ffffff;
+
+  border-color: var(--sp-border-input);
+
+  box-shadow: none;
+}
+
+
+.sp-btn-secondary:hover {
+  background: #fafcff;
+
+  border-color: #b9cff0;
+}
+
+
+/* Botão somente contorno */
+
+.sp-btn-outline {
+  color: var(--sp-primary);
+
+  background: #ffffff;
+
+  border-color: var(--sp-primary);
+}
+
+
+.sp-btn-outline:hover {
+  background: var(--sp-primary-light);
+}
+
+
+/* Botão texto */
+
+.sp-btn-ghost {
+  color: var(--sp-primary);
+
+  background: transparent;
+
+  border-color: transparent;
+
+  box-shadow: none;
+}
+
+
+.sp-btn-ghost:hover {
+  background: var(--sp-primary-light);
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.sp-card {
+  width: 100%;
+
+  padding: 20px;
+
+  background: #ffffff;
+
+  border: 1px solid var(--sp-border);
+
+  border-radius: var(--sp-radius-xl);
+
+  box-shadow: var(--sp-shadow-sm);
+}
+
+
+.sp-card--shadow {
+  box-shadow: var(--sp-shadow-md);
+}
+
+
+.sp-card__titulo {
+  margin: 0;
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+  color: var(--sp-blue-dark);
+}
+
+
+.sp-card__descricao {
+  margin: 5px 0 0;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+
+  color: var(--sp-text-secondary);
+}
+
+
+/* =========================================================
+   BADGES / STATUS
+   ========================================================= */
+
+.sp-badge {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  min-height: 24px;
+
+  padding: 0 9px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+
+.sp-badge--success {
+  color: var(--sp-success);
+
+  background: var(--sp-success-bg);
+}
+
+
+.sp-badge--danger {
+  color: var(--sp-danger);
+
+  background: var(--sp-danger-bg);
+}
+
+
+.sp-badge--warning {
+  color: var(--sp-warning);
+
+  background: var(--sp-warning-bg);
+}
+
+
+.sp-badge--info {
+  color: var(--sp-primary);
+
+  background: var(--sp-info-bg);
+}
+
+
+/* =========================================================
+   INPUTS GERAIS
+   ========================================================= */
+
+.sp-input {
+  width: 100%;
+
+  height: 44px;
+
+  padding: 0 13px;
+
+  border: 1px solid var(--sp-border-input);
+
+  border-radius: var(--sp-radius-md);
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: var(--sp-blue-dark);
+
+  font-size: 14px;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+
+.sp-input::placeholder {
+  color: #98a8be;
+}
+
+
+.sp-input:focus {
+  border-color: var(--sp-primary);
+
+  box-shadow:
+    0 0 0 3px rgba(0, 112, 232, 0.10);
+}
+
+
+.sp-input:disabled {
+  background: #f4f7fb;
+
+  color: var(--sp-text-muted);
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   LABEL
+   ========================================================= */
+
+.sp-label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  color: var(--sp-blue-dark);
+}
+
+
+/* =========================================================
+   TEXTAREA
+   ========================================================= */
+
+.sp-textarea {
+  width: 100%;
+
+  min-height: 110px;
+
+  padding: 12px 13px;
+
+  border: 1px solid var(--sp-border-input);
+
+  border-radius: var(--sp-radius-md);
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: var(--sp-blue-dark);
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  resize: vertical;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+
+.sp-textarea::placeholder {
+  color: #98a8be;
+}
+
+
+.sp-textarea:focus {
+  border-color: var(--sp-primary);
+
+  box-shadow:
+    0 0 0 3px rgba(0, 112, 232, 0.10);
+}
+
+
+/* =========================================================
+   SELECT
+   ========================================================= */
+
+.sp-select {
+  width: 100%;
+
+  height: 44px;
+
+  padding: 0 13px;
+
+  border: 1px solid var(--sp-border-input);
+
+  border-radius: var(--sp-radius-md);
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: var(--sp-blue-dark);
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  cursor: pointer;
+}
+
+
+.sp-select:focus {
+  border-color: var(--sp-primary);
+
+  box-shadow:
+    0 0 0 3px rgba(0, 112, 232, 0.10);
+}
+
+
+/* =========================================================
+   FORMULÁRIO GERAL
+   ========================================================= */
+
+.sp-form-group {
+  margin-bottom: 16px;
+}
+
+
+.sp-form-row {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 16px;
+}
+
+
+/* =========================================================
+   DIVISOR
+   ========================================================= */
+
+.sp-divider {
+  width: 100%;
+
+  height: 1px;
+
+  margin: 20px 0;
+
+  background: var(--sp-border-light);
+}
+
+
+/* =========================================================
+   ALERTAS
+   ========================================================= */
+
+.sp-alert {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 10px;
+
+  width: 100%;
+
+  padding: 12px 14px;
+
+  border-radius: var(--sp-radius-md);
+
+  font-size: 13px;
+
+  line-height: 1.45;
+}
+
+
+.sp-alert--info {
+  color: #0055cc;
+
+  background: #eef5ff;
+
+  border: 1px solid #d8e9ff;
+}
+
+
+.sp-alert--success {
+  color: #12855a;
+
+  background: #e3f7ed;
+
+  border: 1px solid #c8eedc;
+}
+
+
+.sp-alert--warning {
+  color: #9a6500;
+
+  background: #fff5df;
+
+  border: 1px solid #f5dfac;
+}
+
+
+.sp-alert--error {
+  color: #a92a2a;
+
+  background: #fdeeee;
+
+  border: 1px solid #f5cccc;
+}
+
+
+/* =========================================================
+   ÍCONES
+   ========================================================= */
+
+.sp-icon {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  color: var(--sp-primary);
+}
+
+
+.sp-icon-sm {
+  width: 18px;
+  height: 18px;
+}
+
+
+.sp-icon-md {
+  width: 22px;
+  height: 22px;
+}
+
+
+.sp-icon-lg {
+  width: 28px;
+  height: 28px;
+}
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.sp-loading {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+
+.sp-spinner {
+  width: 20px;
+  height: 20px;
+
+  border: 2px solid rgba(0, 112, 232, 0.18);
+
+  border-top-color: var(--sp-primary);
+
+  border-radius: 50%;
+
+  animation: sp-spin 0.7s linear infinite;
+}
+
+
+@keyframes sp-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   HEADER GERAL
+   ========================================================= */
+
+.sp-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  width: 100%;
+
+  min-height: 64px;
+
+  padding: 0 24px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid var(--sp-border);
+}
+
+
+/* =========================================================
+   LOGO GERAL
+   ========================================================= */
+
+.sp-logo {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color: var(--sp-primary);
+
+  font-size: 22px;
+
+  font-weight: 800;
+
+  letter-spacing: -0.6px;
+}
+
+
+.sp-logo img {
+  width: auto;
+
+  height: 34px;
+}
+
+
+/* =========================================================
+   NAVEGAÇÃO
+   ========================================================= */
+
+.sp-nav {
+  display: flex;
+
+  align-items: center;
+
+  gap: 4px;
+}
+
+
+.sp-nav__item {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  min-height: 38px;
+
+  padding: 0 12px;
+
+  border-radius: 9px;
+
+  color: var(--sp-text-secondary);
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+  text-decoration: none;
+
+  transition: var(--sp-transition);
+}
+
+
+.sp-nav__item:hover {
+  color: var(--sp-primary);
+
+  background: var(--sp-primary-light);
+}
+
+
+.sp-nav__item--active {
+  color: var(--sp-primary);
+
+  background: var(--sp-primary-light);
+
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   TABELAS
+   ========================================================= */
+
+.sp-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+
+  border: 1px solid var(--sp-border);
+
+  border-radius: var(--sp-radius-lg);
+
+  background: #ffffff;
+}
+
+
+.sp-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-size: 13px;
+}
+
+
+.sp-table th {
+  padding: 12px 14px;
+
+  text-align: left;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  color: var(--sp-blue-dark);
+
+  background: #f7faff;
+
+  border-bottom: 1px solid var(--sp-border);
+}
+
+
+.sp-table td {
+  padding: 12px 14px;
+
+  color: var(--sp-text);
+
+  border-bottom: 1px solid #edf2f8;
+}
+
+
+.sp-table tr:last-child td {
+  border-bottom: 0;
+}
+
+
+.sp-table tbody tr:hover {
+  background: #fafcff;
+}
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.sp-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 1000;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(15, 35, 65, 0.35);
+}
+
+
+.sp-modal {
+  width: 100%;
+
+  max-width: 520px;
+
+  max-height: calc(100vh - 40px);
+
+  overflow-y: auto;
+
+  padding: 22px;
+
+  background: #ffffff;
+
+  border: 1px solid var(--sp-border);
+
+  border-radius: var(--sp-radius-xl);
+
+  box-shadow: var(--sp-shadow-lg);
+}
+
+
+.sp-modal__titulo {
+  margin: 0;
+
+  font-size: 20px;
+
+  font-weight: 700;
+
+  color: var(--sp-blue-dark);
+}
+
+
+.sp-modal__texto {
+  margin: 7px 0 0;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+
+  color: var(--sp-text-secondary);
+}
+
+
+/* =========================================================
+   UTILITÁRIOS
+   ========================================================= */
+
+.sp-flex {
+  display: flex;
+}
+
+
+.sp-flex-center {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+
+.sp-flex-between {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+}
+
+
+.sp-align-center {
+  align-items: center;
+}
+
+
+.sp-gap-1 {
+  gap: 4px;
+}
+
+
+.sp-gap-2 {
+  gap: 8px;
+}
+
+
+.sp-gap-3 {
+  gap: 12px;
+}
+
+
+.sp-gap-4 {
+  gap: 16px;
+}
+
+
+.sp-gap-5 {
+  gap: 20px;
+}
+
+
+.sp-w-full {
+  width: 100%;
+}
+
+
+.sp-text-center {
+  text-align: center;
+}
+
+
+.sp-text-right {
+  text-align: right;
+}
+
+
+.sp-hidden {
+  display: none !important;
+}
+
+

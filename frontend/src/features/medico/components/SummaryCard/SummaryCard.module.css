@@ -1,0 +1,109 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 178px;
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+/* O foco aparece no cartão, não só no ícone da seta. */
+.card:has(.link:focus-visible) {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.icone {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: var(--space-4);
+  border-radius: 14px;
+}
+
+.rotulo {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-muted);
+}
+
+.valor {
+  margin-top: 2px;
+  font-size: 32px;
+  font-weight: var(--fw-bold);
+  line-height: 1.1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-navy-950);
+}
+
+.apoio {
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+}
+
+.link {
+  position: absolute;
+  right: var(--space-5);
+  bottom: var(--space-4);
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: var(--color-primary);
+  border-radius: 8px;
+  transition: transform var(--duration) var(--ease);
+}
+
+.link::after {
+  content: "";
+  position: absolute;
+  inset: calc(-1 * var(--space-5)) calc(-1 * var(--space-5)) calc(-1 * var(--space-4));
+  border-radius: var(--radius-card);
+}
+
+.link:focus-visible {
+  outline: none;
+}
+
+.card:hover .link {
+  transform: translateX(3px);
+}
+
+/* Tons dos ícones */
+.azul .icone { color: var(--color-primary); background: var(--color-primary-light); }
+.verde .icone { color: #0F6B4F; background: #DCF5EA; }
+.roxo .icone { color: #5B3BC4; background: #EBE5FC; }
+.ambar .icone { color: #8A5300; background: #FCEFD6; }
+
+@media (max-width: 768px) {
+  .card {
+    min-height: 0;
+    padding: var(--space-4);
+  }
+
+  .icone {
+    width: 40px;
+    height: 40px;
+    margin-bottom: var(--space-3);
+  }
+
+  .valor {
+    font-size: 28px;
+  }
+
+  .link {
+    right: var(--space-4);
+    bottom: var(--space-3);
+  }
+}

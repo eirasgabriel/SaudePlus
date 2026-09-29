@@ -1,0 +1,236 @@
+/* O cabeçalho do site flutua sobre o topo da página. */
+.pagina {
+  padding-top: calc(var(--header-top) + var(--header-height) + 40px);
+  padding-bottom: 80px;
+}
+
+.voltar { margin-bottom: 16px; font-size: 14px; }
+.voltar a { color: var(--color-primary); }
+
+/* ---- Estados: carregando, não encontrado, erro ---- */
+.estado {
+  max-width: 560px;
+  margin: 40px auto 0;
+  text-align: center;
+}
+.estadoTitulo {
+  font-size: 28px;
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+  letter-spacing: -0.02em;
+}
+.estado .vazio { margin: 12px 0 24px; }
+.estadoAcoes { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+/* ---- Cabeçalho do perfil ---- */
+.cabecalho {
+  display: grid;
+  grid-template-columns: 160px 1fr 260px;
+  align-items: center;
+  gap: 28px;
+  padding: 28px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+}
+
+.foto {
+  width: 160px;
+  height: 160px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+.fotoVazia {
+  display: grid;
+  place-items: center;
+  background: var(--color-surface-tint);
+  color: var(--color-primary);
+  font-size: 44px;
+  font-weight: 700;
+}
+
+.identidade { min-width: 0; }
+
+.nome {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.02em;
+  color: var(--color-navy-950);
+}
+.verificado { color: var(--color-primary); }
+
+.meta {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+.tag {
+  padding: 0 12px;
+  line-height: 22px;
+  border-radius: 6px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.nota { margin-top: 10px; }
+
+.modalidades {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.modalidade {
+  padding: 2px 10px;
+  border-radius: 5px;
+  background: var(--color-surface-muted);
+  color: var(--color-text-strong);
+  font-size: 12.5px;
+}
+
+.chamada {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-radius: 10px;
+  background: var(--color-surface-tint);
+}
+.valor { display: grid; gap: 2px; font-size: 13px; color: var(--color-text-muted); }
+.valor strong { font-size: 24px; color: var(--color-navy-950); }
+.agendar { width: 100%; height: 44px; border-radius: 8px; }
+.dica { font-size: 12px; color: var(--color-text-muted); }
+
+/* ---- Seções ---- */
+.grade {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.coluna { display: grid; gap: 24px; }
+
+.secao {
+  padding: 24px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+.secaoTitulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+}
+.secaoTitulo svg { color: var(--color-primary); }
+
+.bio { line-height: 1.6; color: var(--color-text); white-space: pre-line; }
+.vazio { font-size: 14px; color: var(--color-text-muted); }
+
+/* Horários por dia */
+.dias { display: grid; gap: 18px; }
+.diaTitulo {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-strong);
+  text-transform: capitalize;
+}
+.horarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+}
+.horario {
+  display: grid;
+  place-items: center;
+  height: 34px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-text-strong);
+  font-size: 13px;
+  text-decoration: none;
+  transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.horario:hover,
+.horario:focus-visible {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* Avaliações */
+.avaliacoes { display: grid; gap: 16px; }
+.avaliacao { padding-bottom: 16px; border-bottom: 1px solid var(--color-divider); }
+.avaliacao:last-child { padding-bottom: 0; border-bottom: 0; }
+.avaliacaoNota { display: flex; align-items: center; gap: 4px; font-size: 14px; }
+.avaliacaoNota svg { color: #f5b301; }
+.avaliacaoTexto { margin-top: 6px; line-height: 1.5; color: var(--color-text); }
+.avaliacaoAutor { margin-top: 6px; font-size: 12.5px; color: var(--color-text-muted); }
+.verMais {
+  margin-top: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+.verMais:disabled { opacity: 0.6; cursor: default; }
+
+/* Unidades e convênios */
+.unidades { display: grid; gap: 18px; }
+.unidadeNome { font-size: 15px; font-weight: var(--fw-semibold); color: var(--color-text-strong); }
+.linha {
+  margin-top: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+.linha svg { flex: none; margin-top: 2px; color: var(--color-primary); }
+.mapa {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--color-primary);
+}
+.convenios { display: flex; flex-wrap: wrap; gap: 8px; }
+.convenio {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  font-size: 13px;
+  color: var(--color-text-strong);
+}
+
+@media (max-width: 1024px) {
+  .cabecalho { grid-template-columns: 120px 1fr; }
+  .foto { width: 120px; height: 120px; }
+  .chamada { grid-column: 1 / -1; }
+  .grade { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .cabecalho { grid-template-columns: 1fr; padding: 20px; }
+  .nome { font-size: 24px; }
+  .secao { padding: 20px; }
+}

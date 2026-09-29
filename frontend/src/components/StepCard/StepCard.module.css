@@ -1,0 +1,61 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 24px 16px;
+  text-align: center;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card-hover); }
+
+.number {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 18px;
+  font-weight: var(--fw-semibold);
+}
+
+.title {
+  margin-top: 12px;
+  font-size: 17px;
+  line-height: 20px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: -0.01em;
+  color: var(--color-navy-950);
+}
+
+/* Lado a lado, um titulo de duas linhas ("Compareca ou acesse on-line")
+   empurrava a descricao para baixo e, com o justify-content: center,
+   deslocava tambem o icone. Reservar as duas linhas mantem icone, titulo
+   e descricao alinhados em toda a fileira. Em coluna unica nao ha fileira,
+   entao a reserva sai. */
+@media (min-width: 769px) {
+  .title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px; /* 2 x line-height */
+  }
+}
+
+.text {
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--color-text-soft);
+}
+.text span { display: block; }

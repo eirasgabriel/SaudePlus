@@ -1,0 +1,173 @@
+.header {
+  position: absolute;
+  top: var(--header-top);
+  left: 0;
+  right: 0;
+  z-index: 50;
+}
+
+.bar {
+  width: min(var(--container-header), calc(100% - var(--page-gutter) * 2));
+  height: var(--header-height);
+  margin-inline: auto;
+  padding: 0 33px 0 30px;
+  display: flex;
+  align-items: center;
+  background: var(--color-surface);
+  border-radius: var(--radius-header);
+  box-shadow: var(--shadow-header);
+}
+
+/* ---------- Navegação ---------- */
+.nav {
+  margin-left: 86px;
+  display: flex;
+  align-items: center;
+  gap: 39px;
+  height: 100%;
+}
+
+.navLink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  font-size: var(--fs-nav);
+  font-weight: var(--fw-medium);
+  color: var(--color-navy-900);
+  white-space: nowrap;
+  transition: color var(--duration) var(--ease);
+}
+.navLink:hover { color: var(--color-primary); }
+
+.active {
+  color: var(--color-primary);
+  font-size: 17px;
+  font-weight: var(--fw-semibold);
+}
+.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--color-primary);
+}
+
+/* ---------- Ações ---------- */
+.actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-navy-950);
+  transition: background var(--duration) var(--ease);
+}
+.iconButton:hover { background: var(--color-primary-light); }
+
+.searchButton { margin-right: 20px; }
+
+.loginButton,
+.signupButton {
+  height: 50px;
+  font-size: 17px;
+}
+.loginButton { width: 130px; margin-right: 17px; }
+.signupButton { width: 161px; }
+
+.menuToggle { display: none; }
+
+/* ---------- Painel de busca ---------- */
+.searchPanel {
+  width: min(var(--container-header), calc(100% - var(--page-gutter) * 2));
+  margin: 10px auto 0;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  background: var(--color-surface);
+  border-radius: var(--radius-float);
+  box-shadow: var(--shadow-float);
+}
+.searchPanel input {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-button);
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface-soft);
+}
+.searchPanel input:focus { outline: none; border-color: var(--color-primary); }
+.searchSubmit { height: 48px; padding: 0 24px; }
+
+/* ---------- Menu mobile ---------- */
+.mobileNav {
+  width: min(var(--container-header), calc(100% - var(--page-gutter) * 2));
+  margin: 10px auto 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
+}
+.mobileLink {
+  padding: 14px 12px;
+  border-radius: var(--radius-button);
+  font-weight: var(--fw-medium);
+}
+.mobileLinkActive {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.mobileActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+.mobileActions > * { height: 48px; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 1360px) {
+  .nav { margin-left: 48px; gap: 28px; }
+  .searchButton { margin-right: 12px; }
+  .loginButton { width: 116px; margin-right: 12px; }
+  .signupButton { width: 146px; }
+}
+
+@media (max-width: 1280px) {
+  .nav,
+  .loginButton,
+  .signupButton { display: none; }
+  .searchButton { margin-right: 4px; }
+  .menuToggle { display: grid; }
+}
+
+@media (max-width: 768px) {
+  .bar { padding: 0 12px 0 16px; }
+}
+
+.navLink, .mobileLink { border: 0; background: transparent; padding-inline: 0; text-align: left; font-family: inherit; }
+.mobileLink { padding: 14px 12px; color: var(--color-text); }
+.mobileLinkActive { color: var(--color-primary); background: var(--color-primary-light); }
+@media (min-width: 1181px) and (max-width: 1440px) {
+  .nav { margin-left: 28px; gap: 20px; }
+  .bar { padding-inline: 22px; }
+  .loginButton { width: 90px; }
+  .signupButton { width: 120px; }
+}

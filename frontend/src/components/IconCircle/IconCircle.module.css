@@ -1,0 +1,22 @@
+.circle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.light {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.solid {
+  background: var(--color-primary-bright);
+  color: #fff;
+}
+
+.glass {
+  background: radial-gradient(circle at 35% 30%, #3F8DF5 0%, #1560DA 55%, #0B49BC 100%);
+  box-shadow: 0 0 0 5px rgba(80, 150, 255, 0.25);
+  color: #fff;
+}

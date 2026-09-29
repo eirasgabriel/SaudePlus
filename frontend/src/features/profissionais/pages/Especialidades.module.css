@@ -1,0 +1,119 @@
+/* ==========================================================
+   Especialidades — referência 1536 × 1024
+   ========================================================== */
+
+/* ---------- Hero ---------- */
+.hero {
+  --hero-height: 480px;
+  --hero-content-top: 116px;
+  --art-shift-lg: 0px;
+}
+
+.title {
+  margin-top: 0;
+  font-size: 46px;
+  line-height: 1.1;
+}
+
+.lead {
+  margin-top: 16px;
+  max-width: 560px;
+  font-size: 17px;
+  line-height: 23px;
+}
+
+.search {
+  margin-top: 20px;
+  width: 626px;
+  max-width: 100%;
+}
+
+.chips { margin-top: 16px; }
+
+/* Posições sobre a arte (px da referência) */
+.cardVerified { left: 751px; top: 140px; width: 180px; height: 74px; padding: 0 12px 0 10px; gap: 10px; font-size: 13px; line-height: 1.3; }
+.cardSafety   { left: 1148px; top: 297px; width: 197px; height: 64px; padding-left: 16px; gap: 16px; font-size: 13px; }
+.handwriting  { left: 1161px; top: 157px; }
+
+/* ---------- Cards ---------- */
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.explore {
+  z-index: 3;
+  margin-top: calc(-1 * var(--hero-overlap));
+  padding: var(--section-padding);
+}
+
+.specialtyGrid {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--card-gap);
+}
+
+.empty {
+  margin-top: 18px;
+  padding: 26px;
+  border-radius: 12px;
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+}
+.empty button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font-weight: var(--fw-semibold);
+  text-decoration: underline;
+}
+
+.band { margin-top: var(--section-gap); }
+.bandButton { height: 52px; min-width: 210px; padding: 0 28px; font-size: 16px; }
+
+.featured {
+  margin-top: var(--section-gap);
+  margin-bottom: var(--section-gap);
+  padding: var(--section-padding);
+}
+.featuredTitle { font-size: 22px; }
+
+.subtitle {
+  margin-top: 4px;
+  font-size: 15px;
+  color: var(--color-text-muted);
+}
+
+.doctorGrid {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--card-gap);
+}
+
+/* ==========================================================
+   Responsivo
+   ========================================================== */
+@media (max-width: 1280px) {
+  .specialtyGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .doctorGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 1024px) {
+  .specialtyGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .title { font-size: 36px; line-height: 38px; }
+  .cardHeader { flex-direction: column; gap: 8px; }
+  .specialtyGrid { grid-template-columns: repeat(2, 1fr); }
+  .doctorGrid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .specialtyGrid { grid-template-columns: 1fr; }
+}

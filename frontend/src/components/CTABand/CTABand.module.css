@@ -1,0 +1,82 @@
+.band {
+  position: relative;
+  min-height: 120px;
+  padding: 24px var(--section-padding);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  overflow: hidden;
+  border-radius: 16px;
+  color: #fff;
+  background:
+    radial-gradient(120% 180% at 100% 0%, rgba(40, 120, 240, 0.55) 0%, transparent 45%),
+    linear-gradient(100deg, #0A3FA6 0%, #063390 45%, #0A49B8 100%);
+  box-shadow: var(--shadow-card);
+}
+
+.icon { flex-shrink: 0; }
+
+.heading { flex: 1 1 280px; min-width: 0; }
+
+.title {
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.03em;
+}
+.accent { color: var(--color-accent); }
+.accentBlock { display: block; }
+
+.subtitle {
+  margin-top: 6px;
+  font-size: 17px;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.aside {
+  flex: 1 1 260px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.withDivider {
+  position: relative;
+  padding-left: 28px;
+}
+.withDivider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 46px;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.action { margin-left: auto; flex-shrink: 0; }
+
+/* Variante stacked: botão antes do texto lateral */
+.stacked .action { margin-left: auto; }
+.stacked .aside { flex: 0 1 160px; }
+.stacked .withDivider { padding-left: 34px; }
+.stacked .withDivider::before { height: 50px; }
+
+@media (max-width: 1024px) {
+  .band { flex-wrap: wrap; padding: 24px; }
+  .withDivider { padding-left: 0; flex-basis: 100%; }
+  .withDivider::before { display: none; }
+  .action { margin-left: 0; }
+  .stacked .withDivider { padding-left: 0; }
+  .stacked .aside { flex-basis: 100%; }
+}
+
+@media (max-width: 560px) {
+  .band { flex-direction: column; align-items: flex-start; }
+  .heading, .aside, .stacked .aside { flex-basis: auto; }
+  .action,
+  .action > * { width: 100%; }
+}

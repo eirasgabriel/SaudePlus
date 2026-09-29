@@ -1,0 +1,49 @@
+.menu {
+  position: absolute;
+  top: calc(100% - 6px);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 212px;
+  padding: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-button);
+  box-shadow: var(--shadow-float);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-muted);
+  text-align: left;
+  border-radius: 9px;
+  transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+
+.item:hover {
+  color: var(--color-primary);
+  background: var(--color-surface-muted);
+}
+
+.icone {
+  color: currentColor;
+}
+
+/* Linha separando a última ação das demais. */
+.separado {
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0 0 9px 9px;
+}
+
+.sair:hover {
+  color: #C0392B;
+  background: #FBE3E0;
+}

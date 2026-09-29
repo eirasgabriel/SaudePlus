@@ -1,0 +1,35 @@
+.card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 18px 0 15px;
+  background: #fff;
+  border-radius: var(--radius-float);
+  box-shadow: var(--shadow-float);
+  font-size: var(--fs-small);
+  line-height: 1.38;
+  color: var(--color-navy-950);
+  pointer-events: auto;
+}
+
+.highlight { color: var(--color-primary); }
+
+.iconCircle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-primary-bright);
+  color: #fff;
+}
+
+.iconPlain { color: var(--color-primary-bright); }
+
+.iconSoft {
+  width: 56px;
+  height: 56px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}

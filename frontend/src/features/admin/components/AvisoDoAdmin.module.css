@@ -1,0 +1,20 @@
+.faixa {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  border: 1px solid transparent;
+  border-radius: 10px;
+}
+
+.sucesso {
+  color: #0f6b4f;
+  background: #dcf5ea;
+  border-color: #b7e8d2;
+}
+
+.erro {
+  color: #9b1c1c;
+  background: #fce4e4;
+  border-color: #f5c2c2;
+}

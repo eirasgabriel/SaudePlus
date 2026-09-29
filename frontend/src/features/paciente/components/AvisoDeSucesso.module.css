@@ -1,0 +1,10 @@
+.faixa {
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0f6b4f;
+  background: #dcf5ea;
+  border: 1px solid #b7e8d2;
+  border-radius: 12px;
+}
