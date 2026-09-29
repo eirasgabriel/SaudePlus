@@ -63,3 +63,34 @@ export function DotIcon({ size = 22, ...props }) {
     </svg>
   );
 }
+
+export function GearIcon({ size = 22, ...props }) {
+  return (
+    <svg {...traco} {...base(size, props)}>
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M19.5 14.2a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5v.2a1.9 1.9 0 0 1-3.8 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1h-.2a1.9 1.9 0 0 1 0-3.8h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 1.8.3h.1a1.6 1.6 0 0 0 1-1.5v-.2a1.9 1.9 0 0 1 3.8 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0-.3 1.8v.1a1.6 1.6 0 0 0 1.5 1h.2a1.9 1.9 0 0 1 0 3.8h-.1a1.6 1.6 0 0 0-1.5 1z" />
+    </svg>
+  );
+}
+
+export function LogoutIcon({ size = 22, ...props }) {
+  return (
+    <svg {...traco} {...base(size, props)}>
+      <path d="M9.5 21.2H5.8a1.9 1.9 0 0 1-1.9-1.9V4.7a1.9 1.9 0 0 1 1.9-1.9h3.7" />
+      <path d="M15.8 17.1 20.1 12l-4.3-5.1M20.1 12H9.5" />
+    </svg>
+  );
+}
+
+/* O QuestionCircleIcon do sistema é preenchido e traz o "?" numa cor fixa —
+   foi desenhado para aparecer grande sobre fundo claro. No menu da conta, a
+   18px, ele vira um círculo sólido. Este aqui é de traço, como os vizinhos. */
+export function HelpIcon({ size = 22, ...props }) {
+  return (
+    <svg {...traco} {...base(size, props)}>
+      <circle cx="12" cy="12" r="9.3" />
+      <path d="M9.4 9.3a2.7 2.7 0 1 1 3.8 2.5c-.8.4-1.2 1-1.2 1.8v.5" />
+      <path d="M12 17.4h.01" />
+    </svg>
+  );
+}

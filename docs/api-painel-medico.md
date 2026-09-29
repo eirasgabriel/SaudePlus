@@ -1,17 +1,19 @@
-# API — Painel do Médico
+# API — Área do Médico
 
-Primeiros endpoints reais do SaúdePlus, na branch `feature/dashboard-medico`.
-Servem a tela do profissional de saúde.
+Rotas que servem a tela do profissional de saúde (`/medico` no front).
+Implementadas em `backend/src/main/java/br/com/saudeplus/areamedico/` e
+chamadas por `frontend/src/features/medico/medico.api.js`.
 
-Conforme combinado, esta entrega **não tem banco de dados e não tem
-autenticação**: os dados vivem em memória e todos os endpoints são abertos.
-O `docs/api.md` continua descrevendo o estado anterior e precisa de um
-ponteiro para cá quando a equipe achar melhor.
+Todas exigem `Authorization: Bearer <token>` de um usuário com papel `MEDICO`
+(ver [api.md](api.md)). **O médico vem do token**: nenhuma rota recebe o id
+dele. Consulta, paciente, janela, bloqueio ou notificação de outro médico
+responde `404`, como se não existisse. Uma conta `MEDICO` sem perfil
+profissional (CRM) responde `403`.
 
 ## Como rodar
 
 ```powershell
-# back-end (porta 8080)
+# back-end (porta 8080; sobe o Postgres pelo Docker)
 cd backend
 .\mvnw.cmd spring-boot:run
 
@@ -22,183 +24,148 @@ npm install
 npm run dev
 ```
 
-Depois abra `http://localhost:5173/medico` (depois de entrar com uma conta de médico). **Com o back-end fora do ar a
-tela continua funcionando**: cai nos mocks locais e mostra uma faixa avisando
-que os dados são de demonstração.
-
-No Linux/macOS, use `sh ./mvnw spring-boot:run` e `cp .env.example .env`.
+Entre em `http://localhost:5173/login` com `medico@saudeplus.com` /
+`Medico@SaudePlus2026`. No perfil `dev`, a cada subida o servidor garante uma
+agenda de demonstração para o dia de hoje (`demo/AgendaDeDemonstracao`). Com o
+back-end fora do ar, a tela cai nos mocks locais e mostra uma faixa avisando.
 
 ## Convenções
 
-- Base: `http://localhost:8080`, prefixo `/api`.
-- Tudo em JSON, UTF-8.
-- Datas em ISO (`2026-09-15`); horários em `HH:mm`.
-- CORS liberado para `http://localhost:5173`; configurável por
-  `saudeplus.cors.origens`.
-- Enquanto não há login, o identificador do profissional vai na URL. Quando a
-  autenticação entrar, ele sai do caminho e vem do token.
+- Datas em ISO (`2026-09-15`); horários em `HH:mm`, locais da unidade
+  (fuso `America/Sao_Paulo`).
+- Ids são UUID.
+- Erros no formato de [api.md](api.md#formato-de-erro).
 
 ### Status de consulta
 
-| Chave | Rótulo | Conta como atendida | Conta como próxima |
-| --- | --- | --- | --- |
-| `realizada` | Realizada | sim | não |
-| `em_andamento` | Em andamento | não | não |
-| `aguardando` | Aguardando | não | sim |
-| `confirmada` | Confirmada | não | sim |
+Um único conjunto, compartilhado com paciente e admin. A chave é o que trafega:
 
-A consulta em andamento não entra em nenhum dos dois contadores: já começou,
-mas ainda não terminou.
+| Chave | Rótulo | Pode ir para |
+| --- | --- | --- |
+| `pendente` | Pendente | `confirmada`, `cancelada` |
+| `confirmada` | Confirmada | `aguardando`, `cancelada`, `faltou` |
+| `aguardando` | Aguardando (check-in feito) | `em_andamento` |
+| `em_andamento` | Em andamento | `realizada` |
+| `realizada` | Realizada | — |
+| `cancelada` | Cancelada | — |
+| `faltou` | Não compareceu | — |
 
-### Formato de erro
-
-Toda falha sai no mesmo formato, para o cliente não precisar adivinhar:
-
-```json
-{
-  "momento": "2026-09-17T22:45:12.331-03:00",
-  "status": 404,
-  "erro": "Not Found",
-  "mensagem": "Médico não encontrado: med-9",
-  "caminho": "/api/medicos/med-9/painel",
-  "campos": []
-}
-```
-
-`campos` só é preenchido em erro de validação (422), com `campo` e `mensagem`
-de cada um. Nos demais casos vai como lista vazia, nunca ausente.
-
-| Código | Quando |
-| --- | --- |
-| 400 | parâmetro mal formado (status desconhecido, data inválida) |
-| 404 | recurso inexistente |
-| 422 | corpo válido em forma, mas que viola uma regra ou validação |
+Transição fora da tabela responde `422`. `cancelada` e `faltou` liberam o
+horário para outra reserva. "Retorno" não é status: é o tipo de atendimento
+(`consulta`, `retorno`, `exame`).
 
 ## Endpoints
 
-### `GET /api/medicos/{medicoId}/painel`
+### `GET /api/medico/painel?data=`
 
-Tudo o que a tela precisa, numa requisição. Parâmetro opcional `data`; omitido,
-usa o dia de referência da carga de demonstração.
+A tela inicial numa requisição só. Sem `data`, usa hoje.
 
 ```json
 {
-  "medico": { "id": "med-1", "nome": "Dr. Carlos Mendes", "perfil": "Médico",
-              "especialidade": "Clínico Geral", "crm": "CRM 123.456-RJ", "avatarUrl": null },
-  "unidade": { "id": "uni-1", "nome": "Clínica da Família – Centro", "cidade": "Saquarema",
-               "endereco": "Rua das Flores, 123 – Saquarema, RJ", "telefone": "(22) 2655-1234",
-               "horario": "Segunda a Sexta - 07h às 17h", "mapUrl": "#" },
-  "dataReferencia": "2026-09-15",
+  "medico": { "id": "…", "nome": "Dr. Carlos Andrade", "perfil": "Médico",
+              "especialidade": "Clínico Geral", "crm": "CRM 112.233-RJ", "avatarUrl": null },
+  "unidade": { "id": "…", "nome": "Clínica da Família – Centro", "cidade": "Saquarema",
+               "endereco": "Rua das Flores, 123 – Centro, Saquarema - RJ", "telefone": "(22) 2655-1234",
+               "horario": "Segunda a sexta, 07h às 17h", "mapUrl": "https://…" },
+  "dataReferencia": "2026-09-28",
   "fraseDoDia": "Cuidar de pessoas é o que nos move todos os dias.",
   "resumo": { "consultasHoje": 8, "pacientesAtendidos": 3, "examesPendentes": 3,
               "proximasConsultas": 4, "primeiroHorarioPendente": "10:40" },
-  "contagemPorStatus": { "realizada": 3, "em_andamento": 1, "aguardando": 2, "confirmada": 2 },
-  "agenda": [ { "id": "ag-1", "horario": "08:00", "pacienteId": "ana-paula-ferreira",
-                "paciente": "Ana Paula Ferreira", "tipo": "Consulta de rotina", "status": "realizada" } ],
-  "pacientes": [ { "id": "ana-paula-ferreira", "nome": "Ana Paula Ferreira", "idade": 32,
-                   "motivo": "Consulta de rotina", "iniciais": "AF" } ],
-  "examesPendentes": [ { "id": "ex-1", "nome": "Hemograma completo", "pacienteId": "joao-gabriel-santos",
-                         "paciente": "João Gabriel Santos", "prazo": "Hoje" } ],
-  "notificacoes": [ { "id": "nt-1", "tipo": "resultado", "titulo": "Resultado de exame disponível",
-                      "detalhe": "Mariana Costa – Ultrassom abdominal", "quando": "Hoje, 09:15", "lida": false } ]
+  "contagemPorStatus": { "pendente": 0, "confirmada": 2, "aguardando": 2, "em_andamento": 1,
+                         "realizada": 3, "cancelada": 0, "faltou": 0 },
+  "agenda": [{ "id": "…", "horario": "08:00", "pacienteId": "…", "paciente": "Ana Paula Ferreira",
+               "tipo": "Consulta de rotina", "tipoAtendimento": "consulta", "modalidade": "presencial",
+               "status": "realizada" }],
+  "pacientes": [{ "id": "…", "nome": "Lucas Martins", "idade": 24, "motivo": "Consulta clínica geral",
+                  "iniciais": "LM", "ultimaConsulta": "2026-09-28" }],
+  "examesPendentes": [{ "id": "…", "nome": "Hemograma completo", "pacienteId": "…",
+                        "paciente": "João Gabriel Santos", "prazo": "Hoje", "prazoData": "2026-09-28",
+                        "status": "solicitado" }],
+  "notificacoes": [{ "id": "…", "tipo": "retorno", "titulo": "Lembrete de retorno", "detalhe": "…",
+                     "quando": "Hoje, 09:15", "criadaEm": "2026-09-28T12:15:00Z", "lida": false }]
 }
 ```
 
-`pacientes` vem cortado em 5, que é o que o painel mostra antes do "Ver todos".
-`primeiroHorarioPendente` vem `null` quando não há mais consultas no dia.
+- `unidade` é `null` se o médico ainda não foi vinculado a nenhuma unidade.
+- `resumo.consultasHoje` não conta canceladas. `proximasConsultas` são as
+  `pendente`, `confirmada` e `aguardando`.
+- `pacientes` são os 5 mais recentes (consultas até hoje). `idade` é `null`
+  sem data de nascimento.
+- `tipo` é o texto curto da lista: o motivo informado ou o tipo de atendimento.
 
-### `GET /api/medicos/{medicoId}/agenda`
+### Agenda e consultas
 
-Parâmetros: `data` (ISO) e `status` (chave do domínio, ou `todas`). Um status
-desconhecido devolve 400 em vez de ignorar o filtro em silêncio e mostrar a
-agenda inteira. Responde a lista de consultas, ordenada por horário.
-
-### `PATCH /api/agendamentos/{consultaId}/status`
-
-```json
-{ "status": "realizada" }
-```
-
-Devolve a consulta atualizada. `status` ausente devolve 422 apontando o campo;
-consulta inexistente devolve 404. **Sem banco, a alteração vale enquanto a
-aplicação estiver de pé** e volta ao estado inicial no próximo restart.
-
-### Demais endpoints
-
-| Método e caminho | Devolve |
+| Rota | Faz |
 | --- | --- |
-| `GET /api/medicos/{medicoId}` | dados do profissional |
-| `GET /api/medicos/{medicoId}/pacientes?limite=` | pacientes; sem `limite`, todos |
-| `GET /api/medicos/{medicoId}/exames-pendentes` | exames aguardando resultado |
-| `GET /api/medicos/{medicoId}/notificacoes` | notificações do profissional |
-| `GET /api/pacientes/{pacienteId}` | um paciente |
-| `GET /api/clinicas/{unidadeId}` | uma unidade |
+| `GET /api/medico/agenda?data=&status=` | agenda de um dia (padrão: hoje); `status` é uma chave ou `todas` |
+| `PATCH /api/medico/agendamentos/{id}/status` | `{ "status": "aguardando" }`; para `cancelada`, aceita `motivo` e avisa o paciente |
+| `PATCH /api/medico/agendamentos/{id}/atendimento` | `{ "resumo": "…", "desfecho": "…" }`; encerra a consulta `em_andamento` como `realizada` (ou corrige uma já realizada) |
+
+As duas `PATCH` devolvem a consulta atualizada, no formato de `agenda[]`.
+
+### Pacientes e exames
+
+| Rota | Faz |
+| --- | --- |
+| `GET /api/medico/pacientes?q=&pagina=&tamanho=` | pacientes com consulta com este médico, por nome (`Pagina<…>`) |
+| `GET /api/medico/pacientes/{id}` | ficha: dados, histórico de consultas e exames **com este médico** |
+| `GET /api/medico/exames-pendentes` | exames pedidos por este médico ainda sem resultado, prazo mais próximo primeiro |
+| `POST /api/medico/exames` | pede um exame para um paciente seu (ver [api-exames.md](api-exames.md)) |
+| `GET /api/medico/exames/{id}/resultado` | arquivo do resultado de um exame que este médico pediu |
+
+### Configuração da agenda
+
+Janelas semanais definem quando o médico atende; os horários livres que o
+paciente vê são as janelas fatiadas pela duração, menos bloqueios, consultas
+marcadas e o que começa em menos de 2 horas (`saudeplus.agenda.*`).
+
+| Rota | Faz |
+| --- | --- |
+| `GET /api/medico/disponibilidades` | janelas do médico |
+| `POST /api/medico/disponibilidades` | `{ "unidadeId", "diaSemana": 1, "inicio": "08:00", "fim": "12:00", "duracaoMin": 30, "modalidade": "presencial" }` → `201` |
+| `PUT /api/medico/disponibilidades/{id}` | mesmo corpo |
+| `DELETE /api/medico/disponibilidades/{id}` | `204`; consultas já marcadas não mudam |
+| `GET /api/medico/bloqueios` | bloqueios que ainda não terminaram |
+| `POST /api/medico/bloqueios?cancelarAgendamentos=` | `{ "inicio": "2026-10-01T08:00", "fim": "2026-10-01T12:00", "motivo": "Congresso" }` → `201` |
+| `DELETE /api/medico/bloqueios/{id}` | `204` |
+
+Regras:
+
+- `diaSemana` segue a ISO: 1 = segunda, 7 = domingo.
+- Janela só em unidade ativa onde o médico atende (`422`), sem sobrepor outra
+  janela do mesmo dia (`409`), com `fim` depois de `inicio` e espaço para ao
+  menos uma consulta (`400` com o campo).
+- Bloqueio sobre consultas `pendente`/`confirmada` responde `422` até vir
+  `?cancelarAgendamentos=true`: aí elas são canceladas, cada paciente recebe
+  uma notificação e a resposta traz `agendamentosCancelados`. Paciente
+  `aguardando` ou `em_andamento` no período sempre impede.
+
+### Notificações
+
+| Rota | Faz |
+| --- | --- |
+| `GET /api/medico/notificacoes` | as 30 mais recentes |
+| `PATCH /api/medico/notificacoes/{id}/lida` | marca uma como lida |
+
+## Horários públicos
+
+`GET /api/publico/profissionais/{id}/horarios?de=&ate=` (sem login) devolve
+`[{ "data", "horario", "duracaoMin", "unidadeId", "modalidade" }]`. Sem datas,
+as próximas duas semanas; o fim é limitado a 60 dias à frente. A busca pública
+usa o mesmo cálculo para `proximaData` e `proximosHorarios` de cada cartão.
 
 ## Organização do back-end
 
-Segue as camadas do `docs/arquitetura.md`: o controller recebe HTTP, o service
-concentra as regras, o repository acessa a persistência e os DTOs definem o
-contrato. Nenhum domínio expõe o record de domínio direto na resposta.
-
-```text
-br.com.saudeplus
-├── config/CorsConfig.java
-├── dados/DadosDemonstracao.java        carga em memória
-├── exception/                          exceções + @RestControllerAdvice
-├── agendamentos/  Consulta, StatusConsulta, AgendaService, AgendaController
-├── pacientes/     Paciente, PacienteService, PacienteController
-├── profissionais/ Medico, MedicoService, MedicoController
-├── clinicas/      Unidade, UnidadeService, UnidadeController
-├── exames/        Exame, ExameService, ExameController
-├── notificacoes/  Notificacao, TipoNotificacao, NotificacaoService, ...
-└── painel/        PainelMedicoService, PainelMedicoController
-```
-
-`pacientes`, `notificacoes` e `painel` são pacotes novos: a arquitetura previa
-`auth`, `profissionais`, `clinicas`, `exames` e `agendamentos`, que não cobrem
-esses três domínios. `auth` e `security` seguem vazios, como combinado.
-
-Cada repositório é uma interface com uma implementação `...EmMemoriaRepository`.
-Trocar por JPA depois é substituir a implementação, sem tocar nos services.
-
-### Sem banco, o que isso significa
-
-Os dados são os mesmos de `frontend/src/features/medico/data/medico.js`, de
-propósito: a tela fica idêntica consumindo a API ou os mocks. As listas são
-imutáveis, exceto as consultas, que ficam num `ConcurrentHashMap` porque o
-PATCH as altera. Quando o banco entrar, `DadosDemonstracao` vira uma migration
-de seed e os repositórios em memória saem junto.
-
-## Ligação com o front-end
-
-- `src/services/http.js` — wrapper de `fetch` com base configurável, timeout de
-  8s, cancelamento e `ErroDeApi` (com `offline` para distinguir "o servidor
-  recusou" de "o servidor não respondeu").
-- `src/features/medico/medico.api.js` — uma função por endpoint.
-- `src/features/medico/usePainelMedico.js` — carrega o painel e devolve
-  `origem: "carregando" | "api" | "mocks"`.
-- `src/features/medico/pages/PainelMedicoConectado.jsx` — escolhe a fonte;
-  `DashboardMedico` continua sendo apresentação pura.
-
-Os contadores existem dos dois lados: `AgendaService`/`PainelMedicoService` no
-servidor e `selectors.js` no cliente. Não é duplicação por descuido — a tela
-precisa recalcular ao filtrar sem ir ao servidor. As duas implementações são
-cobertas por testes que fixam os mesmos números.
+- `agendamentos/`: `Agendamento`, `StatusAgendamento` (transições) e o evento `AgendamentoCancelado`.
+- `agenda/`: `Disponibilidade`, `BloqueioAgenda`, `CalculadoraDeHorarios` (função pura) e `AgendaService`.
+- `areamedico/`: controller, services e DTOs de `/api/medico/*`. `MedicoLogado` resolve o médico pelo token.
+- `exames/`, `notificacoes/`: entidades lidas pelo painel; o cancelamento vira notificação depois do commit.
+- `demo/AgendaDeDemonstracao`: só no perfil `dev`.
 
 ## Testes
 
-Back-end, em `backend/src/test/java/br/com/saudeplus`:
-
-- `PacienteTest` — regra das iniciais.
-- `StatusConsultaTest` — chaves do contrato, `concluida` e `pendente`.
-- `AgendaServiceTest` — ordenação, filtro, contadores, troca de status, 404.
-- `PainelMedicoServiceTest` — montagem do painel e contadores derivados.
-- `PainelMedicoApiTest` — API de ponta a ponta com MockMvc, incluindo os
-  formatos de erro.
-
-```powershell
-cd backend
-.\mvnw.cmd test
-```
-
-Front-end: `cd frontend && npm test`.
+- `agenda/CalculadoraDeHorariosTest` e `agendamentos/StatusAgendamentoTest`: regras puras.
+- `areamedico/AreaMedicoApiTest`: rotas de ponta a ponta, incluindo acesso de
+  outro médico (`404`), transições (`422`), bloqueio com cancelamento e aviso ao paciente.
+- `publico/PublicoApiTest`: horários públicos, inclusive que a hora gravada no
+  banco chega à API sem deslocamento de fuso.

@@ -4,6 +4,12 @@ O painel do administrador vive em `/admin` e reúne 12 telas. Esta página
 descreve como ele está montado; a arquitetura geral do repositório está em
 [arquitetura.md](arquitetura.md).
 
+> **Dados reais:** dashboard, usuários, clínicas, agendamentos, relatórios,
+> financeiro e a matriz de permissões vêm da API (ver [api-admin.md](api-admin.md)
+> e [api-financeiro-relatorios.md](api-financeiro-relatorios.md)), por
+> `features/admin/pages/AdminConectado.jsx`. Suporte e as demais abas de
+> configurações ainda usam os mocks descritos abaixo.
+
 ## Rotas
 
 | Caminho | Tela |
@@ -38,7 +44,7 @@ tipo, como no resto do front-end.
 - `services/dadosAdmin*.js`: um arquivo de dados fictícios por tela.
 - `services/fotosPacientes.js`: ponto único de importação das fotos.
 - `services/useTabela.js`: busca, filtros e paginação, usado por cinco telas.
-- `styles/tokens.css`: só a paleta (`:root`) e as classes de blindagem.
+- `styles/tokens-admin.css`: só a paleta (`:root`) e as classes de blindagem.
   **Sem reset global**, de propósito: as telas do paciente fazem o próprio
   reset escopado em `.pagina`, e um reset global daqui trocaria a fonte, o
   fundo e os espaçamentos delas. O reset da área administrativa vive escopado
@@ -50,27 +56,25 @@ tipo, como no resto do front-end.
 
 ## Estado e dados
 
-Nenhum componente tem texto ou número embutido: tudo vem de
-`services/dadosAdmin*.js`. Cada componente recebe os dados por prop, com o mock
-apenas como valor padrão, então trocar o mock pela API não exige tocar em
-componente nenhum:
+Nenhum componente tem texto ou número embutido. As páginas recebem tudo por
+prop, com os dados de `services/dadosAdmin*.js` apenas como valor padrão.
+Quem passa os dados reais é `features/admin/pages/AdminConectado.jsx`, um
+componente por rota (`DashboardDoAdmin`, `UsuariosDoAdmin`…):
 
-```js
-// hoje
-export const usuarios = [ /* ... */ ];
-
-// depois
-export async function buscarUsuarios() {
-  const r = await fetch('/api/usuarios');
-  return r.json();
+```jsx
+export function FinanceiroDoAdmin() {
+  // busca na API, converte com os adaptadores e passa como props
+  return <AdminFinanceiroPage metricas={…} transacoes={…} aoAcaoRapida={…} aviso={…} />;
 }
 ```
 
-Quando a integração começar, cada `dadosAdmin*.js` migra para
-`features/<domínio>/<domínio>.api.js`, como pede a arquitetura.
+- `features/admin/admin.api.js` e `exames.api.js`: as chamadas a `/api/admin/*`.
+- `features/admin/adaptadores.js`: converte as respostas para o formato dos
+  mocks; rótulos, ícones e notas fixas dos cartões continuam vindo dos mocks.
+- Sem API, a página fica com os mocks, o `aviso` mostra a faixa de
+  demonstração e as ações ficam desligadas.
 
-O estado de interface (filtros, abas, toggles) vive em `useState`, então não
-persiste ao recarregar a página — esperado enquanto não há backend.
+Filtros, abas e toggles vivem em `useState` e não persistem ao recarregar.
 
 ### O hook das tabelas
 
@@ -111,27 +115,18 @@ circular com `object-fit: cover`: em foto de corpo inteiro o centro cai no peito
 porque o mesmo paciente aparece como "Maria Silva" na Dashboard e "Maria Silva
 Santos" em Usuários. Quem não tem foto cai no fallback de iniciais sobre cor.
 
-## Dívida conhecida: o `global.css`
+## Classes de blindagem
 
-`styles/global.css` tem duas regras que atrapalham:
-
-```css
-svg { width: 24px !important; height: 24px !important; }
-img { max-width: 60px !important; max-height: 60px !important; border-radius: 50%; }
-```
-
-Como `!important` vence especificidade, elas anulam **todo** tamanho de ícone
-definido em qualquer `.module.css`, e derrubam o logo do `Header` do paciente,
-que pede `width="240"` e acaba virando um círculo de 60px.
-
-Enquanto elas existirem, `tokens.css` traz três classes de blindagem —
-`.spIcone`, `.spImagem` e `.spLogo` — que protegem a área administrativa por
-especificidade. **A correção certa é apagar as duas regras**; depois disso as
-três classes podem sair.
+`styles/tokens-admin.css` traz `.spIcone`, `.spImagem` e `.spLogo`. Elas
+protegem ícones e imagens de duas regras com `!important` (`svg` fixo em 24px
+e `img` em 60px, redondo). Essas regras saíram do `global.css` e hoje vivem em
+`styles/area-paciente.css`, restritas ao `.area-paciente`: na administração
+não valem mais. As classes só fazem diferença se `Icone` ou `Avatar` forem
+usados dentro da área do paciente; fora disso, podem sair.
 
 ## Acessibilidade
 
 `aria-current` nos itens de menu ativos, `aria-label` descritivo nos gráficos
 (a rosca e as barras anunciam os valores), `role="switch"` nos toggles,
 `aria-expanded` no acordeão, foco visível global e `prefers-reduced-motion`
-respeitado em `tokens.css`.
+respeitado em `tokens-admin.css`.

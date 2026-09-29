@@ -156,12 +156,12 @@ export const opcoesEspecialidade = [
 
 export const opcoesFormato = [
   { valor: "pdf", rotulo: "PDF" },
-  { valor: "excel", rotulo: "Excel (.xlsx)" },
+  { valor: "excel", rotulo: "Excel (CSV)" },
   { valor: "csv", rotulo: "CSV" },
 ];
 
 export const opcoesPeriodo = [
-  { valor: "30d", rotulo: "15 de setembro de 2026 - 15 de outubro de 2026" },
+  { valor: "30d", rotulo: "Últimos 30 dias" },
   { valor: "7d", rotulo: "Últimos 7 dias" },
   { valor: "90d", rotulo: "Últimos 90 dias" },
   { valor: "ano", rotulo: "Este ano" },

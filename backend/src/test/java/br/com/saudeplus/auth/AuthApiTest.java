@@ -201,7 +201,7 @@ class AuthApiTest {
             mvc().perform(get("/api/admin/dashboard").header(HttpHeaders.AUTHORIZATION, bearer))
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.status").value(403));
-            mvc().perform(get("/api/medicos/med-1/painel").header(HttpHeaders.AUTHORIZATION, bearer))
+            mvc().perform(get("/api/medico/painel").header(HttpHeaders.AUTHORIZATION, bearer))
                     .andExpect(status().isForbidden());
         }
 

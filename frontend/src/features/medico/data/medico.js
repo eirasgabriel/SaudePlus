@@ -29,11 +29,18 @@ export const FRASE_DO_DIA = "Cuidar de pessoas é o que nos move todos os dias."
    Status de consulta — fonte única de rótulo e cor.
    A ordem também define a ordem dos filtros da agenda.
    ---------------------------------------------------------------- */
+/**
+ * Os status de agendamento da API (StatusAgendamento no back-end).
+ * `concluida`: conta como paciente atendido. `proxima`: ainda vai acontecer.
+ */
 export const STATUS_CONSULTA = {
-  realizada: { rotulo: "Realizada", tom: "sucesso", concluida: true },
-  em_andamento: { rotulo: "Em andamento", tom: "info", concluida: false },
-  aguardando: { rotulo: "Aguardando", tom: "alerta", concluida: false },
-  confirmada: { rotulo: "Confirmada", tom: "neutro", concluida: false },
+  pendente: { rotulo: "Pendente", tom: "neutro", concluida: false, proxima: true },
+  confirmada: { rotulo: "Confirmada", tom: "neutro", concluida: false, proxima: true },
+  aguardando: { rotulo: "Aguardando", tom: "alerta", concluida: false, proxima: true },
+  em_andamento: { rotulo: "Em andamento", tom: "info", concluida: false, proxima: false },
+  realizada: { rotulo: "Realizada", tom: "sucesso", concluida: true, proxima: false },
+  cancelada: { rotulo: "Cancelada", tom: "erro", concluida: false, proxima: false },
+  faltou: { rotulo: "Não compareceu", tom: "erro", concluida: false, proxima: false },
 };
 
 /** Agenda do dia. `horario` em HH:MM, 24h. */

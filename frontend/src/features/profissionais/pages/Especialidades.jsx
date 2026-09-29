@@ -15,7 +15,7 @@ import Button from "../../../components/Button/Button.jsx";
 import { UsersIcon, ShieldCheckIcon, StarIcon } from "../../../components/icons/Icons.jsx";
 
 import { SPECIALTIES, POPULAR_SPECIALTIES } from "../data/specialties.js";
-import { PROFESSIONALS } from "../data/professionals.js";
+import { useDestaques } from "../useBuscaProfissionais.js";
 import heroArt from "../../../assets/images/hero-especialidades.jpg";
 import heroMobile from "../../../assets/images/hero-especialidades-mobile.jpg";
 
@@ -26,6 +26,7 @@ const normalize = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, ""
 export default function Especialidades() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  const destaques = useDestaques();
 
   const filtered = query.trim()
     ? SPECIALTIES.filter((s) => normalize(`${s.name} ${s.description}`).includes(normalize(query.trim())))
@@ -149,7 +150,7 @@ export default function Especialidades() {
         </header>
 
         <div className={styles.doctorGrid}>
-          {PROFESSIONALS.map((p) => (
+          {destaques.map((p) => (
             <DoctorCard key={p.id} {...p} />
           ))}
         </div>

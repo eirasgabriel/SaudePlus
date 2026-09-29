@@ -11,21 +11,41 @@ import GraficoRosca from "../components/GraficoRosca";
 import { Seletor } from "../components/Controles";
 import { Tabela, CelulaDupla } from "../components/Tabela";
 import {
-  metricas,
-  agendamentosPorMes,
+  metricas as metricasMock,
+  agendamentosPorMes as agendamentosPorMesMock,
   periodosGrafico,
-  tiposAtendimento,
+  tiposAtendimento as tiposAtendimentoMock,
   acoesRapidas,
-  clinicasMaisAcessadas,
-  ultimosAgendamentos,
+  clinicasMaisAcessadas as clinicasMaisAcessadasMock,
+  ultimosAgendamentos as ultimosAgendamentosMock,
   statusAgendamentoDashboard,
-  notificacoes,
+  notificacoes as notificacoesMock,
 } from "../services/dadosAdminDashboard";
 import comum from "../styles/adminComum.module.css";
 import estilos from "./AdminDashboardPage.module.css";
 
-export default function AdminDashboardPage({ usuario = { nome: "Admin Master" } }) {
-  const [periodo, definirPeriodo] = useState("9m");
+/**
+ * Dados por prop, com os mocks como padrão. `aoMudarPeriodo("6m")` avisa a
+ * troca do período do gráfico, para quem busca a série na API.
+ */
+export default function AdminDashboardPage({
+  usuario = { nome: "Admin Master" },
+  metricas = metricasMock,
+  agendamentosPorMes = agendamentosPorMesMock,
+  tiposAtendimento = tiposAtendimentoMock,
+  clinicasMaisAcessadas = clinicasMaisAcessadasMock,
+  ultimosAgendamentos = ultimosAgendamentosMock,
+  notificacoes = notificacoesMock,
+  aviso = null,
+  aoMudarPeriodo,
+}) {
+  const [periodo, definirPeriodoLocal] = useState("9m");
+  const [hoje] = useState(() => new Date());
+
+  function definirPeriodo(valor) {
+    definirPeriodoLocal(valor);
+    aoMudarPeriodo?.(valor);
+  }
   const primeiroNome = usuario.nome.split(" ")[0];
 
   return (
@@ -33,8 +53,10 @@ export default function AdminDashboardPage({ usuario = { nome: "Admin Master" } 
       <CabecalhoPagina
         titulo={`Olá, ${primeiroNome}!`}
         subtitulo="Aqui está um resumo geral do sistema SaúdePlus."
-        data={new Date(2026, 8, 15)}
+        data={hoje}
       />
+
+      {aviso}
 
       <section
         className={`${comum.metricas} ${comum.metricas5}`}
@@ -139,7 +161,7 @@ export default function AdminDashboardPage({ usuario = { nome: "Admin Master" } 
         >
           <div className={estilos.lista}>
             {ultimosAgendamentos.map((a) => {
-              const status = statusAgendamentoDashboard[a.status];
+              const status = statusAgendamentoDashboard[a.status] ?? { rotulo: a.status, variante: "neutro" };
               return (
                 <div key={a.id} className={estilos.itemAgendamento}>
                   <Avatar nome={a.paciente} foto={a.foto} tam={38} />

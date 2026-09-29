@@ -43,9 +43,9 @@ export function examesComPacientes(exames = EXAMES_PENDENTES, pacientes = PACIEN
   }));
 }
 
-/** Consultas ainda não iniciadas, na ordem do dia. */
+/** Consultas que ainda vão acontecer (pendente, confirmada, aguardando), na ordem do dia. */
 export function proximasConsultas(agenda = AGENDA) {
-  return agenda.filter(({ status }) => !STATUS_CONSULTA[status]?.concluida && status !== "em_andamento");
+  return agenda.filter(({ status }) => STATUS_CONSULTA[status]?.proxima);
 }
 
 /** Quantas consultas existem em cada status. Alimenta os filtros da agenda. */
@@ -60,7 +60,7 @@ export function contagemPorStatus(agenda = AGENDA) {
  * Os quatro cartões de resumo do topo.
  *
  * Definições (mudou a regra? mude só aqui):
- * - consultasHoje ....... total de itens na agenda do dia
+ * - consultasHoje ....... itens da agenda do dia, menos os cancelados
  * - pacientesAtendidos .. consultas com status concluído (`realizada`)
  * - examesPendentes ..... exames aguardando resultado
  * - proximasConsultas ... consultas que ainda não começaram, e o horário da primeira
@@ -70,7 +70,7 @@ export function resumoDoDia(agenda = AGENDA, exames = EXAMES_PENDENTES) {
   const atendidos = agenda.filter(({ status }) => STATUS_CONSULTA[status]?.concluida).length;
 
   return {
-    consultasHoje: agenda.length,
+    consultasHoje: agenda.filter(({ status }) => status !== "cancelada").length,
     pacientesAtendidos: atendidos,
     examesPendentes: exames.length,
     proximasConsultas: proximas.length,
@@ -78,9 +78,18 @@ export function resumoDoDia(agenda = AGENDA, exames = EXAMES_PENDENTES) {
   };
 }
 
-/** Filtra a agenda por status. `null` ou "todas" devolve tudo. */
+/**
+ * Filtra a agenda.
+ *
+ * Além dos status, aceita dois filtros que não são status:
+ * - "todas"     devolve tudo (o mesmo que não filtrar);
+ * - "pendentes" devolve o que ainda não começou, que é exatamente o número
+ *               do cartão "Próximas consultas" — assim o cartão e o filtro
+ *               nunca mostram contas diferentes.
+ */
 export function filtrarAgenda(agenda, status) {
   if (!status || status === "todas") return agenda;
+  if (status === "pendentes") return proximasConsultas(agenda);
   return agenda.filter((consulta) => consulta.status === status);
 }
 

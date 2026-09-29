@@ -8,7 +8,7 @@
 
 .fundo {
   /* Paleta oficial */
-  --primary: #0066ff;
+  --primary: var(--color-primary);
   --primary-700: #0052d6;
   --primary-100: #dceaff;
   --primary-50: #eef5ff;
@@ -64,7 +64,7 @@
 }
 
 .fundo :focus-visible {
-  outline: 3px solid rgba(0, 102, 255, 0.45);
+  outline: 3px solid rgba(0, 112, 232, 0.45);
   outline-offset: 2px;
   border-radius: 10px;
 }
@@ -311,12 +311,12 @@
   border: 0;
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.28);
+  box-shadow: 0 8px 20px rgba(0, 112, 232, 0.28);
 }
 
 .botaoPrimario:hover {
   background: var(--primary-700);
-  box-shadow: 0 12px 26px rgba(0, 102, 255, 0.34);
+  box-shadow: 0 12px 26px rgba(0, 112, 232, 0.34);
 }
 
 .botaoPrimario:active {

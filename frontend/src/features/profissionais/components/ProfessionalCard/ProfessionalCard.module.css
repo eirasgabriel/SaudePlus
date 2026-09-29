@@ -20,6 +20,16 @@
   object-fit: cover;
 }
 
+.photoVazia {
+  display: grid;
+  place-items: center;
+  background: var(--color-surface-tint);
+  color: var(--color-primary);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
 .info { min-width: 0; }
 
 .name {

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import CartaoMetrica from "../components/CartaoMetrica";
 import Cartao from "../components/Cartao";
@@ -12,8 +13,8 @@ import {
 } from "../components/Tabela";
 import useTabela from "../services/useTabela";
 import {
-  metricas,
-  usuarios,
+  metricas as metricasMock,
+  usuarios as usuariosMock,
   perfisUsuario,
   statusUsuario,
   filtrosStatus,
@@ -33,7 +34,18 @@ const COLUNAS = [
   "Ações",
 ];
 
-export default function AdminUsuariosPage() {
+/**
+ * Dados por prop, com os mocks como padrão. `aoNovoUsuario` liga o botão
+ * "Novo usuário"; `aoAlternarBloqueio(usuario)` liga o cadeado de cada linha.
+ */
+export default function AdminUsuariosPage({
+  usuarios = usuariosMock,
+  metricas = metricasMock,
+  aviso = null,
+  aoNovoUsuario,
+  aoAlternarBloqueio,
+}) {
+  const [hoje] = useState(() => new Date());
   const tabela = useTabela({
     dados: usuarios,
     porPagina: 7,
@@ -53,8 +65,10 @@ export default function AdminUsuariosPage() {
         titulo="Usuários"
         subtitulo="Gerencie os usuários cadastrados no sistema SaúdePlus."
         icone="usuarios"
-        data={new Date(2026, 8, 15)}
+        data={hoje}
       />
+
+      {aviso}
 
       <section className={comum.metricas} aria-label="Indicadores de usuários">
         {metricas.map((m) => (
@@ -89,14 +103,14 @@ export default function AdminUsuariosPage() {
           aoMudar={(v) => tabela.definirFiltro("unidade", v)}
           opcoes={filtrosUnidade}
         />
-        <Botao icone="mais">Novo usuário</Botao>
+        <Botao icone="mais" onClick={aoNovoUsuario}>Novo usuário</Botao>
       </div>
 
       <Cartao semPadding>
         <div style={{ padding: "8px 12px 12px" }}>
           <Tabela colunas={COLUNAS} vazio="Nenhum usuário encontrado com esses filtros.">
             {tabela.visiveis.map((u) => {
-              const perfil = perfisUsuario[u.perfil];
+              const perfil = perfisUsuario[u.perfil] ?? { rotulo: u.perfil, variante: "neutro" };
               const status = statusUsuario[u.status];
 
               return (
@@ -125,7 +139,14 @@ export default function AdminUsuariosPage() {
                       acoes={[
                         { icone: "olho", rotulo: "Ver detalhes" },
                         { icone: "lapis", rotulo: "Editar" },
-                        { icone: "maisOpcoes", rotulo: "Mais opções", tom: "neutra" },
+                        aoAlternarBloqueio
+                          ? {
+                              icone: "cadeado",
+                              rotulo: u.status === "bloqueado" ? "Desbloquear" : "Bloquear",
+                              tom: u.status === "bloqueado" ? "neutra" : "perigo",
+                              aoClicar: () => aoAlternarBloqueio(u),
+                            }
+                          : { icone: "maisOpcoes", rotulo: "Mais opções", tom: "neutra" },
                       ]}
                     />
                   </td>

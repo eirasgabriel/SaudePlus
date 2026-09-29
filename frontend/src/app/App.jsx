@@ -8,6 +8,7 @@ import SomenteVisitante from '../components/SomenteVisitante.jsx'
 import Home from '../features/home/pages/Home.jsx'
 import Especialidades from '../features/profissionais/pages/Especialidades.jsx'
 import Buscar from '../features/profissionais/pages/Buscar.jsx'
+import PerfilProfissional from '../features/profissionais/pages/PerfilProfissional.jsx'
 import ComoFunciona from '../features/institucional/pages/ComoFunciona.jsx'
 import SobreNos from '../features/institucional/pages/SobreNos.jsx'
 import Ajuda from '../features/ajuda/pages/Ajuda.jsx'
@@ -16,20 +17,24 @@ import Login from '../features/auth/pages/Login.jsx'
 import RecuperarSenha from '../features/auth/pages/RecuperarSenha.jsx'
 import RedefinirSenha from '../features/auth/pages/RedefinirSenha.jsx'
 import PainelMedicoConectado from '../features/medico/pages/PainelMedicoConectado.jsx'
-import PacienteDashboard from '../components/PacienteDashboard.jsx'
-import ConsultasPage from '../pages/ConsultasPage.jsx'
-import ExamesPage from '../pages/ExamesPage.jsx'
-import HistoricoPage from '../pages/HistoricoPage.jsx'
-import ClinicasPage from '../pages/ClinicasPage.jsx'
+import {
+  PainelDoPaciente,
+  ConsultasDoPaciente,
+  ExamesDoPaciente,
+  HistoricoDoPaciente,
+  ClinicasDoPaciente,
+} from '../features/paciente/pages/PacienteConectado.jsx'
 import '../styles/area-paciente.css'
-import AdminLayout from '../layouts/AdminLayout.jsx'
-import AdminDashboardPage from '../pages/AdminDashboardPage.jsx'
-import AdminUsuariosPage from '../pages/AdminUsuariosPage.jsx'
-import AdminClinicasPage from '../pages/AdminClinicasPage.jsx'
-import AdminAgendamentosPage from '../pages/AdminAgendamentosPage.jsx'
-import AdminRelatoriosPage from '../pages/AdminRelatoriosPage.jsx'
-import AdminFinanceiroPage from '../pages/AdminFinanceiroPage.jsx'
-import AdminConfiguracoesPage from '../pages/AdminConfiguracoesPage.jsx'
+import {
+  LayoutDoAdmin,
+  DashboardDoAdmin,
+  UsuariosDoAdmin,
+  ClinicasDoAdmin,
+  AgendamentosDoAdmin,
+  ConfiguracoesDoAdmin,
+  FinanceiroDoAdmin,
+  RelatoriosDoAdmin,
+} from '../features/admin/pages/AdminConectado.jsx'
 import AdminSuportePage from '../pages/AdminSuportePage.jsx'
 import RouteEffects from './RouteEffects.jsx'
 import styles from './App.module.css'
@@ -65,6 +70,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/especialidades" element={<Especialidades />} />
           <Route path="/buscar" element={<Buscar key={location.search} onUnavailable={showUnavailable} />} />
+          <Route path="/profissionais/:id" element={<PerfilProfissional key={location.pathname} />} />
           <Route path="/como-funciona" element={<ComoFunciona onUnavailable={showUnavailable} />} />
           <Route path="/sobre-nos" element={<SobreNos onUnavailable={showUnavailable} />} />
           <Route path="/ajuda" element={<Ajuda onUnavailable={showUnavailable} />} />
@@ -96,29 +102,30 @@ export default function App() {
             </RotaProtegida>
           }
         >
-          <Route index element={<PacienteDashboard />} />
-          <Route path="consultas" element={<ConsultasPage />} />
-          <Route path="exames" element={<ExamesPage />} />
-          <Route path="historico" element={<HistoricoPage />} />
-          <Route path="clinicas" element={<ClinicasPage />} />
+          <Route index element={<PainelDoPaciente />} />
+          <Route path="consultas" element={<ConsultasDoPaciente />} />
+          <Route path="exames" element={<ExamesDoPaciente />} />
+          <Route path="historico" element={<HistoricoDoPaciente />} />
+          <Route path="clinicas" element={<ClinicasDoPaciente />} />
         </Route>
         <Route path="/medico" element={<RotaProtegida permitir={['MEDICO']}><PainelMedicoConectado /></RotaProtegida>} />
         <Route
           path="/admin"
           element={
-            <RotaProtegida permitir={['ADMIN']}>
-              <AdminLayout />
+            // A equipe entra também; o servidor e o menu limitam aos módulos liberados.
+            <RotaProtegida permitir={['ADMIN', 'GESTOR', 'ENFERMEIRO', 'RECEPCIONISTA', 'AGENTE']}>
+              <LayoutDoAdmin />
             </RotaProtegida>
           }
         >
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="usuarios" element={<AdminUsuariosPage />} />
-          <Route path="clinicas" element={<AdminClinicasPage />} />
-          <Route path="agendamentos" element={<AdminAgendamentosPage />} />
-          <Route path="relatorios" element={<AdminRelatoriosPage />} />
-          <Route path="financeiro" element={<AdminFinanceiroPage />} />
+          <Route index element={<DashboardDoAdmin />} />
+          <Route path="usuarios" element={<UsuariosDoAdmin />} />
+          <Route path="clinicas" element={<ClinicasDoAdmin />} />
+          <Route path="agendamentos" element={<AgendamentosDoAdmin />} />
+          <Route path="relatorios" element={<RelatoriosDoAdmin />} />
+          <Route path="financeiro" element={<FinanceiroDoAdmin />} />
           {/* As abas ficam na query string: /admin/configuracoes?aba=seguranca */}
-          <Route path="configuracoes" element={<AdminConfiguracoesPage />} />
+          <Route path="configuracoes" element={<ConfiguracoesDoAdmin />} />
           <Route path="suporte" element={<AdminSuportePage />} />
         </Route>
       </Routes>

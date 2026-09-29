@@ -10,14 +10,15 @@ import { usePainelMedico } from "../usePainelMedico.js";
  * tela renderiza com os mocks e exibe um aviso, em vez de mostrar uma página
  * de erro para algo que é um painel de leitura.
  */
-export default function PainelMedicoConectado({ medicoId, data }) {
-  const { origem, dados, erro, recarregar } = usePainelMedico(medicoId, { data });
+export default function PainelMedicoConectado({ data }) {
+  const { origem, dados, erro, recarregar } = usePainelMedico({ data });
 
   // Sem resposta da API: os valores padrão do DashboardMedico já são os mocks.
   const props =
     origem === "api" && dados
       ? {
           medico: dados.medico,
+          // Médico ainda sem unidade vinculada: `null`, e a tela mostra o aviso.
           unidade: dados.unidade,
           agenda: dados.agenda,
           pacientes: dados.pacientes,

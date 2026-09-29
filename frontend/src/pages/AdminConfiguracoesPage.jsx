@@ -34,7 +34,8 @@ const subtitulos = {
  * A aba ativa fica na URL (?aba=seguranca), então o link é compartilhável
  * e o botão "voltar" do navegador funciona entre as abas.
  */
-export default function AdminConfiguracoesPage() {
+/** `propsDasAbas`: props extras por aba (ex.: `{ usuarios: { aoSalvarPermissoes } }`). */
+export default function AdminConfiguracoesPage({ propsDasAbas = {}, aviso = null }) {
   const [parametros, definirParametros] = useSearchParams();
   const aba = conteudos[parametros.get("aba")] ? parametros.get("aba") : "geral";
   const Conteudo = conteudos[aba];
@@ -52,9 +53,11 @@ export default function AdminConfiguracoesPage() {
         data={new Date(2026, 8, 15)}
       />
 
+      {aviso}
+
       <Abas abas={abas} ativa={aba} aoTrocar={trocarAba} />
 
-      <Conteudo />
+      <Conteudo {...(propsDasAbas[aba] ?? {})} />
     </>
   );
 }

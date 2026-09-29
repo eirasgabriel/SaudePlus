@@ -1,6 +1,9 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { useId, useRef, useState } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import Icone from "../components/Icone";
 import Avatar from "../components/Avatar";
+import MenuPerfil from "../components/MenuPerfil/MenuPerfil.jsx";
+import { useAuth } from "../features/auth/auth.context.js";
 import { itensMenu, itensTopo, usuarioLogado } from "../services/dadosAdminNavegacao";
 import estilos from "./AdminLayout.module.css";
 
@@ -8,7 +11,45 @@ import estilos from "./AdminLayout.module.css";
  * Casca da área administrativa: cabeçalho + menu lateral + <Outlet />.
  * Cada página é renderizada no lugar do Outlet pelas rotas filhas.
  */
-export default function AdminLayout({ usuario = usuarioLogado }) {
+/**
+ * `modulos`: ids liberados para quem está logado (ex.: ["dashboard", "agendamentos"]).
+ * Sem a lista (mocks), o menu mostra tudo. "Suporte" não é módulo e aparece sempre.
+ */
+export default function AdminLayout({ usuario = usuarioLogado, modulos = null }) {
+  const visivel = (item) => modulos == null || item.id === "suporte" || modulos.includes(item.id);
+
+  /* Menu da conta, o mesmo componente do painel do médico. Antes o botão do
+     nome no canto superior direito não abria nada — era um <button> sem ação,
+     com uma seta que prometia um menu inexistente. */
+  const [contaAberta, setContaAberta] = useState(false);
+  const botaoConta = useRef(null);
+  const idMenuConta = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}-menu-conta`;
+  const navegar = useNavigate();
+  const { sair } = useAuth();
+
+  const iconeDoMenu = (nome) =>
+    function IconeDoMenu({ size, className }) {
+      return <Icone nome={nome} tam={size} className={className} />;
+    };
+
+  const itensDaConta = [
+    { rotulo: "Minha conta", icone: iconeDoMenu("usuario"), href: "/admin/configuracoes" },
+    { rotulo: "Ajuda", icone: iconeDoMenu("interrogacao"), href: "/ajuda" },
+    {
+      rotulo: "Sair",
+      icone: iconeDoMenu("cadeadoAberto"),
+      href: "/login",
+      separado: true,
+      destaque: true,
+      /* Encerrar a sessão antes de navegar: com o token ainda válido, o
+         RotaProtegida devolveria a pessoa para o painel. */
+      onSelecionar: (evento) => {
+        evento.preventDefault();
+        sair();
+        navegar("/login", { replace: true });
+      },
+    },
+  ];
   /* `end` só no Dashboard, senão "/admin" ficaria ativo em todas as rotas filhas */
   const classeTopo = ({ isActive }) =>
     `${estilos.navItem} ${isActive ? estilos.navAtivo : ""}`;
@@ -32,7 +73,7 @@ export default function AdminLayout({ usuario = usuarioLogado }) {
         </NavLink>
 
         <nav className={estilos.nav} aria-label="Navegação principal">
-          {itensTopo.map((item) => (
+          {itensTopo.filter(visivel).map((item) => (
             <NavLink
               key={item.id}
               to={item.para}
@@ -61,21 +102,40 @@ export default function AdminLayout({ usuario = usuarioLogado }) {
             )}
           </button>
 
-          <button type="button" className={estilos.perfil}>
+          <div className={estilos.perfilCaixa}>
+            <button
+              type="button"
+              ref={botaoConta}
+              className={estilos.perfil}
+              aria-haspopup="menu"
+              aria-expanded={contaAberta}
+              aria-controls={idMenuConta}
+              aria-label={`Menu da conta de ${usuario.nome}`}
+              onClick={() => setContaAberta((aberta) => !aberta)}
+            >
             <Avatar nome={usuario.nome} foto={usuario.foto} cor="var(--azul)" tam={40} />
             <span className={estilos.perfilTexto}>
               <span className={estilos.perfilNome}>{usuario.nome}</span>
               <span className={estilos.perfilCargo}>{usuario.cargo}</span>
             </span>
-            <Icone nome="chevronBaixo" tam={17} className={estilos.chevron} />
-          </button>
+              <Icone nome="chevronBaixo" tam={17} className={estilos.chevron} />
+            </button>
+
+            <MenuPerfil
+              id={idMenuConta}
+              aberto={contaAberta}
+              aoFechar={() => setContaAberta(false)}
+              botaoDeOrigem={botaoConta}
+              itens={itensDaConta}
+            />
+          </div>
         </div>
       </header>
 
       <div className={estilos.corpo}>
         <aside className={estilos.sidebar}>
           <nav className={estilos.menu} aria-label="Menu administrativo">
-            {itensMenu.map((item) => (
+            {itensMenu.filter(visivel).map((item) => (
               <NavLink
                 key={item.id}
                 to={item.para}

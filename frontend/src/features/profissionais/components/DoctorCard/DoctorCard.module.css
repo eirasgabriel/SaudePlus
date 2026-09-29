@@ -60,3 +60,12 @@
   .card { flex-direction: column; }
   .body { width: 100%; }
 }
+
+.photoVazia {
+  display: grid;
+  place-items: center;
+  background: var(--color-surface-tint);
+  color: var(--color-primary);
+  font-size: 30px;
+  font-weight: 700;
+}

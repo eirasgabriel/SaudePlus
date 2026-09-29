@@ -1,14 +1,18 @@
 package br.com.saudeplus.notificacoes;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-/** Categoria da notificação, usada pelo front-end para escolher ícone e cor. */
-public enum TipoNotificacao {
+import br.com.saudeplus.comum.ConversorDeChave;
+import br.com.saudeplus.comum.EnumComChave;
+import jakarta.persistence.Converter;
 
+/** Categoria da notificação; o front escolhe ícone e cor por ela. */
+public enum TipoNotificacao implements EnumComChave {
     RESULTADO("resultado"),
     AGENDAMENTO("agendamento"),
-    RETORNO("retorno");
+    RETORNO("retorno"),
+    CANCELAMENTO("cancelamento"),
+    SISTEMA("sistema");
 
     private final String chave;
 
@@ -16,21 +20,16 @@ public enum TipoNotificacao {
         this.chave = chave;
     }
 
+    @Override
     @JsonValue
     public String chave() {
         return chave;
     }
 
-    @JsonCreator
-    public static TipoNotificacao porChave(String valor) {
-        if (valor == null || valor.isBlank()) {
-            return null;
+    @Converter(autoApply = true)
+    public static class Conversor extends ConversorDeChave<TipoNotificacao> {
+        public Conversor() {
+            super(TipoNotificacao.class);
         }
-        for (TipoNotificacao tipo : values()) {
-            if (tipo.chave.equalsIgnoreCase(valor) || tipo.name().equalsIgnoreCase(valor)) {
-                return tipo;
-            }
-        }
-        throw new IllegalArgumentException("Tipo de notificação desconhecido: " + valor);
     }
 }

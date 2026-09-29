@@ -15,6 +15,7 @@ import br.com.saudeplus.auth.dto.CadastroRequisicao;
 import br.com.saudeplus.auth.dto.LoginRequisicao;
 import br.com.saudeplus.auth.dto.TrocarSenhaRequisicao;
 import br.com.saudeplus.auth.dto.UsuarioResposta;
+import br.com.saudeplus.auditoria.Auditoria;
 import br.com.saudeplus.exception.AcessoProibidoException;
 import br.com.saudeplus.exception.ConflitoException;
 import br.com.saudeplus.exception.NaoAutorizadoException;
@@ -39,6 +40,7 @@ public class AuthService {
     private final PasswordEncoder codificador;
     private final JwtService jwt;
     private final Clock relogio;
+    private final Auditoria auditoria;
 
     /**
      * Hash comparado quando o e-mail não existe, para gastar o mesmo BCrypt
@@ -47,12 +49,13 @@ public class AuthService {
     private final String hashFicticio;
 
     public AuthService(UsuarioRepository usuarios, PacienteRepository pacientes, PasswordEncoder codificador,
-            JwtService jwt, Clock relogio) {
+            JwtService jwt, Clock relogio, Auditoria auditoria) {
         this.usuarios = usuarios;
         this.pacientes = pacientes;
         this.codificador = codificador;
         this.jwt = jwt;
         this.relogio = relogio;
+        this.auditoria = auditoria;
         this.hashFicticio = codificador.encode(UUID.randomUUID().toString());
     }
 
@@ -70,6 +73,7 @@ public class AuthService {
             throw new AcessoProibidoException("Sua conta está desativada. Procure o suporte.");
         }
         usuario.registrarAcesso(relogio.instant());
+        auditoria.registrar(usuario.getId(), "login", "usuario", usuario.getId(), null);
         return autenticar(usuario);
     }
 

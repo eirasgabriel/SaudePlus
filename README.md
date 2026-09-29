@@ -105,44 +105,93 @@ A nossa equipe é composta de 6 Alunos de Engenharia de Software, da Universidad
 
 ---
 
-## Stack Técnica do Projeto - 
+## Stack técnica
 
-> **Front-End:** React + Vite.js + React Router <br>
-> **Back-End:** a definir <br>
-> **Banco de Dados:** a definir <br> 
-> **Mobile:** <br>
-> **Autenticação:** JWT via cabeçalho `Authorization` — contrato em [docs/api.md](docs/api.md) <br>
-> **Cache:** <br>
+> **Front-end:** React 19 + Vite + React Router <br>
+> **Back-end:** Java 21 + Spring Boot 4 (Spring Security, JPA/Hibernate) <br>
+> **Banco de dados:** PostgreSQL 17, com migrações Flyway <br>
+> **Autenticação:** JWT (HS256) no cabeçalho `Authorization`, com perfis e permissões por módulo <br>
+> **Documentação da API:** Swagger em `/swagger-ui.html` (perfil `dev`) e os arquivos de [docs/](docs/) <br>
+> **Mobile:** ainda não iniciado <br>
 
-### O que já existe
+## O que já funciona
 
-Este repositório contém **apenas o front-end**. As telas de Login, Criar conta,
-Recuperar senha e Nova senha estão prontas, com validação, mensagens de erro e de
-sucesso e proteção de rotas por perfil.
+A aplicação roda de ponta a ponta: o front-end chama a API, e a API grava tudo
+no PostgreSQL.
 
-Elas chamam `/api/auth/*`. Como ainda não há uma API no ar, tentar entrar mostra
-*"Não foi possível falar com o servidor"* — é o esperado. O que o back-end precisa
-implementar está especificado em [docs/api.md](docs/api.md).
+- **Visitante:** homepage, páginas institucionais, busca de profissionais com
+  filtros e horários livres reais, perfil do profissional (horários, unidades,
+  convênios e avaliações), cadastro, login e recuperação de senha. "Agendar"
+  leva ao login e volta para o agendamento já preenchido.
+- **Paciente:** painel, agendar, remarcar e cancelar consultas, histórico,
+  avaliação de profissionais, exames com preparo e download do resultado,
+  notificações e pagamentos.
+- **Profissional de saúde:** painel do dia, agenda com as transições de status,
+  registro do atendimento, pacientes, pedido de exames, janelas de atendimento
+  e bloqueios de agenda.
+- **Administração:** dashboard, usuários (é aqui que se cria médico e equipe),
+  clínicas, catálogos, agendamentos, fila de exames com envio de resultado,
+  financeiro, relatórios com exportação em PDF/CSV, configurações, matriz de
+  permissões e auditoria.
+
+Se a API estiver fora do ar, as telas mostram dados de demonstração com um
+aviso, em vez de quebrar.
+
+Ainda não existem: envio real de e-mail (o conteúdo sai no log do servidor),
+gateway de pagamento, login com Google/Apple, a tela de suporte e o app mobile.
+
+## Como rodar
+
+Pré-requisitos: **JDK 21**, **Node.js 20.19+ ou 22.13+** (exigido pelo Vite 8 e pelo jsdom dos testes) e **Docker Desktop** rodando.
+
+```powershell
+# terminal 1: API na porta 8080 (sobe o PostgreSQL pelo Docker)
+cd backend
+.\mvnw.cmd spring-boot:run
+
+# terminal 2: front-end na porta 5173
+cd frontend
+npm ci
+npm run dev
+```
+
+Abra http://localhost:5173. Contas de desenvolvimento:
+
+| Perfil | E-mail | Senha |
+| --- | --- | --- |
+| Administração | `admin@saudeplus.com` | `Admin@SaudePlus2026` |
+| Profissional | `medico@saudeplus.com` | `Medico@SaudePlus2026` |
+| Paciente de demonstração | `ana.ferreira@demo.saudeplus.com` | `Demo@SaudePlus2026` |
+
+Ou crie um paciente na tela **Criar conta**. Detalhes, variáveis de ambiente e
+testes estão em [backend/README.md](backend/README.md) e
+[frontend/README.md](frontend/README.md).
 
 ### Perfis e acesso
 
 | Perfil | Como a conta é criada |
 | --- | --- |
 | Paciente | cadastro público na tela **Criar conta** |
-| Profissional de saúde | criada pelo servidor na inicialização — **não há cadastro** |
-| Administração | criada pelo servidor na inicialização — **não há cadastro** |
+| Profissional de saúde | pela administração, em **Usuários** (a conta inicial nasce com o servidor) |
+| Equipe (gestor, enfermeiro, recepcionista, agente) | pela administração; vê só os módulos liberados na matriz de permissões |
+| Administração | conta inicial criada pelo servidor, ou pela administração |
 
-Os três entram pela mesma tela de login. As credenciais combinadas para médico e
-admin estão em [docs/api.md](docs/api.md).
-
+Todos entram pela mesma tela de login. Quem decide o acesso é o servidor; as
+proteções de rota do React são só navegação.
 
 ---
 
-## Design Arquitetural do Projeto - 
+## Documentação
 
-
-
-
-
-
-Consulte a [organização de pastas e responsabilidades](docs/arquitetura.md) e o [contrato da API](docs/api.md).
+| Documento | Conteúdo |
+| --- | --- |
+| [docs/arquitetura.md](docs/arquitetura.md) | organização do front-end e do back-end, e como eles conversam |
+| [docs/banco-de-dados.md](docs/banco-de-dados.md) | modelo de dados, diagrama, o que o banco garante e evoluções previstas |
+| [docs/api.md](docs/api.md) | autenticação, busca pública, formato de erro e autorização |
+| [docs/api-area-paciente.md](docs/api-area-paciente.md) | rotas `/api/paciente/*` |
+| [docs/api-painel-medico.md](docs/api-painel-medico.md) | rotas `/api/medico/*`, status de consulta e cálculo de horários |
+| [docs/api-exames.md](docs/api-exames.md) | ciclo do exame, do pedido ao resultado |
+| [docs/api-admin.md](docs/api-admin.md) | rotas `/api/admin/*`, permissões e auditoria |
+| [docs/api-financeiro-relatorios.md](docs/api-financeiro-relatorios.md) | cobranças, resumo financeiro e exportação de relatórios |
+| [docs/admin.md](docs/admin.md) | como a área administrativa do front está montada |
+| [docs/dashboard-medico.md](docs/dashboard-medico.md) | como o painel do médico do front está montado |

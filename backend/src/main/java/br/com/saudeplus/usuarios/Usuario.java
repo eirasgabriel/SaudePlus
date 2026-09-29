@@ -85,6 +85,17 @@ public class Usuario extends EntidadeBase {
         this.status = status;
     }
 
+    /** Dados cadastrais editados pela administração. `cpf` já normalizado (ver `Cpf`). */
+    public void alterarCadastro(String nomeCompleto, String telefone, String cpf) {
+        this.nomeCompleto = nomeCompleto.strip();
+        this.telefone = vazioComoNulo(telefone);
+        this.cpf = cpf;
+    }
+
+    public void alterarPapel(Papel papel) {
+        this.papel = papel;
+    }
+
     private static String vazioComoNulo(String valor) {
         return valor == null || valor.isBlank() ? null : valor.strip();
     }

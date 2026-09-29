@@ -68,7 +68,7 @@
 .buscaInput:focus {
   outline: none;
   border-color: var(--azul-suave);
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 112, 232, 0.1);
 }
 
 .limpar {
@@ -141,7 +141,7 @@
 .seletor:focus {
   outline: none;
   border-color: var(--azul);
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 112, 232, 0.1);
 }
 
 /* ---------- Campo de texto ---------- */
@@ -184,7 +184,7 @@
 .entrada:focus {
   outline: none;
   border-color: var(--azul);
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 112, 232, 0.1);
 }
 
 .contador {
@@ -215,7 +215,7 @@
 .primario {
   background: var(--azul);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.24);
+  box-shadow: 0 4px 12px rgba(0, 112, 232, 0.24);
 }
 
 .primario:hover {

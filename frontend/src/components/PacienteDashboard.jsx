@@ -1,5 +1,7 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
+import MenuPerfil from './MenuPerfil/MenuPerfil.jsx';
+import { useAuth } from '../features/auth/auth.context.js';
 import ListaAgendamentos from './ListaAgendamentos';
 import ModalAgendamento from './ModalAgendamento';
 import {
@@ -301,9 +303,39 @@ export default function PacienteDashboard({
   };
 
   const { name: nomePaciente, role: perfilPaciente, avatarUrl: fotoPaciente } = paciente;
+
+  /* Menu da conta, o mesmo componente das outras duas áreas. O botão do nome
+     já existia, mas chamava uma prop `aoAbrirPerfil` que ninguém passava —
+     ou seja, não abria nada. */
+  const [contaAberta, setContaAberta] = useState(false);
+  const botaoConta = useRef(null);
+  const idMenuConta = `${prefixoId}-menu-conta`;
   const rotuloContador = totalNotificacoes > 9 ? '9+' : totalNotificacoes;
 
   const navegar = useNavigate();
+
+  const { sair } = useAuth();
+
+  /* Sem "Minha conta": a área do paciente ainda não tem tela de perfil, e um
+     item que leva a 404 é pior do que item nenhum. Quando `/paciente/perfil`
+     entrar no App.jsx, acrescente aqui:
+       { rotulo: 'Minha conta', href: '/paciente/perfil' }, */
+  const itensDaConta = [
+    { rotulo: 'Ajuda', href: '/ajuda' },
+    {
+      rotulo: 'Sair',
+      href: '/login',
+      separado: true,
+      destaque: true,
+      /* Encerrar a sessão antes de navegar: com o token ainda válido, o
+         RotaProtegida devolveria a pessoa para o painel. */
+      onSelecionar: (evento) => {
+        evento.preventDefault();
+        sair();
+        navegar('/login', { replace: true });
+      },
+    },
+  ];
 
   /* Estado do modal de agendamento. Os dois gatilhos — o botão
      "Agendar agora" e o link "Agendar consulta" do estado vazio da
@@ -322,9 +354,9 @@ export default function PacienteDashboard({
   const fecharAgendamento = () => setModalAberto(false);
 
   const confirmarAgendamento = (dados) => {
+    // Devolve a promessa: o modal espera a resposta e mostra o erro, se houver.
     if (aoConfirmarAgendamento) {
-      aoConfirmarAgendamento(dados);
-      return;
+      return aoConfirmarAgendamento(dados);
     }
     // Sem integração ainda: leva o paciente para a lista de consultas
     navegar(rotaAgendamento, { state: { agendamento: dados } });
@@ -376,10 +408,16 @@ export default function PacienteDashboard({
 
             <button
               type="button"
+              ref={botaoConta}
               className={estilos.perfil}
               aria-haspopup="menu"
+              aria-expanded={contaAberta}
+              aria-controls={idMenuConta}
               aria-label={`Menu da conta de ${nomePaciente}`}
-              onClick={aoAbrirPerfil}
+              onClick={() => {
+                aoAbrirPerfil?.();
+                setContaAberta((aberta) => !aberta);
+              }}
             >
               <span className={estilos.avatar} aria-hidden="true">
                 {fotoPaciente ? (
@@ -397,6 +435,14 @@ export default function PacienteDashboard({
               </span>
               <Icone nome="setaBaixo" className={estilos.setaPerfil} />
             </button>
+
+            <MenuPerfil
+              id={idMenuConta}
+              aberto={contaAberta}
+              aoFechar={() => setContaAberta(false)}
+              botaoDeOrigem={botaoConta}
+              itens={itensDaConta}
+            />
           </div>
         </header>
 
@@ -602,6 +648,7 @@ export default function PacienteDashboard({
                   </svg>
                 </div>
 
+                {unidade ? (
                 <div className={estilos.unidadeInfo}>
                   <span className={estilos.unidadeNome}>{unidade.name}</span>
                   <address className={estilos.unidadeDetalhes}>
@@ -609,10 +656,12 @@ export default function PacienteDashboard({
                       <Icone nome="pino" className={estilos.metaIcone} />
                       <span>{unidade.address}</span>
                     </span>
-                    <span className={estilos.meta}>
-                      <Icone nome="telefone" className={estilos.metaIcone} />
-                      <a href={paraLinkTelefone(unidade.phone)}>{unidade.phone}</a>
-                    </span>
+                    {unidade.phone && (
+                      <span className={estilos.meta}>
+                        <Icone nome="telefone" className={estilos.metaIcone} />
+                        <a href={paraLinkTelefone(unidade.phone)}>{unidade.phone}</a>
+                      </span>
+                    )}
                     <span className={estilos.meta}>
                       <Icone nome="relogio" className={estilos.metaIcone} />
                       <span>{unidade.hours}</span>
@@ -622,6 +671,12 @@ export default function PacienteDashboard({
                     Ver no mapa
                   </LinkSeta>
                 </div>
+                ) : (
+                  <div className={estilos.unidadeInfo}>
+                    <span className={estilos.unidadeNome}>Nenhuma consulta marcada</span>
+                    <span className={estilos.meta}>A unidade da sua próxima consulta aparece aqui.</span>
+                  </div>
+                )}
               </div>
             </section>
           </aside>

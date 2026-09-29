@@ -47,6 +47,7 @@ export const perfisUsuario = {
   administrador: { rotulo: "Administrador", variante: "ciano", icone: "usuarios" },
   agente: { rotulo: "Agente Comunitário", variante: "aviso", icone: "usuarios" },
   recepcionista: { rotulo: "Recepcionista", variante: "rosa", icone: "usuario" },
+  gestor: { rotulo: "Gestor", variante: "roxo", icone: "usuarios" },
 };
 
 export const statusUsuario = {

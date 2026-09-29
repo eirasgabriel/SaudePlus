@@ -28,8 +28,28 @@ const opcoesStatus = [
   { valor: "inativo", rotulo: "Inativos" },
 ];
 
-export default function AdminConfigUsuarios() {
-  const [permissoes, definirPermissoes] = useState(permissoesIniciais);
+/**
+ * `permissoes` (formato de `permissoesIniciais`) e `aoSalvarPermissoes`
+ * ligam a matriz à API. Com a API, a coluna do administrador fica travada:
+ * o servidor sempre libera tudo para ele.
+ */
+export default function AdminConfigUsuarios({ permissoes: permissoesRecebidas = permissoesIniciais, aoSalvarPermissoes }) {
+  const [permissoes, definirPermissoes] = useState(permissoesRecebidas);
+  const [salvando, definirSalvando] = useState(false);
+  const [mensagem, definirMensagem] = useState(null);
+
+  async function salvar() {
+    definirSalvando(true);
+    definirMensagem(null);
+    try {
+      await aoSalvarPermissoes(permissoes);
+      definirMensagem("Permissões salvas. Valem a partir da próxima ação de cada pessoa.");
+    } catch (erro) {
+      definirMensagem(erro?.message ?? "Não foi possível salvar as permissões.");
+    } finally {
+      definirSalvando(false);
+    }
+  }
 
   const tabela = useTabela({
     dados: usuariosSistema,
@@ -156,7 +176,22 @@ export default function AdminConfigUsuarios() {
           ))}
         </Cartao>
 
-        <Cartao titulo="Permissões por Módulo" icone="escudoCheck">
+        <Cartao
+          titulo="Permissões por Módulo"
+          icone="escudoCheck"
+          extra={
+            aoSalvarPermissoes ? (
+              <Botao icone="check" onClick={salvar} disabled={salvando}>
+                {salvando ? "Salvando…" : "Salvar"}
+              </Botao>
+            ) : null
+          }
+        >
+          {mensagem && (
+            <p role="status" style={{ margin: "0 0 12px", fontSize: 13 }}>
+              {mensagem}
+            </p>
+          )}
           <div className={estilos.matrizWrap}>
             <table className={estilos.matriz}>
               <thead>
@@ -186,6 +221,7 @@ export default function AdminConfigUsuarios() {
                             type="button"
                             className={`${estilos.marca} ${ativo ? estilos.marcaAtiva : ""}`}
                             onClick={() => alternarPermissao(modulo.id, coluna.id)}
+                            disabled={Boolean(aoSalvarPermissoes) && coluna.id === "administrador"}
                             aria-pressed={ativo}
                             aria-label={`${modulo.rotulo} — ${coluna.rotulo}: ${
                               ativo ? "liberado" : "bloqueado"

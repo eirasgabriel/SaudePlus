@@ -5,10 +5,11 @@
 
 
 :root {
-  /* Cores principais */
-  --sp-primary: #0066ff;
-  --sp-primary-dark: #0059e6;
-  --sp-primary-light: #eef5ff;
+  /* Cores principais — apelidos da rampa de tokens.css, para as telas de
+     login e cadastro usarem o mesmo azul do resto do sistema. */
+  --sp-primary: var(--color-primary);
+  --sp-primary-dark: var(--color-primary-hover);
+  --sp-primary-light: #E6F1FD;
 
   /* Cores do sistema */
   --sp-blue-dark: #0f2341;
@@ -37,7 +38,7 @@
   --sp-warning: #c77b00;
   --sp-warning-bg: #fff5df;
 
-  --sp-info: #0066ff;
+  --sp-info: var(--color-primary);
   --sp-info-bg: #eef5ff;
 
   /* Raios */
@@ -58,7 +59,7 @@
     0 10px 28px rgba(15, 35, 65, 0.10);
 
   --sp-shadow-primary:
-    0 8px 20px rgba(0, 102, 255, 0.20);
+    0 8px 20px rgba(0, 112, 232, 0.20);
 
   /* Transições */
   --sp-transition:
@@ -239,7 +240,7 @@
   background: var(--sp-primary-dark);
 
   box-shadow:
-    0 9px 22px rgba(0, 102, 255, 0.25);
+    0 9px 22px rgba(0, 112, 232, 0.25);
 }
 
 
@@ -440,7 +441,7 @@
   border-color: var(--sp-primary);
 
   box-shadow:
-    0 0 0 3px rgba(0, 102, 255, 0.10);
+    0 0 0 3px rgba(0, 112, 232, 0.10);
 }
 
 
@@ -514,7 +515,7 @@
   border-color: var(--sp-primary);
 
   box-shadow:
-    0 0 0 3px rgba(0, 102, 255, 0.10);
+    0 0 0 3px rgba(0, 112, 232, 0.10);
 }
 
 
@@ -551,7 +552,7 @@
   border-color: var(--sp-primary);
 
   box-shadow:
-    0 0 0 3px rgba(0, 102, 255, 0.10);
+    0 0 0 3px rgba(0, 112, 232, 0.10);
 }
 
 
@@ -697,7 +698,7 @@
   width: 20px;
   height: 20px;
 
-  border: 2px solid rgba(0, 102, 255, 0.18);
+  border: 2px solid rgba(0, 112, 232, 0.18);
 
   border-top-color: var(--sp-primary);
 

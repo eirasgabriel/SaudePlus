@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { buscarPainel, MEDICO_PADRAO } from "./medico.api.js";
+import { buscarPainel } from "./medico.api.js";
 
 const INICIAL = { origem: "carregando", dados: null, erro: null };
 
 /**
- * Carrega o painel do médico da API.
+ * Carrega o painel do médico logado da API (o médico vem do token).
  *
  * Quando a API não responde, o hook não derruba a tela: devolve
  * `origem: "mocks"` e quem chama renderiza com os dados locais. Isso mantém o
@@ -14,21 +14,21 @@ const INICIAL = { origem: "carregando", dados: null, erro: null };
  *
  * Estados possíveis de `origem`: "carregando" | "api" | "mocks".
  */
-export function usePainelMedico(medicoId = MEDICO_PADRAO, { data } = {}) {
+export function usePainelMedico({ data } = {}) {
   const [estado, setEstado] = useState(INICIAL);
 
   /* Só grava estado quando a resposta chega: o estado inicial já é
      "carregando", então não há setState síncrono dentro do efeito. */
   const buscar = useCallback(
     (sinal) =>
-      buscarPainel(medicoId, { data, sinal })
+      buscarPainel({ data, sinal })
         .then((dados) => {
           if (!sinal?.aborted) setEstado({ origem: "api", dados, erro: null });
         })
         .catch((erro) => {
           if (!sinal?.aborted) setEstado({ origem: "mocks", dados: null, erro });
         }),
-    [medicoId, data],
+    [data],
   );
 
   useEffect(() => {

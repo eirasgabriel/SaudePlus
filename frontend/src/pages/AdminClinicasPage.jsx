@@ -1,3 +1,4 @@
+import { useState } from "react";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import CartaoMetrica from "../components/CartaoMetrica";
 import Cartao from "../components/Cartao";
@@ -11,12 +12,12 @@ import {
 } from "../components/Tabela";
 import useTabela from "../services/useTabela";
 import {
-  metricas,
-  clinicas,
+  metricas as metricasMock,
+  clinicas as clinicasMock,
   statusClinica,
   filtrosStatus,
-  filtrosEspecialidade,
-  filtrosMunicipio,
+  filtrosEspecialidade as filtrosEspecialidadeMock,
+  filtrosMunicipio as filtrosMunicipioMock,
 } from "../services/dadosAdminClinicas";
 import comum from "../styles/adminComum.module.css";
 
@@ -31,7 +32,15 @@ const COLUNAS = [
   "Ações",
 ];
 
-export default function AdminClinicasPage() {
+/** Dados e opções de filtro por prop, com os mocks como padrão. */
+export default function AdminClinicasPage({
+  clinicas = clinicasMock,
+  metricas = metricasMock,
+  filtrosEspecialidade = filtrosEspecialidadeMock,
+  filtrosMunicipio = filtrosMunicipioMock,
+  aviso = null,
+}) {
+  const [hoje] = useState(() => new Date());
   const tabela = useTabela({
     dados: clinicas,
     porPagina: 7,
@@ -50,8 +59,10 @@ export default function AdminClinicasPage() {
         titulo="Clínicas"
         subtitulo="Gerencie as unidades de saúde cadastradas no sistema SaúdePlus."
         icone="clinica"
-        data={new Date(2026, 8, 15)}
+        data={hoje}
       />
+
+      {aviso}
 
       <section className={comum.metricas} aria-label="Indicadores de clínicas">
         {metricas.map((m) => (

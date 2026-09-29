@@ -2,8 +2,9 @@ import { Link } from 'react-router-dom';
 import { mockUnit } from '../services/dadosficticios';
 import estilos from './ClinicasPage.module.css';
 
-export default function ClinicasPage() {
-  const clinicas = Array.isArray(mockUnit) ? mockUnit : [mockUnit];
+/** `unidades`: lista no formato de `mockUnit` ({ name, address, phone, hours, mapUrl }). */
+export default function ClinicasPage({ unidades = mockUnit, aviso = null }) {
+  const clinicas = Array.isArray(unidades) ? unidades : [unidades];
 
   return (
     <div className={estilos.pagina}>
@@ -29,6 +30,8 @@ export default function ClinicasPage() {
             </p>
           </div>
         </header>
+
+        {aviso}
 
         <section className={estilos.secao}>
           <div className={estilos.gridCards}>

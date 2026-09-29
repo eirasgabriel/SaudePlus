@@ -4,9 +4,13 @@ import estilos from './ListaAgendamentos.module.css';
    Contrato esperado: <ListaAgendamentos agendamentos={[...]} /> */
 
 const STATUS = {
-  confirmada: { rotulo: 'Confirmada', tom: 'sucesso' },
   pendente: { rotulo: 'Pendente', tom: 'alerta' },
+  confirmada: { rotulo: 'Confirmada', tom: 'sucesso' },
+  aguardando: { rotulo: 'Aguardando', tom: 'alerta' },
+  em_andamento: { rotulo: 'Em andamento', tom: 'sucesso' },
+  realizada: { rotulo: 'Realizada', tom: 'neutro' },
   cancelada: { rotulo: 'Cancelada', tom: 'perigo' },
+  faltou: { rotulo: 'Não compareceu', tom: 'perigo' },
 };
 
 const formatoDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit' });

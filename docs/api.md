@@ -221,6 +221,18 @@ de `GET /api/auth/perfil`.
 
 ---
 
+## `GET /api/auth/modulos`
+
+Módulos da área administrativa que quem está logado pode abrir, na ordem do
+menu: todos para `ADMIN`, os liberados na matriz para a equipe
+(`GESTOR`, `ENFERMEIRO`, `RECEPCIONISTA`, `AGENTE`), nenhum para paciente.
+
+```json
+["dashboard", "agendamentos", "relatorios"]
+```
+
+---
+
 ## `PUT /api/auth/senha`
 
 Troca a senha de quem está logado. Exige `Authorization`.
@@ -232,6 +244,69 @@ Troca a senha de quem está logado. Exige `Authorization`.
 `200 OK` com `{ "mensagem": "Senha alterada com sucesso." }`. Senha atual errada
 devolve `400` com `campos.senhaAtual`, e não `401`: o front trata `401` como
 sessão expirada e faria logout.
+
+---
+
+## Busca pública (`/api/publico`)
+
+Rotas sem login usadas pela busca de profissionais (`/buscar`). Implementadas em
+`backend/src/main/java/br/com/saudeplus/publico/` e chamadas por
+`frontend/src/features/profissionais/profissionais.api.js`.
+
+| Rota | Devolve |
+| --- | --- |
+| `GET /api/publico/especialidades` | `[{ id, slug, nome, descricao }]`, por nome |
+| `GET /api/publico/tipos-exame` | `[{ id, nome, categoria, preparo, prazoResultadoDias }]` |
+| `GET /api/publico/convenios` | `[{ id, nome }]`, só os ativos |
+| `GET /api/publico/cidades` | `[{ nome, uf, rotulo }]`; `rotulo` é o texto do filtro ("São Paulo - SP") |
+| `GET /api/publico/unidades?cidade=&uf=` | unidades em funcionamento, opcionalmente de uma cidade |
+| `GET /api/publico/unidades/{id}` | uma unidade; `404` se não existe ou não está `ativa` |
+| `GET /api/publico/profissionais` | busca paginada (abaixo) |
+| `GET /api/publico/profissionais/{id}` | perfil completo; `404` se não existe ou a conta não está ativa |
+| `GET /api/publico/profissionais/{id}/horarios?de=&ate=` | horários livres para reserva (ver [api-painel-medico.md](api-painel-medico.md#horários-públicos)) |
+| `GET /api/publico/profissionais/{id}/avaliacoes?pagina=&tamanho=` | avaliações, mais recentes primeiro: `{ nota, comentario, autor ("Ana F."), data }` |
+
+### `GET /api/publico/profissionais`
+
+| Parâmetro | Regra |
+| --- | --- |
+| `q` | trecho do nome do médico ou de uma especialidade dele, sem diferenciar maiúsculas |
+| `especialidade` | slug; pode repetir (`?especialidade=a&especialidade=b` vale "qualquer uma") |
+| `cidade`, `uf` | cidade de alguma unidade em funcionamento do médico |
+| `modalidade` | `presencial`, `online` ou `domiciliar`; pode repetir |
+| `convenio` | nome exato; pode repetir |
+| `ordem` | `relevancia` (padrão, mais avaliações), `avaliacao`, `avaliacoes` ou `nome` |
+| `pagina`, `tamanho` | começa em `0`; `tamanho` padrão 20, máximo 50 |
+
+Filtros diferentes se somam. Valor desconhecido em `modalidade` ou `ordem` devolve
+`400`. Só aparecem médicos com conta ativa e pelo menos uma unidade `ativa`.
+
+```json
+{
+  "conteudo": [{
+    "id": "c1000000-0000-4000-8000-000000000001",
+    "nome": "Dr. Roberto Almeida",
+    "fotoUrl": "/images/profissionais/dr-roberto-almeida.jpg",
+    "crm": "123.456", "crmUf": "SP",
+    "especialidades": [{ "slug": "cardiologia", "nome": "Cardiologia" }],
+    "nota": 4.90, "avaliacoes": 328,
+    "local": { "id": "…", "nome": "SaudePlus Paulista", "endereco": "Av. Paulista, 1000", "bairro": "Bela Vista",
+               "cidade": "São Paulo", "uf": "SP", "telefone": "(11) 3000-1000", "horarioFuncionamento": "…", "mapUrl": null },
+    "modalidades": ["presencial", "online"],
+    "convenios": ["Amil", "Bradesco Saúde", "Unimed"],
+    "valorConsulta": 250.00,
+    "proximaData": "2026-09-29",
+    "proximosHorarios": ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30"]
+  }],
+  "pagina": 0, "tamanho": 20, "totalElementos": 4, "totalPaginas": 1
+}
+```
+
+`local` é a unidade da cidade filtrada (ou a primeira em funcionamento).
+`modalidades` vêm das disponibilidades de agenda do médico. `proximaData` é o
+primeiro dia com horário livre nas próximas duas semanas (ou `null`), e
+`proximosHorarios` traz até seis horários livres desse dia. A busca não ignora acentos: "joao" não
+encontra "João".
 
 ---
 
@@ -262,8 +337,12 @@ mensagem — é o que o formulário usa para destacar o input correspondente.
 | `401` | credenciais inválidas, token ausente/expirado |
 | `403` | conta desativada, ou perfil sem permissão para a rota |
 | `404` | recurso ou rota inexistente |
-| `409` | e-mail já cadastrado, horário já reservado |
+| `405` | método HTTP que a rota não aceita |
+| `409` | e-mail já cadastrado, horário já reservado, registro alterado por outra pessoa ao mesmo tempo |
+| `413` | arquivo enviado acima do limite (10 MB) |
+| `415` | corpo que não é JSON |
 | `422` | regra de negócio violada |
+| `429` | tentativas demais de login ou de recuperação de senha; `Retry-After` diz em quantos segundos tentar de novo |
 | `500` | erro inesperado (detalhes só no log do servidor) |
 
 ---
@@ -277,10 +356,9 @@ Regras aplicadas em `security/SecurityConfig.java`:
 | `/api/auth/login`, `/api/auth/cadastro` | público |
 | `/api/auth/recuperar-senha`, `/api/auth/redefinir-senha` | público |
 | `/api/publico/**` | público (busca de profissionais, especialidades, unidades) |
-| `/api/admin/**` | perfil `ADMIN` |
-| `/api/medico/**` | perfil `MEDICO` |
-| `/api/paciente/**` | perfil `PACIENTE` |
-| `/api/medicos/**`, `/api/agendamentos/**`, `/api/pacientes/**`, `/api/clinicas/**` | perfil `MEDICO` (rotas antigas do painel; migram para `/api/medico/**`) |
+| `/api/admin/**` | `ADMIN`, ou equipe com o módulo liberado na matriz de permissões (ver [api-admin.md](api-admin.md); exames em [api-exames.md](api-exames.md); financeiro e relatórios em [api-financeiro-relatorios.md](api-financeiro-relatorios.md)) |
+| `/api/medico/**` | perfil `MEDICO` (rotas em [api-painel-medico.md](api-painel-medico.md)) |
+| `/api/paciente/**` | perfil `PACIENTE` (rotas em [api-area-paciente.md](api-area-paciente.md)) |
 | qualquer outra | autenticado |
 
 As proteções de rota no React são apenas conveniência de navegação. A autorização
@@ -290,18 +368,26 @@ que vale é esta, no servidor.
 
 ## Limitações conhecidas
 
-- **Envio de e-mail**: sem SMTP, o link de recuperação sai no log do servidor
-  (`notificacoes/EnvioEmailNoLog`). Trocar por um provedor real é implementar
+- **Envio de e-mail**: não há provedor. Em `dev` e `test`, o e-mail inteiro
+  (com o link de recuperação ou de convite) sai no log do servidor
+  (`notificacoes/EnvioEmailNoLog`). Nos outros perfis, o log registra só o
+  assunto e o destinatário mascarado (`EnvioEmailDesligado`): o link dá acesso
+  à conta e não pode ficar em log de produção. Enviar de verdade é implementar
   a interface `EnvioEmail`.
 - **Troca de senha não derruba tokens já emitidos**: bloquear a conta derruba
   (a situação é relida a cada requisição), mas trocar a senha não — o token
   antigo vale até expirar. Resolver exige lista de revogação ou refresh token.
 - **Tempo de resposta da recuperação**: e-mail existente grava o token e monta
   o e-mail; inexistente só consulta. A diferença de tempo é pequena, mas existe.
-- **Sem limite de tentativas**: nem o login nem o pedido de recuperação têm
-  throttling. Vale adicionar antes de expor a API na internet.
+- **Limite de tentativas em memória**: login (5 falhas em 15 min por IP + e-mail,
+  30 por IP) e recuperação de senha (3 por hora por e-mail, 10 por IP)
+  respondem `429` ao passar do limite (`auth/ProtecaoContraForcaBruta`,
+  `saudeplus.limites.*`). A contagem é por instância: com várias instâncias,
+  troque por um armazenamento compartilhado. Atrás de proxy, configure
+  `server.forward-headers-strategy` para contar pelo IP do cliente.
 - **Login social (Google/Apple)** e os documentos de **Termos de Uso** e
   **Política de Privacidade** não existem: os botões estão no layout e avisam que
   o recurso está por vir.
-- **Conta inicial de médico** ainda não tem perfil com CRM e especialidades; ele
-  entra junto com o catálogo de profissionais.
+- **Conta inicial de médico** ganha o perfil profissional com CRM, UF,
+  especialidade e unidade vindos de `SEED_MEDICO_*`. Sem CRM configurado (o
+  padrão em produção), só a conta de acesso é criada.

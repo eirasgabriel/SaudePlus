@@ -29,6 +29,11 @@
   background: #FCEFD6;
 }
 
+.erro {
+  color: #9B1C1C;
+  background: #FCE4E4;
+}
+
 .neutro {
   color: var(--color-text-muted);
   background: var(--color-surface-muted);

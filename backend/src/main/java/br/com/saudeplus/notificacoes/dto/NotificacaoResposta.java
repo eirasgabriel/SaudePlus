@@ -1,23 +1,29 @@
 package br.com.saudeplus.notificacoes.dto;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import br.com.saudeplus.notificacoes.Notificacao;
 import br.com.saudeplus.notificacoes.TipoNotificacao;
 
+/** `quando` vem pronto para exibir ("Hoje, 09:15"); `criadaEm` é o instante exato. */
 public record NotificacaoResposta(
-        String id,
+        UUID id,
         TipoNotificacao tipo,
         String titulo,
         String detalhe,
         String quando,
+        Instant criadaEm,
         boolean lida) {
 
-    public static NotificacaoResposta de(Notificacao notificacao) {
+    public static NotificacaoResposta de(Notificacao notificacao, String quando) {
         return new NotificacaoResposta(
-                notificacao.id(),
-                notificacao.tipo(),
-                notificacao.titulo(),
-                notificacao.detalhe(),
-                notificacao.quando(),
-                notificacao.lida());
+                notificacao.getId(),
+                notificacao.getTipo(),
+                notificacao.getTitulo(),
+                notificacao.getDetalhe(),
+                quando,
+                notificacao.getCriadaEm(),
+                notificacao.isLida());
     }
 }

@@ -57,13 +57,34 @@ function normalizarCampos(campos) {
 function montarUrl(caminho, parametros) {
   const base = API_URL.replace(/\/$/, "");
   const busca = new URLSearchParams();
+  const preenchido = (valor) => valor !== undefined && valor !== null && valor !== "";
   for (const [chave, valor] of Object.entries(parametros ?? {})) {
-    if (valor !== undefined && valor !== null && valor !== "") {
+    // Lista vira o parâmetro repetido (?especialidade=a&especialidade=b).
+    if (Array.isArray(valor)) {
+      valor.filter(preenchido).forEach((item) => busca.append(chave, String(item)));
+    } else if (preenchido(valor)) {
       busca.set(chave, String(valor));
     }
   }
   const consulta = busca.toString();
   return `${base}/${caminho.replace(/^\//, "")}${consulta ? `?${consulta}` : ""}`;
+}
+
+/* Quem avisar quando o servidor recusa o token (401 numa chamada
+   autenticada: sessão expirada, conta bloqueada). O AuthProvider registra
+   aqui o logout; sem isso, as telas ficariam logadas mostrando erro. */
+let aoRecusarSessao = null;
+
+/** Registra o aviso de sessão recusada; devolve a função que o remove. */
+export function definirAoRecusarSessao(funcao) {
+  aoRecusarSessao = funcao;
+  return () => {
+    if (aoRecusarSessao === funcao) aoRecusarSessao = null;
+  };
+}
+
+function avisarSeSessaoRecusada(status, autenticado) {
+  if (status === 401 && autenticado && lerToken()) aoRecusarSessao?.();
 }
 
 function cabecalhos(corpo, autenticado) {
@@ -129,6 +150,7 @@ export async function requisitar(caminho, { metodo = "GET", corpo, parametros, s
   const dados = await lerCorpo(resposta);
 
   if (!resposta.ok) {
+    avisarSeSessaoRecusada(resposta.status, autenticado);
     const mensagem =
       (dados && typeof dados === "object" && dados.mensagem) ||
       `A requisição falhou com status ${resposta.status}.`;
@@ -136,6 +158,49 @@ export async function requisitar(caminho, { metodo = "GET", corpo, parametros, s
   }
 
   return dados;
+}
+
+/** "attachment; filename=\"resultado.pdf\"" → "resultado.pdf". */
+function nomeDoAnexo(disposicao) {
+  const encontrado = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposicao ?? "");
+  return encontrado ? decodeURIComponent(encontrado[1]) : null;
+}
+
+/**
+ * Baixa um arquivo protegido (resultado de exame) e oferece para salvar.
+ *
+ * Um `<a href>` comum não mandaria o token, por isso o arquivo vem por
+ * `fetch` com `Authorization` e é entregue ao navegador como blob.
+ * Erros chegam como `ErroDeApi`, igual às demais chamadas.
+ */
+export async function baixarArquivo(caminho, { nomePadrao = "arquivo", sinal } = {}) {
+  const url = montarUrl(caminho);
+  const controle = new AbortController();
+  sinal?.addEventListener("abort", () => controle.abort(), { once: true });
+
+  let resposta;
+  try {
+    resposta = await fetch(url, { headers: cabecalhos(undefined, true), signal: controle.signal });
+  } catch {
+    throw new ErroDeApi("Não foi possível falar com o servidor.", { status: 0, url });
+  }
+  if (!resposta.ok) {
+    avisarSeSessaoRecusada(resposta.status, true);
+    const dados = await lerCorpo(resposta);
+    const mensagem = (dados && typeof dados === "object" && dados.mensagem) || "Não foi possível baixar o arquivo.";
+    throw new ErroDeApi(mensagem, { status: resposta.status, corpo: dados, url });
+  }
+
+  const blob = await resposta.blob();
+  const endereco = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = endereco;
+  link.download = nomeDoAnexo(resposta.headers.get("content-disposition")) ?? nomePadrao;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  // Dá tempo ao navegador de iniciar o download antes de liberar a memória.
+  setTimeout(() => URL.revokeObjectURL(endereco), 1000);
 }
 
 export const http = {

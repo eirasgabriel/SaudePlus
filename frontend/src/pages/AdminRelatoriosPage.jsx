@@ -9,43 +9,80 @@ import BarrasHorizontais from "../components/BarrasHorizontais";
 import { Seletor, Botao, Campo } from "../components/Controles";
 import Icone from "../components/Icone";
 import {
-  metricas,
-  porEspecialidade,
-  evolucaoAtendimentos,
-  porFaixaEtaria,
+  metricas as metricasMock,
+  porEspecialidade as porEspecialidadeMock,
+  evolucaoAtendimentos as evolucaoAtendimentosMock,
+  porFaixaEtaria as porFaixaEtariaMock,
   relatoriosDisponiveis,
-  resumoPeriodo,
-  opcoesProfissional,
-  opcoesUnidade,
+  resumoPeriodo as resumoPeriodoMock,
+  opcoesProfissional as opcoesProfissionalMock,
+  opcoesUnidade as opcoesUnidadeMock,
   opcoesStatus,
-  opcoesEspecialidade,
+  opcoesEspecialidade as opcoesEspecialidadeMock,
   opcoesFormato,
   opcoesPeriodo,
 } from "../services/dadosAdminRelatorios";
 import comum from "../styles/adminComum.module.css";
 import estilos from "./AdminRelatoriosPage.module.css";
 
-export default function AdminRelatoriosPage() {
-  const [periodo, definirPeriodo] = useState("30d");
-  const [filtros, definirFiltros] = useState({
-    inicio: "2026-09-15",
-    fim: "2026-10-15",
-    profissional: "todos",
-    unidade: "todas",
-    status: "todos",
-    especialidade: "todas",
-    formato: "pdf",
-  });
+const FILTROS_PADRAO = {
+  inicio: "2026-09-15",
+  fim: "2026-10-15",
+  profissional: "todos",
+  unidade: "todas",
+  status: "todos",
+  especialidade: "todas",
+  formato: "pdf",
+};
+
+/**
+ * Dados e opções por prop, com os mocks como padrão. `aoMudarPeriodo("90d")`
+ * avisa a troca do período; `aoGerar(id, filtros)` gera o arquivo (devolve
+ * uma promessa; se falhar, a mensagem aparece acima da lista).
+ */
+export default function AdminRelatoriosPage({
+  metricas = metricasMock,
+  porEspecialidade = porEspecialidadeMock,
+  evolucaoAtendimentos = evolucaoAtendimentosMock,
+  porFaixaEtaria = porFaixaEtariaMock,
+  resumoPeriodo = resumoPeriodoMock,
+  opcoesProfissional = opcoesProfissionalMock,
+  opcoesUnidade = opcoesUnidadeMock,
+  opcoesEspecialidade = opcoesEspecialidadeMock,
+  filtrosIniciais = FILTROS_PADRAO,
+  aviso = null,
+  aoMudarPeriodo,
+  aoGerar,
+}) {
+  const [periodo, definirPeriodoLocal] = useState("30d");
+  const [filtros, definirFiltros] = useState(filtrosIniciais);
   const [gerando, definirGerando] = useState(null);
+  const [erroAoGerar, definirErroAoGerar] = useState(null);
+
+  function definirPeriodo(valor) {
+    definirPeriodoLocal(valor);
+    aoMudarPeriodo?.(valor);
+  }
 
   function atualizar(chave, valor) {
     definirFiltros((atuais) => ({ ...atuais, [chave]: valor }));
   }
 
-  /** Simula a geração — troque pela chamada real à API. */
-  function gerar(id) {
+  /** Gera pela API quando `aoGerar` vem; sem ela (mocks), só simula. */
+  async function gerar(id) {
     definirGerando(id);
-    setTimeout(() => definirGerando(null), 1200);
+    definirErroAoGerar(null);
+    if (!aoGerar) {
+      setTimeout(() => definirGerando(null), 1200);
+      return;
+    }
+    try {
+      await aoGerar(id, filtros);
+    } catch (erro) {
+      definirErroAoGerar(erro?.message ?? "Não foi possível gerar o relatório.");
+    } finally {
+      definirGerando(null);
+    }
   }
 
   return (
@@ -64,6 +101,8 @@ export default function AdminRelatoriosPage() {
           />
         }
       />
+
+      {aviso}
 
       <section
         className={`${comum.metricas} ${comum.metricas5}`}
@@ -102,6 +141,11 @@ export default function AdminRelatoriosPage() {
       {/* ---------- relatórios, filtros e resumo ---------- */}
       <div className={comum.grade3}>
         <Cartao titulo="Relatórios disponíveis" icone="grafico">
+          {erroAoGerar && (
+            <p role="alert" style={{ margin: "0 0 8px", fontSize: 13, color: "#b3261e" }}>
+              {erroAoGerar}
+            </p>
+          )}
           <Lista>
             {relatoriosDisponiveis.map((r) => (
               <ItemLista

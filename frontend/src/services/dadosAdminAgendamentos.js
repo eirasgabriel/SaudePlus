@@ -44,6 +44,14 @@ export const statusAgendamento = {
   espera: { rotulo: "Em espera", variante: "info" },
   retorno: { rotulo: "Retorno", variante: "roxo" },
   cancelado: { rotulo: "Cancelado", variante: "erro" },
+  // Chaves do status unificado da API (StatusAgendamento).
+  pendente: { rotulo: "Aguardando confirmação", variante: "info" },
+  confirmada: { rotulo: "Confirmado", variante: "sucesso" },
+  aguardando: { rotulo: "Na recepção", variante: "aviso" },
+  em_andamento: { rotulo: "Em atendimento", variante: "info" },
+  realizada: { rotulo: "Realizado", variante: "neutro" },
+  cancelada: { rotulo: "Cancelado", variante: "erro" },
+  faltou: { rotulo: "Não compareceu", variante: "erro" },
 };
 
 /** Legenda do calendário. */

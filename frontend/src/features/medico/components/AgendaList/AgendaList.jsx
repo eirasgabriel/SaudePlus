@@ -1,11 +1,17 @@
 import { ChevronRightIcon } from "../../../../components/icons/Icons.jsx";
+import LinkDestino from "../../navegacao/LinkDestino.jsx";
 import StatusTag from "../StatusTag/StatusTag.jsx";
 import styles from "./AgendaList.module.css";
 
 /**
  * Lista da agenda do dia.
- * Recebe as consultas já filtradas; a barra do cabeçalho do painel controla
- * o filtro. Cada linha é um <a> cobrindo o cartão (ver `.link::after`).
+ *
+ * Recebe as consultas já filtradas; quem controla o filtro é a barra no
+ * cabeçalho do painel. A linha inteira é clicável: o botão do fim cobre o
+ * cartão pelo `.link::after`, então não existe área morta.
+ *
+ * Cada linha é um link para /medico/consultas/:consultaId. Enquanto a tela de
+ * detalhe não existir, o clique abre o aviso dizendo o destino.
  */
 export default function AgendaList({ consultas = [], statusAtivo = "todas", onLimparFiltro }) {
   if (consultas.length === 0) {
@@ -39,9 +45,15 @@ export default function AgendaList({ consultas = [], statusAtivo = "todas", onLi
 
           <StatusTag status={status} />
 
-          <a href="#" className={styles.link} aria-label={`Abrir consulta de ${paciente} às ${horario}`}>
+          <LinkDestino
+            destino="consulta"
+            parametros={{ consultaId: id }}
+            detalhe={`${paciente} às ${horario}`}
+            className={styles.link}
+            aria-label={`Abrir consulta de ${paciente} às ${horario}`}
+          >
             <ChevronRightIcon size={18} />
-          </a>
+          </LinkDestino>
         </li>
       ))}
     </ul>

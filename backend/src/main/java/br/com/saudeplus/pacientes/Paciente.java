@@ -45,6 +45,10 @@ public class Paciente extends EntidadeComId {
         this.usuario = usuario;
     }
 
+    public void informarNascimento(LocalDate data) {
+        dataNascimento = data;
+    }
+
     /** Idade em anos completos na data informada, ou `null` sem data de nascimento. */
     public Integer idadeEm(LocalDate data) {
         return dataNascimento == null ? null : Period.between(dataNascimento, data).getYears();

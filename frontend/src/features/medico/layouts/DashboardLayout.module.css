@@ -1,4 +1,8 @@
+/* Coluna flexível para o rodapé ficar colado embaixo mesmo quando a
+   agenda está filtrada e o conteúdo não enche a tela. */
 .pagina {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   background: var(--color-background);
 }
@@ -8,9 +12,13 @@
   grid-template-columns: 236px minmax(0, 1fr) 352px;
   align-items: start;
   gap: var(--space-5);
+  /* Cresce para empurrar o rodapé até o fim da janela. */
+  flex: 1 0 auto;
+  width: 100%;
   max-width: 1600px;
   margin: 0 auto;
-  padding: var(--space-5) var(--space-6) var(--space-10);
+  /* Sem folga embaixo: quem fecha a página agora é o rodapé. */
+  padding: var(--space-5) var(--space-6) 0;
 }
 
 .conteudo {
@@ -30,8 +38,14 @@
   .grade {
     grid-template-columns: 220px minmax(0, 1fr) 320px;
     gap: var(--space-4);
-    padding: var(--space-4) var(--space-4) var(--space-8);
+    padding: var(--space-4) var(--space-4) 0;
   }
+}
+
+/* A grade do painel é mais larga que o container do site institucional;
+   o rodapé acompanha para as colunas não ficarem desalinhadas. */
+.rodape {
+  --rodape-largura: 1600px;
 }
 
 .trilhaDireita {

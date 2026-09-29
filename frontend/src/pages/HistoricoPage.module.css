@@ -6,7 +6,7 @@
 
 .pagina {
   /* Paleta oficial */
-  --primary: #0066ff;
+  --primary: var(--color-primary);
   --purple: #7b4dff;
   --purple-bg: #ece5ff;
   --navy: #0a2463;
@@ -51,7 +51,7 @@
 :where(.pagina) a { color: inherit; text-decoration: none; }
 
 .pagina :focus-visible {
-  outline: 3px solid rgba(0, 102, 255, 0.45);
+  outline: 3px solid rgba(0, 112, 232, 0.45);
   outline-offset: 2px;
   border-radius: 10px;
 }
@@ -197,4 +197,64 @@
   .pagina *::after {
     transition: none !important;
   }
+}
+
+/* Avaliação do atendimento */
+.avaliacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.estrelas {
+  display: inline-flex;
+  gap: 2px;
+  color: #f5a524;
+  letter-spacing: 1px;
+}
+
+.estrela {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+  color: #c9ced8;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Passar o mouse acende a estrela e as anteriores. */
+.estrelas:hover .estrela { color: #f5a524; }
+.estrela:hover ~ .estrela { color: #c9ced8; }
+
+.estrela:focus-visible {
+  outline: 3px solid var(--primary, #1f5eff);
+  outline-offset: 1px;
+}
+
+.estrela:disabled { cursor: progress; }
+
+.erroAvaliacao {
+  flex-basis: 100%;
+  color: #b3261e;
+}
+
+/* Visível só para leitores de tela. */
+.somenteLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }

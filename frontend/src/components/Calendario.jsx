@@ -11,6 +11,7 @@ const DIAS_SEMANA = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
  *
  * marcacoes: { 15: ['consultas','exames'], ... }  (chave = dia do mês)
  * tipos:     [{ id, rotulo, cor }]
+ * aoMudarMes(data): chamado ao navegar de mês, com o dia 1 do mês exibido
  */
 export default function Calendario({
   mesInicial = new Date(2026, 8, 1),
@@ -18,6 +19,7 @@ export default function Calendario({
   marcacoes = {},
   tipos = [],
   aoSelecionarDia,
+  aoMudarMes,
 }) {
   const [referencia, definirReferencia] = useState(
     new Date(mesInicial.getFullYear(), mesInicial.getMonth(), 1)
@@ -56,9 +58,10 @@ export default function Calendario({
   }, [referencia]);
 
   function mudarMes(passo) {
-    definirReferencia(
-      (atual) => new Date(atual.getFullYear(), atual.getMonth() + passo, 1)
-    );
+    const nova = new Date(referencia.getFullYear(), referencia.getMonth() + passo, 1);
+    definirReferencia(nova);
+    // Quem busca as marcações na API precisa saber o mês exibido.
+    aoMudarMes?.(nova);
   }
 
   function selecionar(dia) {

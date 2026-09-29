@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: saudeplus
+      POSTGRES_USER: saudeplus
+      POSTGRES_PASSWORD: saudeplus123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U saudeplus -d saudeplus"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/saudeplus
+      SPRING_DATASOURCE_USERNAME: saudeplus
+      SPRING_DATASOURCE_PASSWORD: saudeplus123
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:

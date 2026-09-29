@@ -1,96 +1,127 @@
 # Arquitetura do SaúdePlus
 
-O repositório mantém uma aplicação: `frontend/` (React + Vite). O back-end ainda
-não existe aqui — o front conversa com ele por HTTP, e o contrato que essa API
-precisa cumprir está em [api.md](api.md).
+O repositório tem duas aplicações que conversam só por HTTP:
+
+- `frontend/`: React + Vite, a interface de visitante, paciente, profissional e administração;
+- `backend/`: Java 21 + Spring Boot 4, a API REST em `/api/*`, com PostgreSQL.
+
+```text
+navegador ──► frontend (Vite, :5173) ──/api──► backend (Spring Boot, :8080) ──► PostgreSQL
+```
+
+Em desenvolvimento, o Vite faz proxy de `/api` para a porta 8080, então o front
+não precisa de CORS nem de URL configurada. O contrato entre os dois está nos
+arquivos `docs/api*.md` (índice no [README](../README.md#documentação)).
+
+## Back-end
+
+Pacotes por domínio em `backend/src/main/java/br/com/saudeplus/`. Dentro de
+cada um, o fluxo é controller → service → repository, com DTOs em `record`
+(pasta `dto/`); entidade JPA nunca sai na resposta.
+
+| Pacote | Responsabilidade |
+| --- | --- |
+| `auth/`, `usuarios/`, `security/` | login, cadastro, perfil, senha; conta de acesso (`Usuario`, `Papel`); JWT e regras por prefixo |
+| `publico/` | busca pública de profissionais, especialidades, unidades e horários livres |
+| `areapaciente/` | rotas `/api/paciente/*` |
+| `areamedico/` | rotas `/api/medico/*` |
+| `admin/` | rotas `/api/admin/*`, incluindo dashboard, relatórios e o controle de acesso por módulo |
+| `pacientes/`, `profissionais/`, `clinicas/` | cadastros: paciente, médico, especialidade, convênio, unidade |
+| `agenda/`, `agendamentos/` | janelas de atendimento, bloqueios, cálculo de horários livres, agendamento e seus status |
+| `exames/`, `arquivos/` | ciclo do exame e armazenamento dos arquivos de resultado |
+| `financeiro/` | cobranças geradas pelos agendamentos, resumo e exportação |
+| `notificacoes/` | caixa de notificações e envio de e-mail (hoje, no log) |
+| `configuracoes/`, `auditoria/` | configurações por grupo, matriz de permissões e registro de atividades |
+| `comum/`, `config/`, `exception/` | base das entidades, paginação, exportação CSV/PDF, CORS, relógio, formato de erro |
+| `demo/` | agenda de demonstração, só no perfil `dev` |
+
+### Decisões que atravessam o código
+
+- **Banco:** PostgreSQL com Flyway (modelo completo em [banco-de-dados.md](banco-de-dados.md)). O schema só muda por migração nova
+  (`db/migration/V*.sql`); o Hibernate apenas valida. Ids são UUID; instantes
+  em `timestamptz`; dinheiro em `numeric(12,2)`. O fuso de negócio é
+  `America/Sao_Paulo`, e o `Clock` é injetável para os testes.
+- **Quem é o dono vem do token.** Nenhuma rota de paciente ou médico recebe o
+  id do dono. Recurso de outro usuário responde `404`, não `403`, para não
+  revelar que ele existe.
+- **Papel e situação da conta são relidos a cada requisição.** Bloquear uma
+  conta derruba o token já emitido.
+- **Equipe e permissões:** além de `PACIENTE`, `MEDICO` e `ADMIN`, há os papéis
+  de equipe (`GESTOR`, `ENFERMEIRO`, `RECEPCIONISTA`, `AGENTE`). Eles entram
+  em `/api/admin/**` só nos módulos liberados na matriz de permissões.
+- **Status único de agendamento** (`pendente`, `confirmada`, `aguardando`,
+  `em_andamento`, `realizada`, `cancelada`, `faltou`) para paciente, médico e
+  administração. As transições são validadas no domínio, e uma transição
+  inválida responde `422`.
+- **Reserva sem conflito:** um índice único parcial no banco impede duas
+  reservas no mesmo horário. A violação vira `409`.
+- **Efeitos colaterais depois do commit:** agendar, cancelar, liberar
+  resultado e confirmar consulta publicam eventos. Os listeners
+  (`@TransactionalEventListener`) criam notificações e cobranças numa transação
+  própria, então uma falha neles não desfaz a ação principal.
+- **Auditoria** na mesma transação da ação: se a ação falha, não fica registro.
+- **Erros** sempre no formato de [api.md](api.md#formato-de-erro).
+
+### Testes
+
+`./mvnw verify` roda os testes unitários (regras puras, como o cálculo de
+horários e as transições de status) e os de integração (`@TesteDeIntegracao`).
+Os de integração sobem a aplicação inteira contra um PostgreSQL descartável do
+Testcontainers e exercitam as rotas pelo MockMvc. Precisam do Docker rodando.
 
 ## Front-end
 
 - `src/main.jsx`: inicialização do React, `BrowserRouter`, `AuthProvider` e CSS global.
-- `src/app/App.jsx`: tabela de rotas da aplicação.
-- `src/layouts/`: estruturas compartilhadas de página e cabeçalho.
-- `src/components/`: componentes usados por diferentes funcionalidades.
-- `src/features/`: código organizado por domínio: auth, profissionais, clinicas,
-  exames e agendamentos. Criar `pages/`, `components/` e `hooks/` dentro de cada
-  funcionalidade quando houver implementação para eles.
-- `src/services/`: infraestrutura compartilhada de acesso HTTP; criar `http.js`
-  quando a integração com a API começar. Operações específicas pertencem à
-  funcionalidade, por exemplo `features/agendamentos/agendamentos.api.js`.
-- `src/features/home/`: homepage, com composição em `pages/` e conteúdo de
-  apresentação em `data/`. Os indicadores são dados demonstrativos do layout.
-- `src/features/profissionais/`: especialidades e busca, dados demonstrativos e
-  componentes específicos de profissionais e filtros.
-- `src/features/institucional/`: páginas Como funciona e Sobre nós e seus conteúdos.
-- `src/features/ajuda/`: central de ajuda, perguntas frequentes e canais de suporte.
-- `src/app/App.jsx`: rotas públicas; `RouteEffects.jsx` atualiza título e foco na navegação.
-  O `BrowserRouter` é inicializado em `src/main.jsx`.
-- `src/styles/tokens.css`: cores, tipografia, espaçamento e medidas compartilhadas.
-- `src/utils/`: utilitários compartilhados, como composição de classes CSS.
-- `src/components/`: componentes usados por diferentes funcionalidades, como
-  `RotaProtegida` e `SomenteVisitante`.
-- `src/features/`: código organizado por domínio: auth, painel, profissionais,
-  clinicas, exames e agendamentos. Criar `pages/`, `components/` e `hooks/` dentro
-  de cada funcionalidade quando houver implementação para eles.
-  - `features/auth/` já está implementada: Login, Criar conta, Recuperar senha e
-    Nova senha, além de `auth.api.js`, `AuthProvider.jsx` e `auth.context.js`.
-    As telas ocupam a página inteira; `CartaoAuth.jsx` é a moldura compartilhada.
-  - As áreas por perfil são `/paciente/*`, `/medico` e `/admin/*` em `app/App.jsx`, todas atrás de `RotaProtegida`.
-- `src/services/`: infraestrutura compartilhada de acesso HTTP. `http.js` envolve o
-  `fetch` e traduz o formato de erro da API; `sessaoStorage.js` guarda o token.
-  Operações específicas pertencem à funcionalidade, por exemplo
-  `features/agendamentos/agendamentos.api.js`.
-- `src/assets/images/`: imagens importadas pelos componentes.
-- `src/styles/global.css`: estilos globais; estilos de componentes ficam próximos deles.
+- `src/app/App.jsx`: tabela de rotas; `RouteEffects.jsx` atualiza título e foco na navegação.
+- `src/layouts/`: `MainLayout` e `Header` do site público; `AdminLayout` da administração.
+- `src/features/`: código por domínio.
+  - `home/`, `institucional/`, `ajuda/`: páginas públicas e seus conteúdos.
+  - `profissionais/`: especialidades, busca e perfil do profissional (`profissionais.api.js`,
+    `buscaParametros.js`, `perfil.js`).
+  - `auth/`: Login, Criar conta, Recuperar senha e Nova senha, `auth.api.js`, `AuthProvider`
+    e `destinoPendente.js` (volta ao endereço pedido depois do login).
+  - `paciente/`: `paciente.api.js`, adaptadores e `pages/PacienteConectado.jsx`.
+  - `medico/`: o painel do profissional (ver [dashboard-medico.md](dashboard-medico.md)) e `medico.api.js`.
+  - `admin/`: `admin.api.js`, `exames.api.js`, adaptadores, `pages/AdminConectado.jsx` e o modal de novo usuário.
+  - `agendamentos/`, `clinicas/`, `exames/`: reservadas, ainda vazias (`.gitkeep`).
+- `src/pages/`: as telas do paciente (`ConsultasPage`, `ExamesPage`…) e da
+  administração (`Admin*Page`, ver [admin.md](admin.md)).
+- `src/components/`: componentes compartilhados: controles, gráficos,
+  `ModalAgendamento`, `RotaProtegida` e `SomenteVisitante`.
+- `src/services/`: `http.js` (envolve o `fetch`, manda o token, traduz o
+  formato de erro e baixa arquivos com `baixarArquivo`), `sessaoStorage.js`
+  (guarda o token) e os dados de demonstração (`dadosficticios.js`, `dadosAdmin*.js`).
+- `src/styles/`: `tokens.css` (cores, tipografia, espaçamento) e `global.css`.
 - `public/`: arquivos servidos diretamente, como o favicon.
 
-`index.html`, `vite.config.js`, `eslint.config.js` e `package*.json` permanecem
-na raiz de `frontend/`. Não mover `index.html` para `public/`. O `vite.config.js`
-faz proxy de `/api` para a API na porta 8080 durante o desenvolvimento.
+### Como uma tela usa a API
 
-## Back-end
+As telas foram construídas antes da API e recebem tudo por props, com os dados
+de demonstração como valor padrão. A ligação fica num componente "conectado"
+por área (`PacienteConectado`, `PainelMedicoConectado`, `AdminConectado`):
 
-O back-end não faz parte deste repositório. O que ele precisa entregar está
-especificado em [api.md](api.md): as rotas de `/api/auth/*`, os corpos de
-requisição e resposta, o formato único de erro, os códigos HTTP e as contas fixas
-de médico e admin que o servidor deve criar na inicialização.
+1. busca na API (`features/<área>/<área>.api.js`);
+2. converte a resposta para o formato que a tela já recebia (`adaptadores.js`);
+3. passa os dados e as ações (salvar, cancelar, exportar…) como props.
 
-A linguagem e o framework ficam em aberto. O que o front assume é só isto:
+Se a API não responder, a tela continua de pé com os dados de demonstração, uma
+faixa avisa a origem e as ações ficam desligadas. Isso vale para
+desenvolvimento e apresentação; não é modo offline.
 
-- respostas JSON em UTF-8;
-- autenticação por JWT no cabeçalho `Authorization: Bearer <token>`;
-- erros no formato `{ timestamp, status, erro, mensagem, campos? }`, onde `campos`
-  mapeia nome do campo para a mensagem de validação — é o que destaca o input
-  errado no formulário;
-- CORS liberado para a origem do front.
+`index.html`, `vite.config.js`, `eslint.config.js` e `package*.json` ficam na
+raiz de `frontend/`.
 
-## Regra de acesso por perfil
+## Regras de acesso
 
-Existem três perfis: `PACIENTE`, `MEDICO` e `ADMIN`. O cadastro público deve criar
-exclusivamente paciente — o corpo do cadastro não tem campo de perfil, então o
-servidor grava `PACIENTE` sempre. Médico e admin nascem apenas do seed feito pelo
-servidor na inicialização, e entram pela mesma tela de login.
+A autorização que vale é a do servidor, por prefixo de rota e, na
+administração, por módulo (ver [api.md](api.md#autorização-por-prefixo)).
+`RotaProtegida` e `SomenteVisitante`, no React, são conveniência de navegação:
+o usuário pode alterar o que quiser no navegador.
 
-A autorização que vale é a do servidor, por prefixo de rota. `RotaProtegida` e
-`SomenteVisitante`, no React, são conveniência de navegação: o usuário pode alterar
-o que quiser no navegador, então eles não substituem a checagem no back-end.
+O cadastro público cria só paciente: o corpo não tem campo de perfil. Médico e
+equipe são criados pela administração. As contas iniciais de admin e médico
+nascem com o servidor.
 
-O front-end consome a API por HTTP; não acessa o banco diretamente. Autorização e
-regras de disponibilidade devem ser garantidas no servidor e no banco quando
-implementados. Segredos não pertencem ao código enviado ao navegador — nada que
-esteja em `frontend/` é secreto, inclusive o que for definido em `VITE_*`.
-
-As pastas ainda sem implementação possuem `.gitkeep` para serem versionadas.
-Remover os marcadores quando as pastas receberem arquivos reais.
-
-## Realocação aplicada
-
-| Origem | Destino |
-| --- | --- |
-| `frontend/src/App.jsx` | `frontend/src/app/App.jsx` |
-| `frontend/src/index.css` | `frontend/src/styles/global.css` |
-| `frontend/public/assets/logo.png` | `frontend/src/assets/images/logo.png` |
-| `frontend/public/assets/weblogo.svg` | `frontend/src/assets/images/weblogo.svg` |
-| `frontend/public/assets/applogo.svg` | `frontend/public/favicon.svg` |
-
-O `App.css` vazio foi removido. O logo saiu do elemento inválido no `head`
-e passou a ser exibido pelo componente `Header`, usando a versão horizontal.
+Segredos não pertencem ao front: nada em `frontend/` é secreto, inclusive o que
+for definido em `VITE_*`. O segredo do JWT e as credenciais do banco vêm de
+variáveis de ambiente do back-end.

@@ -18,4 +18,7 @@ Thumbs.db
 
 # Java / Maven
 target/
+
+# Arquivos enviados no perfil dev (resultados de exame)
+backend/dados/
 *.class

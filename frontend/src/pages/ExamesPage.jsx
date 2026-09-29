@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { mockExams } from '../services/dadosficticios';
 import estilos from './ExamesPage.module.css';
@@ -18,11 +18,13 @@ const formatoCompleto = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', ti
 
 const mesAbreviado = (valor) => capitalizar(formatoMes.format(paraData(valor)).replace('.', ''));
 
-/** status de mockExams */
+/** status de mockExams e da API (ver features/paciente/adaptadores.js) */
 const STATUS = {
   liberado: { rotulo: 'Liberado', tom: 'sucesso' },
   'em análise': { rotulo: 'Em análise', tom: 'alerta' },
   agendado: { rotulo: 'Agendado', tom: 'informativo' },
+  solicitado: { rotulo: 'Solicitado', tom: 'informativo' },
+  cancelado: { rotulo: 'Cancelado', tom: 'neutro' },
 };
 
 const propsSvg = {
@@ -69,7 +71,39 @@ const IconeBaixar = ({ className }) => (
    professional, status, resultUrl.
     */
 
-function CartaoExame({ exame }) {
+/**
+ * Baixa o resultado protegido; enquanto baixa, desabilita o botão, e se falhar
+ * mostra a mensagem da API no lugar.
+ */
+function BotaoResultado({ exame, aoBaixar }) {
+  const [baixando, setBaixando] = useState(false);
+  const [erro, setErro] = useState(null);
+
+  const baixar = async () => {
+    setBaixando(true);
+    setErro(null);
+    try {
+      await aoBaixar(exame);
+    } catch (falha) {
+      setErro(falha?.message ?? 'Não foi possível baixar o resultado.');
+    } finally {
+      setBaixando(false);
+    }
+  };
+
+  return (
+    <>
+      <button type="button" className={estilos.acaoResultado} onClick={baixar} disabled={baixando}>
+        <IconeBaixar className={estilos.acaoIcone} />
+        {baixando ? 'Baixando…' : 'Baixar resultado'}
+        <span className={estilos.somenteLeitor}> de {exame.name}</span>
+      </button>
+      {erro && <p className={estilos.acaoIndisponivel} role="alert">{erro}</p>}
+    </>
+  );
+}
+
+function CartaoExame({ exame, aoBaixarResultado }) {
   const infoStatus = STATUS[exame.status] ?? { rotulo: exame.status, tom: 'neutro' };
   const quando = paraData(exame.dateTime);
 
@@ -105,7 +139,9 @@ function CartaoExame({ exame }) {
           </p>
         </div>
 
-        {exame.resultUrl ? (
+        {exame.resultadoDisponivel && aoBaixarResultado ? (
+          <BotaoResultado exame={exame} aoBaixar={aoBaixarResultado} />
+        ) : exame.resultUrl ? (
           <a className={estilos.acaoResultado} href={exame.resultUrl}>
             <IconeBaixar className={estilos.acaoIcone} />
             Baixar resultado
@@ -128,7 +164,8 @@ function CartaoExame({ exame }) {
    Rota: /exames
     */
 
-export default function ExamesPage({ exames = mockExams }) {
+/** `aoBaixarResultado(exame)` liga o botão de resultado dos exames liberados (arquivo protegido). */
+export default function ExamesPage({ exames = mockExams, aoBaixarResultado }) {
   const { liberados, emAndamento } = useMemo(() => {
     const ordenados = [...exames].sort(
       (a, b) => paraData(b.dateTime) - paraData(a.dateTime),
@@ -177,7 +214,7 @@ export default function ExamesPage({ exames = mockExams }) {
           {liberados.length > 0 ? (
             <ul className={estilos.lista}>
               {liberados.map((exame) => (
-                <CartaoExame key={exame.id} exame={exame} />
+                <CartaoExame key={exame.id} exame={exame} aoBaixarResultado={aoBaixarResultado} />
               ))}
             </ul>
           ) : (
@@ -197,7 +234,7 @@ export default function ExamesPage({ exames = mockExams }) {
 
             <ul className={estilos.lista}>
               {emAndamento.map((exame) => (
-                <CartaoExame key={exame.id} exame={exame} />
+                <CartaoExame key={exame.id} exame={exame} aoBaixarResultado={aoBaixarResultado} />
               ))}
             </ul>
           </section>

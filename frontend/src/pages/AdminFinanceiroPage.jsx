@@ -9,10 +9,10 @@ import GraficoRosca from "../components/GraficoRosca";
 import { Tabela, CelulaDupla } from "../components/Tabela";
 import { Seletor } from "../components/Controles";
 import {
-  metricas,
-  evolucaoFinanceira,
-  formasPagamento,
-  transacoes,
+  metricas as metricasMock,
+  evolucaoFinanceira as evolucaoFinanceiraMock,
+  formasPagamento as formasPagamentoMock,
+  transacoes as transacoesMock,
   statusTransacao,
   acoesRapidas,
   opcoesPeriodoFinanceiro,
@@ -32,9 +32,28 @@ const COLUNAS = [
 /** Abrevia os valores do eixo Y: 10000 -> "R$ 10.000" */
 const emReais = (n) => `R$ ${n.toLocaleString("pt-BR")}`;
 
-export default function AdminFinanceiroPage() {
-  const [periodo, definirPeriodo] = useState("7d");
+/**
+ * Dados por prop, com os mocks como padrão. `aoMudarPeriodo("15d")` avisa a
+ * troca do período; `aoAcaoRapida(id)` liga as ações rápidas (ex.: "relatorio").
+ */
+export default function AdminFinanceiroPage({
+  metricas = metricasMock,
+  evolucaoFinanceira = evolucaoFinanceiraMock,
+  formasPagamento = formasPagamentoMock,
+  transacoes = transacoesMock,
+  aviso = null,
+  aoMudarPeriodo,
+  aoAcaoRapida,
+}) {
+  const [periodo, definirPeriodoLocal] = useState("7d");
   const [verTodas, definirVerTodas] = useState(false);
+  const [hoje] = useState(() => new Date());
+  const rotuloDoPeriodo = (opcoesPeriodoFinanceiro.find((o) => o.valor === periodo)?.rotulo ?? "").toLowerCase();
+
+  function definirPeriodo(valor) {
+    definirPeriodoLocal(valor);
+    aoMudarPeriodo?.(valor);
+  }
 
   const visiveis = verTodas ? transacoes : transacoes.slice(0, 5);
 
@@ -44,8 +63,10 @@ export default function AdminFinanceiroPage() {
         titulo="Financeiro"
         subtitulo="Acompanhe os valores, pagamentos e movimentações financeiras do sistema."
         icone="banco"
-        data={new Date(2026, 8, 15)}
+        data={hoje}
       />
+
+      {aviso}
 
       <section className={comum.metricas} aria-label="Indicadores financeiros">
         {metricas.map((m) => (
@@ -57,7 +78,7 @@ export default function AdminFinanceiroPage() {
       <div className={comum.gradePrincipal}>
         <Cartao
           titulo="Evolução Financeira"
-          subtitulo="Receitas e pagamentos dos últimos 7 dias."
+          subtitulo={`Faturado e recebido nos ${rotuloDoPeriodo}.`}
           icone="tendenciaCima"
           extra={
             <div className={estilos.extraGrafico}>
@@ -105,7 +126,7 @@ export default function AdminFinanceiroPage() {
           <div className={estilos.tabelaWrap}>
             <Tabela colunas={COLUNAS} vazio="Nenhuma transação no período.">
               {visiveis.map((t) => {
-                const status = statusTransacao[t.status];
+                const status = statusTransacao[t.status] ?? { rotulo: t.status, variante: "neutro" };
                 return (
                   <tr key={t.id}>
                     <td>{t.dataHora}</td>
@@ -134,7 +155,7 @@ export default function AdminFinanceiroPage() {
                 titulo={a.titulo}
                 descricao={a.descricao}
                 comSeta
-                aoClicar={() => {}}
+                aoClicar={() => aoAcaoRapida?.(a.id)}
               />
             ))}
           </Lista>

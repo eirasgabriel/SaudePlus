@@ -1,8 +1,11 @@
 # Back-end SaúdePlus
 
 Java 21 + Spring Boot 4.1.1 com Maven, PostgreSQL 17 e migrações com Flyway.
-Autenticação por JWT pronta (`/api/auth/*`). O painel do médico ainda lê
-repositórios em memória; a troca para JPA segue as fases do plano de backend.
+Pronto: autenticação por JWT (`/api/auth/*`), busca pública
+(`/api/publico/*`), área do médico (`/api/medico/*`), área do paciente
+(`/api/paciente/*`), exames com upload de resultado e administração
+(`/api/admin/*`, com financeiro, relatórios em PDF/CSV, permissões por módulo
+e auditoria), tudo em PostgreSQL.
 
 ## Pré-requisitos
 
@@ -44,9 +47,12 @@ $env:SERVER_PORT = '8081'
 | `DB_USUARIO` / `DB_SENHA` | `saudeplus` / `saudeplus` | credenciais do banco |
 | `SERVER_PORT` | `8080` | porta HTTP |
 | `FRONT_URL` | `http://localhost:5173` | base dos links enviados por e-mail |
+| `ARQUIVOS_DIR` | `./dados/arquivos` | pasta dos resultados de exame (em produção, um volume persistente) |
 | `JWT_SEGREDO` | segredo público de desenvolvimento | chave HS256 do token (≥ 32 bytes) |
 | `SEED_ADMIN_EMAIL` / `SEED_ADMIN_SENHA` | `admin@saudeplus.com` / `Admin@SaudePlus2026` | conta inicial de admin |
 | `SEED_MEDICO_EMAIL` / `SEED_MEDICO_SENHA` | `medico@saudeplus.com` / `Medico@SaudePlus2026` | conta inicial de médico |
+| `SEED_MEDICO_CRM` / `SEED_MEDICO_CRM_UF` | `112.233` / `RJ` | CRM do perfil do médico inicial (sem CRM, o perfil não é criado) |
+| `SEED_MEDICO_ESPECIALIDADE` / `SEED_MEDICO_UNIDADE` | `clinico-geral` / `Clínica da Família – Centro` | especialidade (slug) e unidade (nome) do médico inicial |
 
 O perfil `prod` não tem valores padrão para o banco nem para o JWT: as
 variáveis `DB_*` e `JWT_SEGREDO` são obrigatórias, e a aplicação não sobe com um
@@ -54,7 +60,26 @@ segredo curto. As contas iniciais só são criadas em `prod` se `SEED_*_SENHA`
 vier definida, e nunca sobrescrevem uma conta que já existe. O Spring Boot não
 lê arquivos `.env`.
 
-Sem SMTP, o link de "esqueci minha senha" sai no log do servidor.
+Sem SMTP, em `dev` e `test` o link de "esqueci minha senha" sai no log do
+servidor. Em `prod`, o log registra só que o e-mail não foi enviado, sem o
+link (ele dá acesso à conta).
+
+Login e recuperação de senha têm limite de tentativas (`saudeplus.limites.*`,
+padrão: 5 falhas de login em 15 min por IP + e-mail, 3 pedidos de recuperação
+por hora por e-mail); ao passar, a API responde `429`.
+
+### Dados de demonstração
+
+Nos perfis `dev` e `test`, o Flyway também carrega
+`src/main/resources/db/demo/R__dados_demonstracao.sql`: unidades em cinco cidades
+e sete médicos com especialidades, convênios e disponibilidades, usados pela
+busca pública, e oito pacientes. Todas essas contas entram com a senha
+`Demo@SaudePlus2026` (e-mails `*@demo.saudeplus.com`). No perfil `dev`, a cada
+subida, `demo/AgendaDeDemonstracao` também garante uma agenda para hoje do
+médico inicial, com exames pendentes, notificações e as cobranças das
+consultas (pagas as realizadas, pendentes as demais). O arquivo é uma migração
+repetível com ids fixos: editar e reiniciar reaplica sem duplicar. Nunca é
+carregado em `prod`.
 
 ## Testar e empacotar
 
@@ -73,15 +98,27 @@ No Linux/macOS, use `sh ./mvnw verify` ou `sh ./mvnw spring-boot:run`.
 ## Organização
 
 - `src/main/java/br/com/saudeplus/`: pacotes por domínio (controller → service → repository, DTOs em `dto/`).
-- `comum/`: base das entidades JPA (`EntidadeBase`, id UUID) e o envelope `Pagina<T>`.
+- `comum/`: base das entidades JPA (`EntidadeBase`, id UUID), o envelope `Pagina<T>` e a exportação CSV/PDF (`Exportacao`).
 - `config/`: CORS, `Clock` no fuso de negócio e metadados do OpenAPI.
 - `exception/`: exceções de domínio e o tratador que gera o corpo de erro de `docs/api.md`.
 - `security/`: JWT (emissão e validação), regras de acesso por prefixo e respostas 401/403.
 - `auth/`: login, cadastro de paciente, perfil, troca e recuperação de senha, contas iniciais.
 - `usuarios/`: a conta de acesso (`Usuario`) e o `Papel`.
-- `src/main/resources/db/migration/`: `V1__schema.sql` (schema completo) e `V2__seed_referencia.sql` (especialidades, convênios, tipos de exame, permissões e configurações).
+- `profissionais/`, `clinicas/`: médicos, especialidades, convênios e unidades.
+- `agenda/`, `agendamentos/`: janelas de atendimento, bloqueios, cálculo de horários livres e agendamentos com o status unificado.
+- `areamedico/`: rotas `/api/medico/*` (painel, agenda, pacientes, configuração da agenda).
+- `areapaciente/`: rotas `/api/paciente/*` (painel, reservar, cancelar, remarcar, histórico, avaliações, exames).
+- `exames/`, `arquivos/`: ciclo do exame (pedido, coleta, análise, resultado) e armazenamento dos arquivos.
+- `admin/`: rotas `/api/admin/*`: usuários (inclui criar médico), unidades, catálogos, agendamentos, dashboard, exames da clínica, financeiro e relatórios.
+- `financeiro/`: cobranças (`Transacao`), geradas ao confirmar a consulta e anuladas ao cancelar; resumo e exportação.
+- `configuracoes/`: grupos de configuração (o `agendamento` alimenta `agenda/RegrasDaAgenda`) e a matriz de permissões.
+- `auditoria/`: registro de atividades e sua consulta.
+- `notificacoes/`: caixa de notificações; eventos de agendamento e de exame viram avisos depois do commit.
+- `demo/`: agenda de demonstração do médico inicial, só no perfil `dev`.
+- `publico/`: rotas sem login da busca de profissionais (`/api/publico/*`).
+- `src/main/resources/db/migration/`: `V1__schema.sql` (schema completo), `V2__seed_referencia.sql` (especialidades, convênios, tipos de exame, permissões e configurações), `V3__permissoes_padrao_seguras.sql`, `V4__transacoes_pagamento.sql`, `V5__controle_de_concorrencia.sql` (versão para travamento otimista de consultas e cobranças) e `V6__integridade_da_agenda_e_lgpd.sql` (sem consultas sobrepostas, cobrança única por consulta, índices e marcações LGPD; ver [docs/banco-de-dados.md](../docs/banco-de-dados.md)); `db/demo/` só em dev e test.
 
-Regras de schema: toda mudança no banco é uma migração nova (`V3__...sql`);
+Regras de schema: toda mudança no banco é uma migração nova (`V7__...sql`);
 nunca edite uma migração já aplicada. O Hibernate só valida (`ddl-auto: validate`).
 
 Consulte [a arquitetura](../docs/arquitetura.md) e o [contrato da API](../docs/api.md).

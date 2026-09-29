@@ -23,6 +23,9 @@ import UnitCard from "../components/UnitCard/UnitCard.jsx";
 import DayAgendaCard from "../components/DayAgendaCard/DayAgendaCard.jsx";
 import HighlightCard from "../components/HighlightCard/HighlightCard.jsx";
 
+import { NavegacaoProvider } from "../navegacao/NavegacaoProvider.jsx";
+import { irAtePainel } from "../foco.js";
+
 import {
   AGENDA,
   DATA_REFERENCIA,
@@ -47,6 +50,29 @@ import styles from "./DashboardMedico.module.css";
 
 const PACIENTES_NO_PAINEL = 5;
 
+/* ============================================================================
+   O QUE CADA CONTROLE DESTA TELA FAZ
+   ============================================================================
+
+   Funciona hoje, sem depender de tela nova:
+   - os quatro cartões de resumo levam ao painel que resumem, já filtrado;
+   - o filtro da agenda (inclusive "Próximas", o mesmo recorte do cartão);
+   - o sino do cabeçalho desce até as Notificações;
+   - o menu da conta, no avatar;
+   - "Ver no mapa", que abre o endereço da unidade no Google Maps;
+   - o telefone da unidade, que abre o discador.
+
+   Reservado — abre o aviso dizendo o destino (veja `../rotas.js`):
+   - os menus superior e lateral, e a marca;
+   - "Ver agenda completa", "Ver todos" e "Ver todas";
+   - clicar numa linha da agenda ou da lista de pacientes;
+   - os itens do menu da conta;
+   - o envio da busca do cabeçalho.
+
+   ATIVAR ROTAS: nada nesta tela precisa mudar. Siga o passo a passo no
+   cabeçalho de `../rotas.js` — os `irPara(...)` daqui passam a navegar.
+   ========================================================================= */
+
 /**
  * Dashboard do Médico — SaúdePlus.
  *
@@ -54,7 +80,18 @@ const PACIENTES_NO_PAINEL = 5;
  * dados da API mantendo o mesmo formato:
  *   <DashboardMedico medico={...} agenda={...} pacientes={...} />
  */
-export default function DashboardMedico({
+export default function DashboardMedico(props) {
+  /* O provider precisa envolver o cabeçalho e a barra lateral, que também
+     chamam `irPara`. Por isso o conteúdo fica num componente separado: um
+     componente não consegue usar o contexto que ele mesmo cria. */
+  return (
+    <NavegacaoProvider>
+      <PainelDoMedico {...props} />
+    </NavegacaoProvider>
+  );
+}
+
+function PainelDoMedico({
   medico = MEDICO,
   unidade = UNIDADE,
   agenda = AGENDA,
@@ -90,6 +127,15 @@ export default function DashboardMedico({
 
   const naoLidas = notificacoes.filter(({ lida }) => !lida).length;
 
+  /** Atalho dos cartões: filtra a agenda e leva a pessoa até ela. */
+  const verAgendaFiltradaPor = (filtro) => {
+    setStatusFiltro(filtro);
+    irAtePainel(ids.agenda);
+  };
+
+  /* Os cartões apontam para o painel que resumem, com o filtro que produz
+     exatamente o número mostrado — clicar em "Pacientes atendidos: 3" deixa
+     a agenda com 3 linhas, e não com um recorte parecido. */
   const cartoes = [
     {
       icon: CalendarIcon,
@@ -97,6 +143,8 @@ export default function DashboardMedico({
       rotulo: "Consultas hoje",
       valor: resumo.consultasHoje,
       apoio: "Agendadas",
+      acao: "Ver a agenda do dia",
+      aoClicar: () => verAgendaFiltradaPor("todas"),
     },
     {
       icon: UsersIcon,
@@ -104,6 +152,8 @@ export default function DashboardMedico({
       rotulo: "Pacientes atendidos",
       valor: resumo.pacientesAtendidos,
       apoio: `de ${resumo.consultasHoje}`,
+      acao: "Ver as consultas já realizadas",
+      aoClicar: () => verAgendaFiltradaPor("realizada"),
     },
     {
       icon: FlaskIcon,
@@ -111,6 +161,8 @@ export default function DashboardMedico({
       rotulo: "Exames pendentes",
       valor: resumo.examesPendentes,
       apoio: "para resultado",
+      acao: "Ver os exames aguardando resultado",
+      aoClicar: () => irAtePainel(ids.exames),
     },
     {
       icon: ClockIcon,
@@ -120,6 +172,8 @@ export default function DashboardMedico({
       apoio: resumo.primeiroHorarioPendente
         ? `a partir das ${resumo.primeiroHorarioPendente}`
         : "nenhuma pendente",
+      acao: "Ver as consultas que ainda não começaram",
+      aoClicar: () => verAgendaFiltradaPor("pendentes"),
     },
   ];
 
@@ -135,7 +189,7 @@ export default function DashboardMedico({
         icon={BellIcon}
         titulo="Notificações"
         titleId={ids.notificacoes}
-        acao={{ rotulo: "Ver todas", href: "#" }}
+        acao={{ rotulo: "Ver todas", destino: "notificacoes" }}
       >
         <NotificationList notificacoes={notificacoes} />
       </Panel>
@@ -143,13 +197,18 @@ export default function DashboardMedico({
       <HighlightCard
         variante="linha"
         icon={ShieldHeartIcon}
-        titulo={`Juntos por uma saúde melhor em ${unidade.cidade}!`}
+        titulo={`Juntos por uma saúde melhor em ${unidade?.cidade ?? "sua cidade"}!`}
       />
     </>
   );
 
   return (
-    <DashboardLayout medico={medico} totalNotificacoes={naoLidas} aside={colunaDireita}>
+    <DashboardLayout
+      medico={medico}
+      totalNotificacoes={naoLidas}
+      idPainelNotificacoes={ids.notificacoes}
+      aside={colunaDireita}
+    >
       <WelcomeBanner
         nome={medico.nome}
         subtitulo="Aqui está um resumo da sua rotina de hoje."
@@ -171,13 +230,14 @@ export default function DashboardMedico({
           icon={CalendarIcon}
           titulo="Minha agenda de hoje"
           titleId={ids.agenda}
-          acao={{ rotulo: "Ver agenda completa", href: "#" }}
+          acao={{ rotulo: "Ver agenda completa", destino: "agenda" }}
           aside={
             <AgendaFilter
               valor={statusFiltro}
               onChange={setStatusFiltro}
               contagem={contagem}
               total={agenda.length}
+              pendentes={resumo.proximasConsultas}
             />
           }
         >
@@ -198,7 +258,7 @@ export default function DashboardMedico({
             icon={UsersIcon}
             titulo="Seus pacientes"
             titleId={ids.pacientes}
-            acao={{ rotulo: "Ver todos", href: "#" }}
+            acao={{ rotulo: "Ver todos", destino: "pacientes" }}
           >
             <PatientList pacientes={pacientes} limite={PACIENTES_NO_PAINEL} />
           </Panel>
@@ -207,7 +267,7 @@ export default function DashboardMedico({
             icon={StethoscopeIcon}
             titulo="Exames pendentes"
             titleId={ids.exames}
-            acao={{ rotulo: "Ver todos", href: "#" }}
+            acao={{ rotulo: "Ver todos", destino: "exames" }}
           >
             <PendingExamList exames={examesResolvidos} />
           </Panel>

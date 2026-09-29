@@ -12,10 +12,6 @@ spring:
     hibernate:
       # O schema é do Flyway; o Hibernate só confere se as entidades batem.
       ddl-auto: validate
-    properties:
-      hibernate:
-        jdbc:
-          time_zone: UTC
   flyway:
     locations: classpath:db/migration
   docker:
@@ -23,6 +19,11 @@ spring:
       enabled: false
   jackson:
     time-zone: UTC
+  servlet:
+    multipart:
+      # Resultado de exame: até 10 MB (o service confere de novo).
+      max-file-size: 10MB
+      max-request-size: 11MB
 
 server:
   port: ${SERVER_PORT:8080}
@@ -35,14 +36,39 @@ springdoc:
 
 saudeplus:
   fuso-horario: America/Sao_Paulo
+  agenda:
+    # Horários que começam antes de "agora + antecedência" não são oferecidos.
+    antecedencia-minima: 2h
+    janela-maxima-dias: 60
+    # Paciente cancela ou remarca até este tempo antes da consulta.
+    antecedencia-cancelamento: 24h
   front-url: ${FRONT_URL:http://localhost:5173}
+  arquivos:
+    # Pasta dos resultados de exame. Em produção, aponte para um volume persistente.
+    dir: ${ARQUIVOS_DIR:./dados/arquivos}
   jwt:
     # HS256 exige ao menos 32 bytes. Sem valor aqui de propósito: dev e test
     # definem um segredo público abaixo; prod precisa de JWT_SEGREDO.
     segredo: ${JWT_SEGREDO:}
     validade: 8h
+  # Contra adivinhação de senha e bombardeio de e-mails: passou do limite, 429.
+  limites:
+    login-por-conta: { maximo: 5, janela: 15m }
+    login-por-ip: { maximo: 30, janela: 15m }
+    recuperacao-por-conta: { maximo: 3, janela: 1h }
+    recuperacao-por-ip: { maximo: 10, janela: 1h }
+  # Prazos de guarda de dados operacionais (LGPD). Prontuário, exames e
+  # cobranças não entram aqui: o prontuário se guarda por 20 anos (CFM 1.821/2007).
+  retencao:
+    cron: "0 30 3 * * *"
+    notificacoes-lidas: 180d
+    tokens-de-senha: 30d
+    # Mínimo de 6 meses (Marco Civil da Internet, art. 15).
+    auditoria: 1825d
   redefinicao-senha:
     validade: 30m
+    # Link de convite de contas criadas pela administração.
+    validade-convite: 72h
   # Contas criadas na inicialização se o e-mail ainda não existir. Conta com
   # senha em branco é ignorada, então prod só cria o que vier por ambiente.
   contas-iniciais:
@@ -54,6 +80,11 @@ saudeplus:
       email: ${SEED_MEDICO_EMAIL:medico@saudeplus.com}
       senha: ${SEED_MEDICO_SENHA:}
       nome: Dr. Carlos Andrade
+      perfil:
+        crm: ${SEED_MEDICO_CRM:}
+        crm-uf: ${SEED_MEDICO_CRM_UF:}
+        especialidade: ${SEED_MEDICO_ESPECIALIDADE:clinico-geral}
+        unidade: ${SEED_MEDICO_UNIDADE:}
 
 ---
 spring:
@@ -65,6 +96,8 @@ spring:
       enabled: true
       file: compose.yaml
       lifecycle-management: start-only
+  flyway:
+    locations: classpath:db/migration,classpath:db/demo
 
 springdoc:
   api-docs:
@@ -80,14 +113,29 @@ saudeplus:
       senha: ${SEED_ADMIN_SENHA:Admin@SaudePlus2026}
     medico:
       senha: ${SEED_MEDICO_SENHA:Medico@SaudePlus2026}
+      perfil:
+        crm: ${SEED_MEDICO_CRM:112.233}
+        crm-uf: ${SEED_MEDICO_CRM_UF:RJ}
+        unidade: ${SEED_MEDICO_UNIDADE:Clínica da Família – Centro}
 
 ---
 spring:
   config:
     activate:
       on-profile: test
+  flyway:
+    locations: classpath:db/migration,classpath:db/demo
 
 saudeplus:
+  arquivos:
+    dir: ${java.io.tmpdir}/saudeplus-testes/arquivos
+  # Todos os testes vêm do mesmo IP e dividem o contexto: limites altos aqui.
+  # Os limites de verdade são testados em LimiteDeTentativasApiTest.
+  limites:
+    login-por-conta: { maximo: 10000, janela: 15m }
+    login-por-ip: { maximo: 10000, janela: 15m }
+    recuperacao-por-conta: { maximo: 10000, janela: 1h }
+    recuperacao-por-ip: { maximo: 10000, janela: 1h }
   jwt:
     segredo: ${JWT_SEGREDO:dev-somente-local-troque-em-producao-0123456789}
   contas-iniciais:
@@ -95,6 +143,10 @@ saudeplus:
       senha: ${SEED_ADMIN_SENHA:Admin@SaudePlus2026}
     medico:
       senha: ${SEED_MEDICO_SENHA:Medico@SaudePlus2026}
+      perfil:
+        crm: ${SEED_MEDICO_CRM:112.233}
+        crm-uf: ${SEED_MEDICO_CRM_UF:RJ}
+        unidade: ${SEED_MEDICO_UNIDADE:Clínica da Família – Centro}
 
 ---
 spring:

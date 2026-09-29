@@ -20,9 +20,13 @@ const mesAbreviado = (valor) => capitalizar(formatoMes.format(paraData(valor)).r
 
 /** Mesmos status de ListaAgendamentos */
 const STATUS = {
-  confirmada: { rotulo: 'Confirmada', tom: 'sucesso' },
   pendente: { rotulo: 'Pendente', tom: 'alerta' },
+  confirmada: { rotulo: 'Confirmada', tom: 'sucesso' },
+  aguardando: { rotulo: 'Aguardando', tom: 'alerta' },
+  em_andamento: { rotulo: 'Em andamento', tom: 'sucesso' },
+  realizada: { rotulo: 'Realizada', tom: 'neutro' },
   cancelada: { rotulo: 'Cancelada', tom: 'perigo' },
+  faltou: { rotulo: 'Não compareceu', tom: 'perigo' },
 };
 
 const propsSvg = {
@@ -63,9 +67,31 @@ const IconeUsuario = ({ className }) => (
    specialty, professional, status.
   */
 
-function CartaoConsulta({ consulta, passada = false }) {
+/**
+ * `aoCancelar` e `aoRemarcar` recebem a consulta e podem devolver uma
+ * promessa. Os botões só aparecem quando a consulta ainda pode ser alterada
+ * (`podeAlterar`, calculado pela API: status e antecedência mínima).
+ */
+function CartaoConsulta({ consulta, passada = false, aoCancelar, aoRemarcar }) {
   const infoStatus = STATUS[consulta.status] ?? { rotulo: consulta.status, tom: 'neutro' };
   const quando = paraData(consulta.dateTime);
+  const [confirmando, setConfirmando] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState(null);
+  const temAcoes = consulta.podeAlterar && (aoCancelar || aoRemarcar);
+
+  const cancelar = async () => {
+    setEnviando(true);
+    setErro(null);
+    try {
+      await aoCancelar(consulta);
+    } catch (falha) {
+      setErro(falha?.message ?? 'Não foi possível cancelar.');
+      setConfirmando(false);
+    } finally {
+      setEnviando(false);
+    }
+  };
 
   return (
     <li className={`${estilos.cartaoItem} ${passada ? estilos.cartaoPassado : ''}`}>
@@ -100,6 +126,36 @@ function CartaoConsulta({ consulta, passada = false }) {
             <span>{formatoHora.format(quando)}</span>
           </p>
         </div>
+
+        {temAcoes && (
+          <div className={estilos.acoes}>
+            {confirmando ? (
+              <>
+                <span className={estilos.acoesPergunta}>Cancelar esta consulta?</span>
+                <button type="button" className={estilos.botaoPerigo} onClick={cancelar} disabled={enviando}>
+                  {enviando ? 'Cancelando…' : 'Sim, cancelar'}
+                </button>
+                <button type="button" className={estilos.botaoAcao} onClick={() => setConfirmando(false)}>
+                  Voltar
+                </button>
+              </>
+            ) : (
+              <>
+                {aoRemarcar && (
+                  <button type="button" className={estilos.botaoAcao} onClick={() => aoRemarcar(consulta)}>
+                    Remarcar
+                  </button>
+                )}
+                {aoCancelar && (
+                  <button type="button" className={estilos.botaoAcao} onClick={() => setConfirmando(true)}>
+                    Cancelar consulta
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+        )}
+        {erro && <p className={estilos.erroAcao} role="alert">{erro}</p>}
       </div>
     </li>
   );
@@ -110,7 +166,11 @@ function CartaoConsulta({ consulta, passada = false }) {
    Rota: /consultas
     */
 
-export default function ConsultasPage({ consultas = mockAppointments }) {
+/**
+ * `aviso` aparece acima da lista (ex.: dados de demonstração);
+ * `aoCancelar`/`aoRemarcar` ligam as ações dos cartões.
+ */
+export default function ConsultasPage({ consultas = mockAppointments, aviso = null, aoCancelar, aoRemarcar }) {
   // Instante fixado na montagem: Date.now() direto no render é impuro.
   const [agora] = useState(() => Date.now());
 
@@ -153,6 +213,8 @@ export default function ConsultasPage({ consultas = mockAppointments }) {
           </div>
         </header>
 
+        {aviso}
+
         {/* ---- Próximas ---- */}
         <section className={estilos.secao} aria-labelledby="proximas-consultas">
           <div className={estilos.secaoCabecalho}>
@@ -165,7 +227,7 @@ export default function ConsultasPage({ consultas = mockAppointments }) {
           {proximas.length > 0 ? (
             <ul className={estilos.lista}>
               {proximas.map((consulta) => (
-                <CartaoConsulta key={consulta.id} consulta={consulta} />
+                <CartaoConsulta key={consulta.id} consulta={consulta} aoCancelar={aoCancelar} aoRemarcar={aoRemarcar} />
               ))}
             </ul>
           ) : (

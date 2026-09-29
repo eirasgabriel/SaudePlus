@@ -20,7 +20,7 @@
    variáveis globais do restante da aplicação. */
 .pagina {
   /* Paleta oficial */
-  --primary: #0066ff;
+  --primary: var(--color-primary);
   --primary-700: #0052d6;
   --primary-100: #dceaff;
   --primary-50: #eef5ff;
@@ -98,7 +98,7 @@
 }
 
 .pagina :focus-visible {
-  outline: 3px solid rgba(0, 102, 255, 0.45);
+  outline: 3px solid rgba(0, 112, 232, 0.45);
   outline-offset: 2px;
   border-radius: 10px;
 }
@@ -658,7 +658,7 @@
     radial-gradient(120% 90% at 100% 100%, rgba(255, 255, 255, 0.14) 0 40%, transparent 41%),
     radial-gradient(90% 70% at 110% 110%, rgba(255, 255, 255, 0.1) 0 45%, transparent 46%),
     linear-gradient(135deg, #1a82ff 0%, var(--primary) 55%, var(--primary-700) 100%);
-  box-shadow: 0 14px 32px rgba(0, 102, 255, 0.25);
+  box-shadow: 0 14px 32px rgba(0, 112, 232, 0.25);
 }
 
 .agendarIcone {

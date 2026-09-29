@@ -195,6 +195,12 @@
   border: 2px solid var(--branco);
 }
 
+/* Âncora do menu da conta: o MenuPerfil é posicionado em relação a esta
+   caixa, então ela precisa de `position: relative`. */
+.perfilCaixa {
+  position: relative;
+}
+
 .perfil {
   display: flex;
   align-items: center;
@@ -307,7 +313,7 @@
   border-radius: 13px;
   display: grid;
   place-items: center;
-  background: rgba(0, 102, 255, 0.14);
+  background: rgba(0, 112, 232, 0.14);
   color: var(--azul);
   margin-bottom: 12px;
 }
@@ -325,7 +331,7 @@
   position: absolute;
   right: 14px;
   bottom: 12px;
-  color: rgba(0, 102, 255, 0.25);
+  color: rgba(0, 112, 232, 0.25);
 }
 
 /* =========================================================

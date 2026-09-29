@@ -28,6 +28,7 @@ public class RecuperacaoDeSenhaService {
     private final Clock relogio;
     private final String urlDoFront;
     private final Duration validade;
+    private final Duration validadeDoConvite;
 
     public RecuperacaoDeSenhaService(
             UsuarioRepository usuarios,
@@ -36,7 +37,8 @@ public class RecuperacaoDeSenhaService {
             EnvioEmail email,
             Clock relogio,
             @Value("${saudeplus.front-url}") String urlDoFront,
-            @Value("${saudeplus.redefinicao-senha.validade:30m}") Duration validade) {
+            @Value("${saudeplus.redefinicao-senha.validade:30m}") Duration validade,
+            @Value("${saudeplus.redefinicao-senha.validade-convite:72h}") Duration validadeDoConvite) {
         this.usuarios = usuarios;
         this.tokens = tokens;
         this.codificador = codificador;
@@ -44,6 +46,25 @@ public class RecuperacaoDeSenhaService {
         this.relogio = relogio;
         this.urlDoFront = urlDoFront.replaceAll("/+$", "");
         this.validade = validade;
+        this.validadeDoConvite = validadeDoConvite;
+    }
+
+    /**
+     * Conta criada pela administração: em vez de uma senha escolhida por
+     * outra pessoa, a própria pessoa define a sua pelo link do convite.
+     */
+    @Transactional
+    public void convidar(Usuario usuario) {
+        String link = novoLink(usuario, validadeDoConvite);
+        email.enviar(usuario.getEmail(), "Sua conta no SaudePlus", """
+                Olá, %s.
+
+                Uma conta foi criada para você no SaudePlus. Para definir sua senha e entrar, use o link abaixo em até %d horas:
+
+                %s
+
+                Se o link expirar, use "Esqueci minha senha" na tela de login.""".formatted(
+                usuario.getNomeCompleto(), validadeDoConvite.toHours(), link));
     }
 
     /**
@@ -68,13 +89,17 @@ public class RecuperacaoDeSenhaService {
         token.getUsuario().trocarSenha(codificador.encode(novaSenha));
     }
 
-    private void emitirLink(Usuario usuario) {
+    /** Emite um token novo (invalidando os pendentes) e devolve o link do front. */
+    private String novoLink(Usuario usuario, Duration duracao) {
         tokens.apagarPendentesDoUsuario(usuario.getId());
         Instant agora = relogio.instant();
         String tokenEmClaro = TokenRedefinicaoSenha.gerarTokenEmClaro();
-        tokens.save(new TokenRedefinicaoSenha(usuario, tokenEmClaro, agora, agora.plus(validade)));
+        tokens.save(new TokenRedefinicaoSenha(usuario, tokenEmClaro, agora, agora.plus(duracao)));
+        return "%s/redefinir-senha?token=%s".formatted(urlDoFront, tokenEmClaro);
+    }
 
-        String link = "%s/redefinir-senha?token=%s".formatted(urlDoFront, tokenEmClaro);
+    private void emitirLink(Usuario usuario) {
+        String link = novoLink(usuario, validade);
         email.enviar(usuario.getEmail(), "Redefinição de senha — SaudePlus", """
                 Olá, %s.
 

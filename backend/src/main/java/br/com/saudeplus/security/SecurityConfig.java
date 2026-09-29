@@ -35,22 +35,13 @@ public class SecurityConfig {
         "/api/auth/login", "/api/auth/cadastro", "/api/auth/recuperar-senha", "/api/auth/redefinir-senha",
     };
 
-    /**
-     * Rotas do painel do médico criadas antes da autenticação, com o id do
-     * médico no caminho. Migram para `/api/medico/**` (id vindo do token) na
-     * fase de agendamentos; até lá, ficam restritas ao papel MEDICO.
-     */
-    private static final String[] PAINEL_MEDICO_LEGADO = {
-        "/api/medicos/**", "/api/agendamentos/**", "/api/pacientes/**", "/api/clinicas/**",
-    };
-
     private static final String[] DOCUMENTACAO = {
         "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
     };
 
     @Bean
-    SecurityFilterChain cadeiaDeSeguranca(HttpSecurity http, ConversorDeJwt conversor, RespostasDeSeguranca respostas)
-            throws Exception {
+    SecurityFilterChain cadeiaDeSeguranca(HttpSecurity http, ConversorDeJwt conversor, RespostasDeSeguranca respostas,
+            AcessoAoAdmin acessoAoAdmin) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
@@ -65,10 +56,10 @@ public class SecurityConfig {
                         // Só respondem no perfil dev; nos demais, o springdoc está desligado.
                         .requestMatchers(DOCUMENTACAO).permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // ADMIN, ou equipe com o módulo liberado na matriz de permissões.
+                        .requestMatchers("/api/admin/**").access(acessoAoAdmin)
                         .requestMatchers("/api/medico/**").hasRole("MEDICO")
                         .requestMatchers("/api/paciente/**").hasRole("PACIENTE")
-                        .requestMatchers(PAINEL_MEDICO_LEGADO).hasRole("MEDICO")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(servidor -> servidor
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(conversor))

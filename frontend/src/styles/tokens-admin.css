@@ -5,17 +5,23 @@
    tinha um tokens.css próprio (os nomes de variáveis não se
    sobrepõem). Importado em src/main.jsx, antes de global.css.
    A fonte Inter já é carregada pelo index.html.
+
+   A rampa de azul NÃO é mais literal: deriva de `--color-primary`, definido
+   em tokens.css. Antes eram dois azuis quase iguais (#0066ff aqui, #0066F5
+   lá) que ninguém conseguia manter em sincronia. Os nomes em português
+   continuam — as 19 folhas de estilo do admin usam `var(--azul)` e não
+   precisam ser reescritas.
    ========================================================= */
 
 :root {
-  /* --- Paleta oficial --- */
-  --azul: #0066ff;
-  --azul-hover: #0052cc;
-  --azul-escuro: #003d99;
-  --azul-medio: #2e86ff;
-  --azul-suave: #7fb2ff;
-  --azul-claro: #e8f0ff;
-  --azul-bg: #f2f7ff;
+  /* --- Paleta oficial: apelidos da rampa de tokens.css --- */
+  --azul: var(--color-primary);
+  --azul-hover: var(--color-primary-hover);
+  --azul-escuro: var(--color-primary-dark);
+  --azul-medio: #4798EE;
+  --azul-suave: #94C3F5;
+  --azul-claro: #E6F1FD;
+  --azul-bg: #F4F9FE;
 
   /* --- Status --- */
   --verde: #16a34a;
@@ -48,7 +54,7 @@
   /* --- Sombras --- */
   --sombra: 0 1px 2px rgba(15, 31, 61, 0.04), 0 6px 18px rgba(15, 31, 61, 0.05);
   --sombra-md: 0 2px 6px rgba(15, 31, 61, 0.06), 0 12px 28px rgba(15, 31, 61, 0.08);
-  --sombra-azul: 0 8px 24px rgba(0, 102, 255, 0.28);
+  --sombra-azul: 0 8px 24px rgba(0, 112, 232, 0.28);
 
   /* --- Layout --- */
   --sidebar-w: 232px;

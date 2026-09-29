@@ -27,38 +27,61 @@ de `src/layouts/` e os componentes compartilhados de `src/components/`.
 Os estilos usam CSS Modules e os tokens de `src/styles/tokens.css`.
 Imagens e conteúdo demonstrativo foram adaptados da referência fornecida.
 As páginas de Especialidades, Busca, Como funciona, Sobre nós e Ajuda estão
-integradas com React Router. Busca, filtros, ordenação e perguntas frequentes usam
-dados locais demonstrativos. Os botões Entrar e Criar conta do cabeçalho levam a `/login` e `/cadastro`;
-agendamento, perfil completo e suporte exibem um aviso de indisponibilidade. Nenhum agendamento é enviado ao servidor.
+integradas com React Router. A busca de profissionais vem da API
+(`/api/publico/*`); perguntas frequentes e textos institucionais são locais.
+Cada profissional tem uma página de perfil (`/profissionais/:id`) com
+horários livres, unidades, convênios e avaliações. "Agendar consulta" (no
+perfil ou no cartão da busca) leva a `/paciente/consultas?agendar=<id>`, que
+abre o agendamento com o profissional, e o dia e horário se escolhidos, já
+preenchidos. Sem login, a pessoa passa pelo login ou cadastro e volta para lá
+(`features/auth/destinoPendente.js`). Com a API fora do ar, os cartões de
+demonstração e o suporte exibem um aviso de indisponibilidade.
 
-Rotas: `/`, `/especialidades`, `/buscar`, `/como-funciona`, `/sobre-nos` e `/ajuda`.
-A busca aceita `q`, `especialidade`, `profissional`, `cidade` e `tipo` na URL.
+Rotas públicas: `/`, `/especialidades`, `/buscar`, `/profissionais/:id`, `/como-funciona`, `/sobre-nos` e `/ajuda`.
+A busca aceita `q`, `especialidade`, `cidade` (`"Cidade - UF"`) e `tipo` na URL.
 Em produção, configure o servidor para devolver `index.html` nas rotas da aplicação,
 permitindo abrir ou atualizar os endereços diretamente.
 
-`npm test` verifica a renderização das rotas, a estrutura do layout, os parâmetros
-de busca e estados sem resultados. A revisão visual deve ser feita no navegador.
+`npm test` (arquivos em `scripts/*.test.mjs`) verifica:
+
+- `pages`: a renderização das rotas públicas e a estrutura do layout;
+- `busca`: as regras da busca de profissionais (URL → filtros → parâmetros da
+  API, resposta → cartão e o filtro local usado sem API);
+- `perfil`: o perfil do profissional, o link de agendamento e a volta ao
+  destino depois do login;
+- `dom`: telas montadas num DOM de verdade (jsdom) com uma API falsa: busca com
+  e sem API, perfil, destaques e o fluxo "Agendar" → login → agendamento
+  preenchido → reserva. O ambiente fica em `scripts/dom-ambiente.mjs`
+  (`apiFalsa`, `renderizar`, `esperar`, `clicar`, `digitar`);
+- `adaptadores`: a conversão das respostas da API para as telas do paciente e
+  da administração;
+- `medico`: o painel do médico.
+
+A revisão visual deve ser feita no navegador.
 
 Consulte [a arquitetura](../docs/arquitetura.md) para saber onde adicionar componentes,
-páginas, estilos e integrações. A base do back-end usa Java + Spring Boot; os endpoints ainda não estão implementados.
+páginas, estilos e integrações.
+
 ## A API
 
-**O back-end ainda não tem os endpoints de autenticação.** As telas de login chamam
-`/api/auth/*`, então, enquanto essa parte da API não existir, entrar ou cadastrar
-mostra:
+O back-end fica em [`../backend`](../backend/README.md) (Java + Spring Boot).
+Suba-o antes do `npm run dev`; o Vite faz proxy de `/api` para
+`http://localhost:8080`, sem configurar URL nem lidar com CORS.
 
-> Não foi possível falar com o servidor. Verifique se a API está no ar e tente novamente.
+Com a API fora do ar:
 
-Isso é o comportamento esperado, não um defeito: as telas, as rotas, as validações
-e as mensagens funcionam normalmente. O contrato que a API precisa cumprir — rotas,
-corpos, códigos de erro e as contas fixas de médico e admin — está em
-[docs/api.md](../docs/api.md).
+- login e cadastro mostram *"Não foi possível falar com o servidor. Verifique se
+  a API está no ar e tente novamente."*;
+- a busca e as áreas logadas mostram dados de demonstração com uma faixa de
+  aviso, e as ações (agendar, salvar, exportar…) ficam desligadas.
 
-O Vite faz proxy de `/api` para `http://localhost:8080`, então qualquer API que
-rode nessa porta já é encontrada, sem configurar URL nem lidar com CORS. Para
-apontar para outro endereço, defina `VITE_API_URL` (lida por `src/services/http.js`)
-— por exemplo `VITE_API_URL=https://api.exemplo.com/api`. Nesse caso, a API precisa
-liberar a origem do front no CORS.
+Para apontar para outro servidor, defina `VITE_API_URL` com a URL **sem** o
+`/api` (lida por `src/services/http.js`; ver `.env.example`), por exemplo
+`VITE_API_URL=https://api.exemplo.com`. Nesse caso, a origem do front precisa
+estar liberada no CORS do back-end (`saudeplus.cors.origens`).
+
+As rotas estão documentadas em [docs/api.md](../docs/api.md) e nos
+`docs/api-*.md` de cada área.
 
 ## Rotas
 
@@ -70,9 +93,9 @@ liberar a origem do front no CORS.
 | `/redefinir-senha?token=...` | aberta a qualquer um — é o destino do link do e-mail |
 | `/paciente/*`, `/medico`, `/admin/*` | exigem o perfil correspondente (painéis reais do paciente, médico e admin) |
 
-Médico e admin não se cadastram: entram pelo `/login` com contas que a API precisa
-criar na inicialização. As credenciais combinadas estão em
-[docs/api.md](../docs/api.md).
+Médico e equipe não se cadastram: são criados pela administração, e as contas
+iniciais de admin e médico nascem com o servidor. As credenciais de
+desenvolvimento estão em [docs/api.md](../docs/api.md).
 
 `RotaProtegida` e `SomenteVisitante` são conveniência de navegação. A autorização
 de verdade tem que ser a do servidor.
@@ -86,7 +109,14 @@ de verdade tem que ser a do servidor.
   - `AuthProvider.jsx` + `auth.context.js`: usuário autenticado disponível na aplicação toda.
     O cadastro não abre a sessão sozinho — `aplicarSessao` é chamado quando o usuário
     sai da tela de "conta criada com sucesso", senão o redirecionamento engoliria a mensagem.
-- `src/services/http.js`: wrapper de `fetch` com o formato de erro da API.
+- `src/features/paciente/`, `medico/`, `admin/`: as chamadas à API de cada
+  área (`*.api.js`), os adaptadores de resposta e os componentes "conectados"
+  que ligam as telas à API.
+- `src/features/profissionais/`: busca pública e perfil do profissional
+  (`profissionais.api.js`, `buscaParametros.js`, `perfil.js`,
+  `pages/PerfilProfissional.jsx`) e os dados de demonstração.
+- `src/services/http.js`: wrapper de `fetch` com o token, o formato de erro da
+  API e o download de arquivos (`baixarArquivo`).
 - `src/services/sessaoStorage.js`: guarda o token. Com "Lembrar de mim" vai para o
   `localStorage`; sem, para o `sessionStorage` e some ao fechar a aba.
 - `src/styles/global.css`: tokens de cor, tipografia e reset.
@@ -105,9 +135,8 @@ A tela `/recuperar-senha` pede o link e a `/redefinir-senha?token=...` grava a n
 senha. O envio do e-mail e a geração do token são responsabilidade da API; o fluxo
 esperado está descrito em [docs/api.md](../docs/api.md).
 
-Para ver a tela `/redefinir-senha` sem uma API no ar, abra-a com qualquer token na
-URL, por exemplo `http://localhost:5173/redefinir-senha?token=teste`. Sem o
-parâmetro `token`, ela mostra de propósito o estado "Link inválido".
+Sem SMTP, o back-end escreve o link no log do servidor: copie de lá e abra no
+navegador. Sem o parâmetro `token`, a tela mostra de propósito o estado "Link inválido".
 
 ## Pendências conhecidas
 

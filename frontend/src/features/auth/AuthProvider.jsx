@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { definirAoRecusarSessao } from '../../services/http.js'
 import { lerToken, limparToken, salvarToken } from '../../services/sessaoStorage.js'
 import { autenticar, buscarPerfil, cadastrarPaciente } from './auth.api.js'
 import { AuthContext } from './auth.context.js'
@@ -44,6 +45,18 @@ export default function AuthProvider({ children }) {
       ativo = false
     }
   }, [])
+
+  // O servidor recusou o token no meio do uso (expirou, conta bloqueada):
+  // encerra a sessão. A RotaProtegida leva ao login e guarda a tela atual,
+  // para a pessoa voltar a ela depois de entrar.
+  useEffect(
+    () =>
+      definirAoRecusarSessao(() => {
+        limparToken()
+        setUsuario(null)
+      }),
+    [],
+  )
 
   const entrar = useCallback(async ({ email, senha, lembrar = true }) => {
     const resposta = await autenticar({ email, senha })

@@ -15,13 +15,13 @@ import {
 } from "../components/Tabela";
 import useTabela from "../services/useTabela";
 import {
-  metricas,
-  agendamentos,
+  metricas as metricasMock,
+  agendamentos as agendamentosMock,
   statusAgendamento,
   tiposCalendario,
   marcacoesSetembro,
-  filtrosClinica,
-  filtrosProfissional,
+  filtrosClinica as filtrosClinicaMock,
+  filtrosProfissional as filtrosProfissionalMock,
 } from "../services/dadosAdminAgendamentos";
 import comum from "../styles/adminComum.module.css";
 
@@ -35,8 +35,44 @@ const COLUNAS = [
   "Ações",
 ];
 
-export default function AdminAgendamentosPage() {
-  const [periodo, definirPeriodo] = useState("2026-09-15");
+/**
+ * Ações da linha com a API: confirmar o que está pendente, registrar a
+ * chegada do confirmado e cancelar enquanto a consulta não começou.
+ */
+function acoesDoAgendamento(a, aoAlterarStatus) {
+  const acoes = [];
+  if (a.status === "pendente") {
+    acoes.push({ icone: "checkCirculo", rotulo: "Confirmar", aoClicar: () => aoAlterarStatus(a, "confirmada") });
+  }
+  if (a.status === "confirmada") {
+    acoes.push({ icone: "usuario", rotulo: "Registrar chegada", aoClicar: () => aoAlterarStatus(a, "aguardando") });
+  }
+  if (a.status === "pendente" || a.status === "confirmada") {
+    acoes.push({ icone: "alertaX", rotulo: "Cancelar", tom: "perigo", aoClicar: () => aoAlterarStatus(a, "cancelada") });
+  }
+  return acoes;
+}
+
+/**
+ * Dados por prop, com os mocks como padrão. `aoMudarMes` avisa a navegação
+ * do calendário (para buscar as marcações do mês); `aoAlterarStatus(a, status)`
+ * liga as ações da linha.
+ */
+export default function AdminAgendamentosPage({
+  agendamentos = agendamentosMock,
+  metricas = metricasMock,
+  marcacoes = marcacoesSetembro,
+  mesInicial = new Date(2026, 8, 1),
+  diaSelecionado = 15,
+  filtrosClinica = filtrosClinicaMock,
+  filtrosProfissional = filtrosProfissionalMock,
+  periodoInicial = "2026-09-15",
+  aviso = null,
+  aoMudarMes,
+  aoAlterarStatus,
+}) {
+  const [periodo, definirPeriodo] = useState(periodoInicial);
+  const [hoje] = useState(() => new Date());
 
   const tabela = useTabela({
     dados: agendamentos,
@@ -55,8 +91,10 @@ export default function AdminAgendamentosPage() {
         titulo="Agendamentos"
         subtitulo="Gerencie os agendamentos de consultas e exames do sistema SaúdePlus."
         icone="calendario"
-        data={new Date(2026, 8, 15)}
+        data={hoje}
       />
+
+      {aviso}
 
       <section className={comum.metricas} aria-label="Indicadores de agendamentos">
         {metricas.map((m) => (
@@ -69,10 +107,11 @@ export default function AdminAgendamentosPage() {
         <div className={comum.colunaLateral}>
           <Cartao titulo="Calendário de Agendamentos" icone="calendario">
             <Calendario
-              mesInicial={new Date(2026, 8, 1)}
-              diaSelecionado={15}
-              marcacoes={marcacoesSetembro}
+              mesInicial={mesInicial}
+              diaSelecionado={diaSelecionado}
+              marcacoes={marcacoes}
               tipos={tiposCalendario}
+              aoMudarMes={aoMudarMes}
             />
           </Cartao>
 
@@ -125,7 +164,7 @@ export default function AdminAgendamentosPage() {
                 vazio="Nenhum agendamento encontrado com esses filtros."
               >
                 {tabela.visiveis.map((a) => {
-                  const status = statusAgendamento[a.status];
+                  const status = statusAgendamento[a.status] ?? { rotulo: a.status, variante: "neutro" };
                   return (
                     <tr key={a.id}>
                       <td>
@@ -162,15 +201,15 @@ export default function AdminAgendamentosPage() {
                       </td>
                       <td>
                         <AcoesLinha
-                          acoes={[
-                            { icone: "olho", rotulo: "Ver detalhes" },
-                            { icone: "lapis", rotulo: "Editar" },
-                            {
-                              icone: "maisOpcoes",
-                              rotulo: "Mais opções",
-                              tom: "neutra",
-                            },
-                          ]}
+                          acoes={
+                            aoAlterarStatus
+                              ? acoesDoAgendamento(a, aoAlterarStatus)
+                              : [
+                                  { icone: "olho", rotulo: "Ver detalhes" },
+                                  { icone: "lapis", rotulo: "Editar" },
+                                  { icone: "maisOpcoes", rotulo: "Mais opções", tom: "neutra" },
+                                ]
+                          }
                         />
                       </td>
                     </tr>

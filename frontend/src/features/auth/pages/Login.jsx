@@ -57,7 +57,7 @@ export default function Login() {
   }
 
   return (
-    <CartaoAuth atalho={{ texto: 'Criar conta', para: '/cadastro' }}>
+    <CartaoAuth voltarPara="/" atalho={{ texto: 'Criar conta', para: '/cadastro' }}>
       <form className="sp-form" onSubmit={enviar} noValidate>
         <h1 className="sp-form__titulo">Login</h1>
         <p className="sp-form__subtitulo">Acesse sua conta para continuar</p>
