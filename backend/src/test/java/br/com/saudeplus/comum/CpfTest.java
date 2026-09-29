@@ -24,6 +24,13 @@ class CpfTest {
     }
 
     @Test
+    @DisplayName("completa 9 dígitos com os verificadores")
+    void geraDigitos() {
+        assertEquals("529.982.247-25", Cpf.comDigitosVerificadores("529982247"));
+        assertThrows(IllegalArgumentException.class, () -> Cpf.comDigitosVerificadores("52998224"));
+    }
+
+    @Test
     @DisplayName("recusa dígito verificador errado, tamanho errado e dígitos repetidos")
     void recusa() {
         assertThrows(IllegalArgumentException.class, () -> Cpf.normalizar("529.982.247-24"));

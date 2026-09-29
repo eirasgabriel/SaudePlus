@@ -103,6 +103,27 @@ A tela inicial numa requisição só. Sem `data`, usa hoje.
 
 As duas `PATCH` devolvem a consulta atualizada, no formato de `agenda[]`.
 
+| Rota | Faz |
+| --- | --- |
+| `GET /api/medico/consultas?de=&ate=&status=&q=&ordem=&pagina=&tamanho=` | tela "Consultas": `Pagina` das consultas do período (padrão: 30 dias antes e depois de hoje; até 1 ano, senão `400`), em ordem de data e hora; `ordem=recentes` inverte; `q` filtra pelo nome do paciente; até 100 por página |
+| `GET /api/medico/agendamentos/{id}` | detalhe da consulta (abaixo); de outro médico, `404` |
+
+Item da lista: o de `agenda[]` mais `data`, `unidade` e `especialidade` (nomes).
+
+Detalhe:
+
+```json
+{ "id": "…", "data": "2026-09-29", "horario": "08:00", "duracaoMin": 30,
+  "paciente": { "id": "…", "nome": "Ana Paula Ferreira", "idade": 32, "sexo": "feminino" },
+  "tipoAtendimento": "consulta", "modalidade": "presencial", "status": "realizada", "alteravel": false,
+  "motivo": "Consulta de rotina", "resumo": "Paciente estável.", "desfecho": "Retorno em 30 dias.",
+  "motivoCancelamento": null, "unidade": { "id": "…", "nome": "Clínica da Família – Centro" },
+  "especialidade": { "id": "…", "nome": "Clínico Geral" },
+  "exames": [{ "id": "…", "nome": "Hemograma completo", "status": "solicitado", "prazo": null, "resultadoDisponivel": false }] }
+```
+
+`exames` são os pedidos com `agendamentoOrigemId` desta consulta.
+
 ### Pacientes e exames
 
 | Rota | Faz |
@@ -110,6 +131,8 @@ As duas `PATCH` devolvem a consulta atualizada, no formato de `agenda[]`.
 | `GET /api/medico/pacientes?q=&pagina=&tamanho=` | pacientes com consulta com este médico, por nome (`Pagina<…>`) |
 | `GET /api/medico/pacientes/{id}` | ficha: dados, histórico de consultas e exames **com este médico** |
 | `GET /api/medico/exames-pendentes` | exames pedidos por este médico ainda sem resultado, prazo mais próximo primeiro |
+| `GET /api/medico/exames?status=&pagina=&tamanho=` | tela "Exames": todos os pedidos por este médico, mais recentes primeiro, no formato de `exames-pendentes`; `status` é uma chave ou `pendentes` |
+| `GET /api/medico/exames/{id}` | detalhe: `{ id, nome, categoria, preparo, pacienteId, paciente, status, prazo, solicitadoEm, coletaEm, unidade, agendamentoOrigemId, resultadoDisponivel, resultadoLiberadoEm }`; de outro médico, `404` |
 | `POST /api/medico/exames` | pede um exame para um paciente seu (ver [api-exames.md](api-exames.md)) |
 | `GET /api/medico/exames/{id}/resultado` | arquivo do resultado de um exame que este médico pediu |
 
@@ -146,6 +169,19 @@ Regras:
 | --- | --- |
 | `GET /api/medico/notificacoes` | as 30 mais recentes |
 | `PATCH /api/medico/notificacoes/{id}/lida` | marca uma como lida |
+| `PATCH /api/medico/notificacoes/lidas` | marca todas como lidas → `204` |
+
+### Perfil e unidades
+
+| Rota | Faz |
+| --- | --- |
+| `GET /api/medico/perfil` | `{ id, nome, email, telefone, fotoUrl, crm, crmUf, bio, valorConsulta, notaMedia, totalAvaliacoes, especialidades[{id,nome}], unidades[{id,nome}] }` |
+| `PUT /api/medico/perfil` | `{ "bio": "…", "valorConsulta": 180.00 }`: o que o próprio médico muda; vale na hora no perfil público. Valor negativo ou com mais de 2 casas → `400` |
+| `GET /api/medico/unidades` | unidades vinculadas, com endereço, telefone, horário, mapa e `status` |
+
+Nome, telefone e foto mudam em `PUT /api/auth/perfil`; CRM, especialidades e
+unidades, só pela administração. A busca do cabeçalho usa
+`GET /api/medico/pacientes?q=`.
 
 ## Horários públicos
 

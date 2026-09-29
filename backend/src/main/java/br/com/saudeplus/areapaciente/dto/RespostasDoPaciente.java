@@ -43,4 +43,15 @@ public final class RespostasDoPaciente {
 
     public record AvaliacaoRegistrada(UUID agendamentoId, int nota, String comentario) {
     }
+
+    public record ConvenioDoPaciente(UUID id, String nome) {
+    }
+
+    /**
+     * "Minhas informações". `idade` em anos completos hoje, ou nula sem data
+     * de nascimento; `convenio` nulo quando é particular.
+     */
+    public record Perfil(UUID id, String nome, String email, String telefone, String fotoUrl, String cpf,
+            LocalDate dataNascimento, Integer idade, String sexo, ConvenioDoPaciente convenio, String numeroCarteirinha) {
+    }
 }

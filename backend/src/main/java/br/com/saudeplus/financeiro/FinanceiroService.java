@@ -54,14 +54,16 @@ public class FinanceiroService {
     private final TransacaoRepository transacoes;
     private final PacienteRepository pacientes;
     private final AgendamentoRepository agendamentos;
+    private final FormasDePagamentoService formas;
     private final Auditoria auditoria;
     private final Clock relogio;
 
     public FinanceiroService(TransacaoRepository transacoes, PacienteRepository pacientes,
-            AgendamentoRepository agendamentos, Auditoria auditoria, Clock relogio) {
+            AgendamentoRepository agendamentos, FormasDePagamentoService formas, Auditoria auditoria, Clock relogio) {
         this.transacoes = transacoes;
         this.pacientes = pacientes;
         this.agendamentos = agendamentos;
+        this.formas = formas;
         this.auditoria = auditoria;
         this.relogio = relogio;
     }
@@ -173,6 +175,7 @@ public class FinanceiroService {
         Transacao nova = new Transacao(paciente, dados.agendamentoId(), dados.descricao(), dados.valor(), dados.forma(),
                 relogio.instant());
         if (dados.jaPago()) {
+            formas.exigirAtiva(dados.forma());
             nova.pagar(dados.forma(), relogio.instant());
         }
         transacoes.save(nova);
@@ -187,7 +190,10 @@ public class FinanceiroService {
         Transacao transacao = transacoes.findCompletaById(id)
                 .orElseThrow(() -> RecursoNaoEncontradoException.de("Transação", id.toString()));
         switch (novo) {
-            case PAGO -> transacao.pagar(forma, relogio.instant());
+            case PAGO -> {
+                formas.exigirAtiva(forma);
+                transacao.pagar(forma, relogio.instant());
+            }
             case ESTORNADO -> transacao.estornar(relogio.instant());
             case PENDENTE -> throw new RegraDeNegocioException("Uma transação não volta a ficar pendente.");
         }

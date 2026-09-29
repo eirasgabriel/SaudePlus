@@ -49,6 +49,11 @@ export function reenviarConvite(id, { sinal } = {}) {
   return http.post(`/api/admin/usuarios/${id}/convite`, undefined, { sinal, autenticado });
 }
 
+/** Exclusão lógica: a conta fica inativa. Ninguém exclui a si mesmo (422). */
+export function excluirUsuario(id, { sinal } = {}) {
+  return http.remover(`/api/admin/usuarios/${id}`, { sinal, autenticado });
+}
+
 /* ------------------------------------------------------------ unidades e catálogos */
 
 export function listarUnidades({ sinal } = {}) {
@@ -72,12 +77,26 @@ export function alterarStatusDaUnidade(id, status, { sinal } = {}) {
   return http.patch(`/api/admin/unidades/${id}/status`, { status }, { sinal, autenticado });
 }
 
+/** Exclusão lógica: a unidade fica inativa. */
+export function excluirUnidade(id, { sinal } = {}) {
+  return http.remover(`/api/admin/unidades/${id}`, { sinal, autenticado });
+}
+
 export function listarEspecialidades({ sinal } = {}) {
   return http.get("/api/admin/especialidades", { sinal, autenticado });
 }
 
 export function listarConvenios({ sinal } = {}) {
   return http.get("/api/admin/convenios", { sinal, autenticado });
+}
+
+/** `{ nome, ativo }`; nome repetido responde 409. */
+export function criarConvenio(dados, { sinal } = {}) {
+  return http.post("/api/admin/convenios", dados, { sinal, autenticado });
+}
+
+export function alterarConvenio(id, dados, { sinal } = {}) {
+  return http.put(`/api/admin/convenios/${id}`, dados, { sinal, autenticado });
 }
 
 export function listarTiposDeExame({ sinal } = {}) {
@@ -128,6 +147,16 @@ export function alterarStatusDaTransacao(id, status, { forma, sinal } = {}) {
   return http.patch(`/api/admin/financeiro/transacoes/${id}/status`, { status, forma }, { sinal, autenticado });
 }
 
+/** Todas as formas, com `ativa`: `[{ forma: "pix", rotulo: "Pix", ativa: true }]`. */
+export function listarFormasDePagamento({ sinal } = {}) {
+  return http.get("/api/admin/financeiro/formas-pagamento", { sinal, autenticado });
+}
+
+/** `ativas`: chaves das formas aceitas na baixa; as demais ficam desativadas. */
+export function definirFormasDePagamento(ativas, { sinal } = {}) {
+  return http.put("/api/admin/financeiro/formas-pagamento", { ativas }, { sinal, autenticado });
+}
+
 /** Baixa as transações do período. `formato`: "pdf", "csv" ou "excel" (CSV). */
 export function exportarFinanceiro({ de, ate, status, formato = "pdf" } = {}) {
   const busca = new URLSearchParams(Object.entries({ de, ate, status, formato }).filter(([, v]) => v));
@@ -170,6 +199,30 @@ export function buscarPermissoes({ sinal } = {}) {
 
 export function salvarPermissoes(matriz, { sinal } = {}) {
   return http.put("/api/admin/permissoes", matriz, { sinal, autenticado });
+}
+
+/** Versão, banco, última migração e início do servidor. Só ADMIN. */
+export function buscarInformacoesDoSistema({ sinal } = {}) {
+  return http.get("/api/admin/sistema", { sinal, autenticado });
+}
+
+/* ------------------------------------------------------------ notificações (de quem está logado) */
+
+export function listarNotificacoes({ sinal } = {}) {
+  return http.get("/api/admin/notificacoes", { sinal, autenticado });
+}
+
+/** `{ total }` para o sino. */
+export function contarNotificacoesNaoLidas({ sinal } = {}) {
+  return http.get("/api/admin/notificacoes/nao-lidas", { sinal, autenticado });
+}
+
+export function marcarNotificacaoComoLida(id, { sinal } = {}) {
+  return http.patch(`/api/admin/notificacoes/${id}/lida`, undefined, { sinal, autenticado });
+}
+
+export function marcarTodasComoLidas({ sinal } = {}) {
+  return http.patch("/api/admin/notificacoes/lidas", undefined, { sinal, autenticado });
 }
 
 export function buscarAuditoria({ usuarioId, acao, de, ate, pagina = 0, tamanho = 50, sinal } = {}) {

@@ -157,6 +157,9 @@ Fora do diagrama, sem relacionamentos: `permissoes` (matriz papel × módulo),
   resultado). Carregados na `V2`, valem em todos os ambientes.
 - **`unidades`**: clínicas e laboratórios, com `status` `ativa`,
   `manutencao` ou `inativa`. Só as ativas aparecem na busca e recebem reserva.
+  CNPJ (formatado, único quando informado) e e-mail são opcionais.
+- As formas de pagamento desativadas ficam em `configuracoes`, chave
+  `formas-pagamento` (`{"desativadas": [...]}`).
 - As tabelas de ligação `medico_especialidades`, `medico_convenios` e
   `medico_unidades` usam chave composta, o que impede o mesmo vínculo duas vezes.
 
@@ -271,6 +274,7 @@ Além das chaves primárias e únicas:
 | `V4__transacoes_pagamento.sql` | forma de pagamento opcional, `pago_em`, `estornado_em` |
 | `V5__controle_de_concorrencia.sql` | coluna `versao` em `agendamentos` e `transacoes` |
 | `V6__integridade_da_agenda_e_lgpd.sql` | extensão `btree_gist`, coluna `periodo` e as restrições de sobreposição; índices da administração; `transacoes.origem` e a cobrança única por consulta; comentários LGPD nas colunas de dados de saúde |
+| `V7__contato_das_unidades.sql` | `unidades.cnpj` (único quando informado) e `unidades.email`, opcionais |
 | `db/demo/R__dados_demonstracao.sql` | só em `dev` e `test`: unidades, médicos, pacientes e agendas de exemplo, com ids fixos e `ON CONFLICT DO NOTHING` |
 
 ### Ao aplicar a V6 num banco que já tem dados

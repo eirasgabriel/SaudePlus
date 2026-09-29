@@ -11,7 +11,11 @@ import {
 } from "../services/dadosAdminConfiguracoes";
 import estilos from "../styles/adminConfig.module.css";
 
-export default function AdminConfigSeguranca() {
+/**
+ * `aoVerLogs` liga "Visualizar Logs" à auditoria. Os demais itens (2FA,
+ * dispositivos, backup...) são do protótipo e ainda não têm back-end.
+ */
+export default function AdminConfigSeguranca({ aoVerLogs }) {
   const [itens, definirItens] = useState(itensSeguranca);
 
   function alternar(id, ativo) {
@@ -48,7 +52,11 @@ export default function AdminConfigSeguranca() {
                     />
                   </>
                 ) : (
-                  <Botao variante="secundario" icone={item.botao.icone}>
+                  <Botao
+                    variante="secundario"
+                    icone={item.botao.icone}
+                    onClick={item.id === "logs" ? aoVerLogs : undefined}
+                  >
                     {item.botao.rotulo}
                   </Botao>
                 )

@@ -15,11 +15,9 @@ import {
 } from "../../../components/icons/Icons.jsx";
 import { HomeIcon, FlaskIcon, HelpIcon, LogoutIcon } from "../components/icons/MedicoIcons.jsx";
 
-/* `ativo: true` no Início é provisório: esta é a única tela que existe, então
-   ela é sempre a atual. Com o router, quem decide passa a ser o `isActive` do
-   NavLink e este campo sai daqui. */
+/* O item da página atual é decidido pela URL (`destinoAtivo`, em rotas.js). */
 export const MENU_TOPO = [
-  { rotulo: "Início", icone: HomeIcon, destino: "inicio", ativo: true },
+  { rotulo: "Início", icone: HomeIcon, destino: "inicio" },
   { rotulo: "Agenda", icone: CalendarIcon, destino: "agenda" },
   { rotulo: "Consultas", icone: StethoscopeIcon, destino: "consultas" },
   { rotulo: "Exames", icone: FlaskIcon, destino: "exames" },
@@ -28,7 +26,7 @@ export const MENU_TOPO = [
 ];
 
 export const MENU_LATERAL = [
-  { rotulo: "Início", icone: HomeIcon, destino: "inicio", ativo: true },
+  { rotulo: "Início", icone: HomeIcon, destino: "inicio" },
   { rotulo: "Minha agenda", icone: CalendarIcon, destino: "agenda" },
   { rotulo: "Consultas", icone: StethoscopeIcon, destino: "consultas" },
   { rotulo: "Exames", icone: FlaskIcon, destino: "exames" },

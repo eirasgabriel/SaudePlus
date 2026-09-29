@@ -1,4 +1,5 @@
 import Footer from "../../../components/Footer/Footer.jsx";
+import { cx } from "../../../utils/cx.js";
 import { useNavegacao } from "../navegacao/useNavegacao.js";
 import DashboardHeader from "./DashboardHeader.jsx";
 import DashboardSidebar from "./DashboardSidebar.jsx";
@@ -39,7 +40,7 @@ export default function DashboardLayout({
         idPainelNotificacoes={idPainelNotificacoes}
       />
 
-      <div className={styles.grade}>
+      <div className={cx(styles.grade, !aside && styles.semTrilha)}>
         <DashboardSidebar />
 
         <main id="conteudo" className={styles.conteudo} tabIndex={-1}>

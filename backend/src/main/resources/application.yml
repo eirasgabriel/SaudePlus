@@ -69,22 +69,33 @@ saudeplus:
     validade: 30m
     # Link de convite de contas criadas pela administração.
     validade-convite: 72h
-  # Contas criadas na inicialização se o e-mail ainda não existir. Conta com
-  # senha em branco é ignorada, então prod só cria o que vier por ambiente.
+  # Seeds: contas iniciais (auth/ContasIniciais) e dados de teste
+  # (seed/DadosDeTeste). Desligados por padrão; SEED_ENABLED=true liga.
+  seed:
+    habilitado: ${SEED_ENABLED:false}
+    # Senha de toda conta de teste cuja SEED_*_SENHA não veio. Em branco, as
+    # contas principais são puladas e as demais ganham senha aleatória.
+    senha-padrao: ${SEED_SENHA_PADRAO:teste@saudeplus}
+  # Contas criadas na inicialização se o e-mail ainda não existir; nunca
+  # sobrescrevem uma conta existente.
   contas-iniciais:
     admin:
-      email: ${SEED_ADMIN_EMAIL:admin@saudeplus.com}
+      email: ${SEED_ADMIN_EMAIL:admin@teste.com}
       senha: ${SEED_ADMIN_SENHA:}
       nome: Administrador SaudePlus
     medico:
-      email: ${SEED_MEDICO_EMAIL:medico@saudeplus.com}
+      email: ${SEED_MEDICO_EMAIL:medico@teste.com}
       senha: ${SEED_MEDICO_SENHA:}
       nome: Dr. Carlos Andrade
       perfil:
-        crm: ${SEED_MEDICO_CRM:}
-        crm-uf: ${SEED_MEDICO_CRM_UF:}
+        crm: ${SEED_MEDICO_CRM:112.233}
+        crm-uf: ${SEED_MEDICO_CRM_UF:RJ}
         especialidade: ${SEED_MEDICO_ESPECIALIDADE:clinico-geral}
         unidade: ${SEED_MEDICO_UNIDADE:}
+    # Criado por seed/DadosDeTeste, junto com os demais pacientes de teste.
+    paciente:
+      email: ${SEED_PACIENTE_EMAIL:paciente@teste.com}
+      senha: ${SEED_PACIENTE_SENHA:}
 
 ---
 spring:
@@ -108,14 +119,12 @@ springdoc:
 saudeplus:
   jwt:
     segredo: ${JWT_SEGREDO:dev-somente-local-troque-em-producao-0123456789}
+  # Localmente o seed já vem ligado: a agenda de demonstração depende do médico inicial.
+  seed:
+    habilitado: ${SEED_ENABLED:true}
   contas-iniciais:
-    admin:
-      senha: ${SEED_ADMIN_SENHA:Admin@SaudePlus2026}
     medico:
-      senha: ${SEED_MEDICO_SENHA:Medico@SaudePlus2026}
       perfil:
-        crm: ${SEED_MEDICO_CRM:112.233}
-        crm-uf: ${SEED_MEDICO_CRM_UF:RJ}
         unidade: ${SEED_MEDICO_UNIDADE:Clínica da Família – Centro}
 
 ---
@@ -138,15 +147,20 @@ saudeplus:
     recuperacao-por-ip: { maximo: 10000, janela: 1h }
   jwt:
     segredo: ${JWT_SEGREDO:dev-somente-local-troque-em-producao-0123456789}
+  # Credenciais fixas: os testes entram com elas, independentemente do ambiente.
+  seed:
+    habilitado: true
   contas-iniciais:
     admin:
-      senha: ${SEED_ADMIN_SENHA:Admin@SaudePlus2026}
+      email: admin@saudeplus.com
+      senha: Admin@SaudePlus2026
     medico:
-      senha: ${SEED_MEDICO_SENHA:Medico@SaudePlus2026}
+      email: medico@saudeplus.com
+      senha: Medico@SaudePlus2026
       perfil:
-        crm: ${SEED_MEDICO_CRM:112.233}
-        crm-uf: ${SEED_MEDICO_CRM_UF:RJ}
-        unidade: ${SEED_MEDICO_UNIDADE:Clínica da Família – Centro}
+        crm: 112.233
+        crm-uf: RJ
+        unidade: Clínica da Família – Centro
 
 ---
 spring:

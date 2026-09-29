@@ -23,6 +23,15 @@ public final class Cpf {
                 digitos.substring(9));
     }
 
+    /** Completa 9 dígitos com os verificadores e devolve formatado. Usado para gerar CPFs fictícios. */
+    public static String comDigitosVerificadores(String noveDigitos) {
+        if (!noveDigitos.matches("\\d{9}")) {
+            throw new IllegalArgumentException("Informe exatamente 9 dígitos.");
+        }
+        String dez = noveDigitos + digitoVerificador(noveDigitos, 9);
+        return normalizar(dez + digitoVerificador(dez, 10));
+    }
+
     static boolean valido(String digitos) {
         if (digitos.length() != 11 || digitos.chars().distinct().count() == 1) {
             return false;

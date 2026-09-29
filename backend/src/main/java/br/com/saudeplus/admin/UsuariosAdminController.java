@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -72,6 +73,16 @@ public class UsuariosAdminController {
     public UsuarioAdminResposta alterarStatus(@AuthenticationPrincipal UsuarioAutenticado ator, @PathVariable UUID id,
             @Valid @RequestBody AlterarStatusDoUsuario requisicao) {
         return usuarios.alterarStatus(ator, id, requisicao.status());
+    }
+
+    /**
+     * Exclusão lógica: a conta fica inativa e não entra mais. Consultas,
+     * exames e cobranças continuam ligados a ela (prontuário se guarda por 20 anos).
+     */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void excluir(@AuthenticationPrincipal UsuarioAutenticado ator, @PathVariable UUID id) {
+        usuarios.alterarStatus(ator, id, StatusConta.INATIVO);
     }
 
     @PostMapping("/{id}/convite")

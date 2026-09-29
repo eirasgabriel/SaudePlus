@@ -138,6 +138,23 @@ esperado está descrito em [docs/api.md](../docs/api.md).
 Sem SMTP, o back-end escreve o link no log do servidor: copie de lá e abra no
 navegador. Sem o parâmetro `token`, a tela mostra de propósito o estado "Link inválido".
 
+## Telas conectadas das áreas logadas
+
+- Médico: agenda diária, criação/edição/remoção de horários, bloqueios com
+  confirmação de cancelamento, consultas e atendimento, pacientes e prontuário,
+  exames, unidades, notificações e edição da conta e do perfil profissional.
+- Paciente: informações pessoais, convênio, senha e notificações, além dos
+  agendamentos, exames e histórico do painel.
+- Administração: edição de usuários e clínicas (incluindo CNPJ e e-mail),
+  fila de exames com coleta e envio de resultado, notificações, convênios,
+  formas de pagamento, informações do sistema e auditoria.
+
+As novas telas do médico e de perfil/notificações do paciente exibem o erro e
+permitem tentar novamente quando a API falha. Os testes de interação em
+`scripts/telas-conectadas.test.mjs` usam uma API simulada para verificar
+edição de horários, bloqueios, perfil, notificações, coleta e teclado nos modais.
+Execute `npm test`, `npm run lint` e `npm run build` em `frontend/`.
+
 ## Pendências conhecidas
 
 Login com Google/Apple depende de uma API: os botões estão no layout e avisam que

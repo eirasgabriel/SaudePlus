@@ -42,6 +42,11 @@ Não há gateway de pagamento: a baixa (`pago`) e o estorno são feitos pela adm
 | `POST /api/admin/financeiro/transacoes` | lançamento manual → `201` |
 | `PATCH /api/admin/financeiro/transacoes/{id}/status` | `{ "status": "pago", "forma": "pix" }` dá baixa; `{ "status": "estornado" }` estorna. Transição inválida → `422` |
 | `GET /api/admin/financeiro/exportar?de=&ate=&status=&formato=` | arquivo com as transações do período |
+| `GET /api/admin/financeiro/formas-pagamento` | `[{ "forma": "pix", "rotulo": "Pix", "ativa": true }]`, todas as formas |
+| `PUT /api/admin/financeiro/formas-pagamento` | `{ "ativas": ["pix", "credito"] }`: as demais ficam desativadas. Lista vazia ou forma desconhecida → `400` |
+
+Forma desativada não serve para dar baixa nem para lançamento já pago (`422`).
+Cobranças já pagas com ela não mudam.
 
 Transação:
 
@@ -55,7 +60,7 @@ Transação:
 ```
 
 Lançamento manual: `{ "pacienteId", "agendamentoId"?, "descricao", "valor", "forma"?, "jaPago"? }`
-(`jaPago: true` exige `forma`).
+(`jaPago: true` exige `forma`; sem `jaPago`, a cobrança fica pendente).
 
 Resumo:
 

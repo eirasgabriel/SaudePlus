@@ -1,5 +1,6 @@
 package br.com.saudeplus.areamedico.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -7,6 +8,8 @@ import java.util.UUID;
 
 import br.com.saudeplus.agenda.Modalidade;
 import br.com.saudeplus.agendamentos.StatusAgendamento;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -55,6 +58,13 @@ public final class RequisicoesDoMedico {
             @NotNull(message = "Escolha o exame.") UUID tipoExameId,
             LocalDate prazo,
             UUID agendamentoOrigemId) {
+    }
+
+    /** O que o próprio médico edita no perfil público. Vazio apaga a apresentação. */
+    public record AtualizarPerfilProfissional(
+            @Size(max = 2000, message = "A apresentação deve ter até 2000 caracteres") String bio,
+            @DecimalMin(value = "0", message = "O valor não pode ser negativo")
+            @Digits(integer = 10, fraction = 2, message = "Use até duas casas decimais") BigDecimal valorConsulta) {
     }
 
     /** Horários locais da agenda (fuso de negócio), no formato `2026-10-01T08:00`. */

@@ -46,3 +46,21 @@ export function redefinirSenha({ token, senha }) {
 export function buscarPerfil() {
   return requisitar('/api/auth/perfil', { autenticado: true })
 }
+
+/** PUT /api/auth/perfil — nome, telefone e foto (https) de quem está logado. */
+export function atualizarPerfil({ nomeCompleto, telefone, fotoUrl }) {
+  return requisitar('/api/auth/perfil', {
+    metodo: 'PUT',
+    corpo: { nomeCompleto, telefone, fotoUrl },
+    autenticado: true,
+  })
+}
+
+/** PUT /api/auth/senha — senha atual errada responde 400 no campo `senhaAtual`. */
+export function trocarSenha({ senhaAtual, novaSenha }) {
+  return requisitar('/api/auth/senha', {
+    metodo: 'PUT',
+    corpo: { senhaAtual, novaSenha },
+    autenticado: true,
+  })
+}

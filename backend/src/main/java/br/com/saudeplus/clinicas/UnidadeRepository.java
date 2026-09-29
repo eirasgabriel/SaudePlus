@@ -17,6 +17,10 @@ public interface UnidadeRepository extends JpaRepository<Unidade, UUID> {
 
     long countByStatus(StatusUnidade status);
 
+    boolean existsByCnpj(String cnpj);
+
+    boolean existsByCnpjAndIdNot(String cnpj, UUID id);
+
     List<Unidade> findAllByOrderByNome();
 
     /** Cidades com pelo menos uma unidade em funcionamento, para o filtro da busca. */

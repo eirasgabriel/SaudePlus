@@ -28,11 +28,24 @@ const COLUNAS = [
   "Ações",
 ];
 
-export default function AdminConfigClinicas() {
-  const [selecionada, definirSelecionada] = useState(unidadesCadastradas[0]);
+/**
+ * Sem props, é o protótipo com os mocks. Com a API, `unidades` (formato de
+ * `unidadesCadastradas`) e `filtrosUnidade` trazem os cadastros reais, e
+ * `aoNovaClinica`, `aoEditar(c)` e `aoExcluir(c)` ligam os botões.
+ */
+export default function AdminConfigClinicas({
+  unidades = unidadesCadastradas,
+  filtrosUnidade = filtrosUnidadeConfig,
+  aoNovaClinica,
+  aoEditar,
+  aoExcluir,
+}) {
+  const [selecionadaId, definirSelecionadaId] = useState(unidades[0]?.id);
+  const selecionada = unidades.find((u) => u.id === selecionadaId) ?? null;
+  const definirSelecionada = (c) => definirSelecionadaId(c.id);
 
   const tabela = useTabela({
-    dados: unidadesCadastradas,
+    dados: unidades,
     porPagina: 7,
     camposBusca: ["nome", "cnpj", "unidade", "endereco"],
     valoresIniciais: { clinica: "todas", unidade: "todas" },
@@ -48,7 +61,7 @@ export default function AdminConfigClinicas() {
       <Cartao
         titulo="Clínicas e Unidades"
         icone="predio"
-        extra={<Botao icone="mais">Nova Clínica</Botao>}
+        extra={<Botao icone="mais" onClick={aoNovaClinica}>Nova Clínica</Botao>}
         semPadding
       >
         <div style={{ padding: "0 16px 12px" }}>
@@ -75,7 +88,7 @@ export default function AdminConfigClinicas() {
             <Seletor
               valor={tabela.valores.unidade}
               aoMudar={(v) => tabela.definirFiltro("unidade", v)}
-              opcoes={filtrosUnidadeConfig}
+              opcoes={filtrosUnidade}
               rotulo="Unidades"
             />
           </div>
@@ -92,7 +105,7 @@ export default function AdminConfigClinicas() {
                   <td>
                     <CelulaDupla
                       principal={c.nome}
-                      secundario={`CNPJ: ${c.cnpj}`}
+                      secundario={c.cnpj ? `CNPJ: ${c.cnpj}` : "CNPJ não informado"}
                       icone="predio"
                     />
                   </td>
@@ -120,9 +133,23 @@ export default function AdminConfigClinicas() {
                         {
                           icone: "lapis",
                           rotulo: "Editar",
-                          aoClicar: () => definirSelecionada(c),
+                          aoClicar: (evento) => {
+                            evento.stopPropagation();
+                            definirSelecionada(c);
+                            aoEditar?.(c);
+                          },
                         },
-                        { icone: "lixeira", rotulo: "Excluir", tom: "perigo" },
+                        ...(c.status !== "inativa"
+                          ? [{
+                              icone: "lixeira",
+                              rotulo: "Excluir",
+                              tom: "perigo",
+                              aoClicar: (evento) => {
+                                evento.stopPropagation();
+                                aoExcluir?.(c);
+                              },
+                            }]
+                          : []),
                       ]}
                     />
                   </td>
@@ -146,7 +173,7 @@ export default function AdminConfigClinicas() {
         titulo="Detalhes da Clínica"
         icone="predio"
         extra={
-          <Botao variante="secundario" icone="lapis">
+          <Botao variante="secundario" icone="lapis" onClick={() => selecionada && aoEditar?.(selecionada)}>
             Editar
           </Botao>
         }
@@ -173,7 +200,7 @@ export default function AdminConfigClinicas() {
             <div className={estilos.campoDetalhe}>
               <Icone nome="predio" tam={15} className={estilos.campoIcone} />
               <span className={estilos.campoRotulo}>CNPJ</span>
-              <span className={estilos.campoValor}>{selecionada.cnpj}</span>
+              <span className={estilos.campoValor}>{selecionada.cnpj || "Não informado"}</span>
             </div>
             <div className={estilos.campoDetalhe}>
               <Icone nome="localizacao" tam={15} className={estilos.campoIcone} />
@@ -190,7 +217,7 @@ export default function AdminConfigClinicas() {
             <div className={estilos.campoDetalhe}>
               <Icone nome="email" tam={15} className={estilos.campoIcone} />
               <span className={estilos.campoRotulo}>E-mail</span>
-              <span className={estilos.campoValor}>{selecionada.email}</span>
+              <span className={estilos.campoValor}>{selecionada.email || "Não informado"}</span>
             </div>
             <div className={estilos.campoDetalhe}>
               <Icone nome="relogio" tam={15} className={estilos.campoIcone} />
@@ -204,20 +231,22 @@ export default function AdminConfigClinicas() {
               </span>
             </div>
 
-            <div className={estilos.vinculadas}>
-              <strong style={{ fontSize: 13, color: "var(--azul-escuro)" }}>
-                Unidades vinculadas
-              </strong>
-              {selecionada.vinculadas.map((u) => (
-                <div key={u.id} className={estilos.vinculadaLinha}>
-                  <Icone nome="localizacao" tam={15} />
-                  <span className={estilos.vinculadaNome}>{u.rotulo}</span>
-                  <Etiqueta variante={statusClinica[u.status].variante}>
-                    {statusClinica[u.status].rotulo}
-                  </Etiqueta>
-                </div>
-              ))}
-            </div>
+            {selecionada.vinculadas.length > 0 && (
+              <div className={estilos.vinculadas}>
+                <strong style={{ fontSize: 13, color: "var(--azul-escuro)" }}>
+                  Unidades vinculadas
+                </strong>
+                {selecionada.vinculadas.map((u) => (
+                  <div key={u.id} className={estilos.vinculadaLinha}>
+                    <Icone nome="localizacao" tam={15} />
+                    <span className={estilos.vinculadaNome}>{u.rotulo}</span>
+                    <Etiqueta variante={statusClinica[u.status].variante}>
+                      {statusClinica[u.status].rotulo}
+                    </Etiqueta>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </Cartao>

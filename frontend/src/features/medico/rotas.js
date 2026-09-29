@@ -53,19 +53,21 @@ export const ROTAS = {
   /* Já no roteador. */
   inicio: { caminho: "/medico", rotulo: "Início", existe: true },
 
-  /* Reservadas: os links já apontam para cá, as telas ainda não existem. */
-  agenda: { caminho: "/medico/agenda", rotulo: "Minha agenda", existe: false },
-  consultas: { caminho: "/medico/consultas", rotulo: "Consultas", existe: false },
-  consulta: { caminho: "/medico/consultas/:consultaId", rotulo: "Detalhe da consulta", existe: false },
-  exames: { caminho: "/medico/exames", rotulo: "Exames", existe: false },
-  exame: { caminho: "/medico/exames/:exameId", rotulo: "Detalhe do exame", existe: false },
-  pacientes: { caminho: "/medico/pacientes", rotulo: "Pacientes", existe: false },
-  prontuario: { caminho: "/medico/pacientes/:pacienteId", rotulo: "Prontuário do paciente", existe: false },
-  unidade: { caminho: "/medico/unidade", rotulo: "Unidade", existe: false },
-  notificacoes: { caminho: "/medico/notificacoes", rotulo: "Notificações", existe: false },
-  conta: { caminho: "/medico/conta", rotulo: "Minha conta", existe: false },
+  agenda: { caminho: "/medico/agenda", rotulo: "Minha agenda", existe: true },
+  consultas: { caminho: "/medico/consultas", rotulo: "Consultas", existe: true },
+  consulta: { caminho: "/medico/consultas/:consultaId", rotulo: "Detalhe da consulta", existe: true },
+  exames: { caminho: "/medico/exames", rotulo: "Exames", existe: true },
+  exame: { caminho: "/medico/exames/:exameId", rotulo: "Detalhe do exame", existe: true },
+  pacientes: { caminho: "/medico/pacientes", rotulo: "Pacientes", existe: true },
+  prontuario: { caminho: "/medico/pacientes/:pacienteId", rotulo: "Prontuário do paciente", existe: true },
+  unidade: { caminho: "/medico/unidade", rotulo: "Unidade", existe: true },
+  notificacoes: { caminho: "/medico/notificacoes", rotulo: "Notificações", existe: true },
+  conta: { caminho: "/medico/conta", rotulo: "Minha conta", existe: true },
+  busca: { caminho: "/medico/busca", rotulo: "Busca", existe: true },
+
+  /* Reservada: as preferências do médico ainda não têm tela. A configuração
+     da agenda (janelas e bloqueios) fica em "Minha agenda". */
   configuracoes: { caminho: "/medico/configuracoes", rotulo: "Configurações", existe: false },
-  busca: { caminho: "/medico/busca", rotulo: "Busca", existe: false },
 
   /* Fora da área do médico, no site institucional — já existe. */
   ajuda: { caminho: "/ajuda", rotulo: "Ajuda", existe: true },
@@ -105,6 +107,17 @@ export function caminhoDe(destino, parametros = {}) {
     (caminho, [chave, valor]) => caminho.replace(`:${chave}`, encodeURIComponent(valor)),
     rota.caminho,
   );
+}
+
+/**
+ * O destino é a página atual (ou uma filha dela)? Marca o item do menu.
+ * "inicio" só vale no caminho exato, senão ficaria ativo em toda a área.
+ */
+export function destinoAtivo(destino, caminhoAtual) {
+  const caminho = ROTAS[destino]?.caminho;
+  if (!caminho || acaoDe(destino)) return false;
+  if (destino === "inicio") return caminhoAtual === caminho || caminhoAtual === `${caminho}/`;
+  return caminhoAtual === caminho || caminhoAtual.startsWith(`${caminho}/`);
 }
 
 /** Rótulo do destino, para o aviso e para o `aria-label` dos controles. */

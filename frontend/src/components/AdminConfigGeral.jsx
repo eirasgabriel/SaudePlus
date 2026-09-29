@@ -15,10 +15,21 @@ import {
 import comum from "../styles/adminComum.module.css";
 import estilos from "../styles/adminConfig.module.css";
 
-export default function AdminConfigGeral() {
-  const [form, definirForm] = useState(configuracoesGerais);
-  const [notificacoes, definirNotificacoes] = useState(notificacoesSistema);
+/**
+ * Sem props, é o protótipo com os mocks. Com a API:
+ * - `valores`: o grupo `gerais` gravado (preenche o formulário);
+ * - `aoSalvar(grupo)`: grava o formulário e os interruptores de notificação;
+ * - `informacoes`: `[{ rotulo, valor }]` do servidor (versão, banco...).
+ * Backup é do provedor do banco, então com a API o cartão só explica isso.
+ */
+export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
+  const [form, definirForm] = useState(() => ({ ...configuracoesGerais, ...(valores ?? {}) }));
+  const [notificacoes, definirNotificacoes] = useState(() =>
+    notificacoesSistema.map((n) => ({ ...n, ativo: valores?.notificacoes?.[n.id] ?? n.ativo })),
+  );
   const [salvo, definirSalvo] = useState(false);
+  const [salvando, definirSalvando] = useState(false);
+  const [erro, definirErro] = useState(null);
 
   function atualizar(chave, valor) {
     definirForm((atual) => ({ ...atual, [chave]: valor }));
@@ -31,7 +42,19 @@ export default function AdminConfigGeral() {
     );
   }
 
-  function salvar() {
+  async function salvar() {
+    if (aoSalvar) {
+      definirSalvando(true);
+      definirErro(null);
+      try {
+        await aoSalvar({ ...form, notificacoes: Object.fromEntries(notificacoes.map((n) => [n.id, n.ativo])) });
+      } catch (falha) {
+        definirErro(falha?.message ?? "Não foi possível salvar.");
+        return;
+      } finally {
+        definirSalvando(false);
+      }
+    }
     definirSalvo(true);
     setTimeout(() => definirSalvo(false), 2500);
   }
@@ -87,8 +110,13 @@ export default function AdminConfigGeral() {
             opcoes={opcoesFuso}
           />
 
-          <Botao icone={salvo ? "check" : "baixar"} onClick={salvar}>
-            {salvo ? "Alterações salvas" : "Salvar alterações"}
+          {erro && (
+            <p role="alert" style={{ margin: 0, fontSize: 13, color: "#b91c1c" }}>
+              {erro}
+            </p>
+          )}
+          <Botao icone={salvo ? "check" : "baixar"} onClick={salvar} disabled={salvando}>
+            {salvando ? "Salvando…" : salvo ? "Alterações salvas" : "Salvar alterações"}
           </Botao>
         </div>
       </Cartao>
@@ -180,21 +208,33 @@ export default function AdminConfigGeral() {
         </Cartao>
 
         <Cartao titulo="Backup do Sistema" icone="bancoDados">
-          <div className={estilos.backup}>
-            <Icone nome="bancoDados" tam={19} className={estilos.backupIcone} />
-            <div className={estilos.backupTexto}>
-              Último backup realizado em:
-              <strong className={estilos.backupData}>{backupSistema.ultimo}</strong>
+          {informacoes ? (
+            <div className={estilos.backup}>
+              <Icone nome="bancoDados" tam={19} className={estilos.backupIcone} />
+              <div className={estilos.backupTexto}>
+                Os backups e a restauração do banco são feitos pelo provedor de hospedagem, no
+                painel dele. O sistema não guarda cópias por conta própria.
+              </div>
             </div>
-            <Etiqueta variante="sucesso">{backupSistema.status}</Etiqueta>
-          </div>
+          ) : (
+            <>
+              <div className={estilos.backup}>
+                <Icone nome="bancoDados" tam={19} className={estilos.backupIcone} />
+                <div className={estilos.backupTexto}>
+                  Último backup realizado em:
+                  <strong className={estilos.backupData}>{backupSistema.ultimo}</strong>
+                </div>
+                <Etiqueta variante="sucesso">{backupSistema.status}</Etiqueta>
+              </div>
 
-          <div className={estilos.backupBotoes}>
-            <Botao icone="nuvem">Fazer backup agora</Botao>
-            <Botao variante="secundario" icone="atualizar">
-              Restaurar backup
-            </Botao>
-          </div>
+              <div className={estilos.backupBotoes}>
+                <Botao icone="nuvem">Fazer backup agora</Botao>
+                <Botao variante="secundario" icone="atualizar">
+                  Restaurar backup
+                </Botao>
+              </div>
+            </>
+          )}
         </Cartao>
       </div>
 
@@ -222,7 +262,7 @@ export default function AdminConfigGeral() {
 
         <Cartao titulo="Informações do Sistema" icone="info">
           <div className={comum.pares}>
-            {informacoesSistema.map((info) => (
+            {(informacoes ?? informacoesSistema).map((info) => (
               <div key={info.rotulo} className={comum.par}>
                 <span className={comum.parRotulo}>{info.rotulo}</span>
                 <span className={comum.parValor}>{info.valor}</span>

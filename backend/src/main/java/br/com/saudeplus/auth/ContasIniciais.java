@@ -2,8 +2,10 @@ package br.com.saudeplus.auth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,17 +22,19 @@ import br.com.saudeplus.usuarios.UsuarioRepository;
 
 /**
  * Cria as contas de admin e médico na inicialização — não existe rota
- * pública que crie esses perfis.
+ * pública que crie esses perfis. Só roda com `SEED_ENABLED=true`.
  *
  * Só cria quando o e-mail ainda não existe, para reiniciar o servidor não
- * sobrescrever uma senha já trocada. Conta sem senha configurada é pulada:
- * em produção, só nasce o que vier por variável de ambiente.
+ * sobrescrever uma senha já trocada. Sem `SEED_*_SENHA`, a conta nasce com a
+ * senha padrão de teste (`saudeplus.seed.senha-padrao`), e o log avisa para
+ * trocá-la; com a senha padrão também em branco, a conta é pulada.
  *
  * A conta de médico ganha também o perfil profissional (CRM, especialidade e,
  * se existir, a unidade). Uma conta de médico que já existia sem perfil é
  * completada.
  */
 @Component
+@ConditionalOnProperty(name = "saudeplus.seed.habilitado", havingValue = "true")
 @Order(ContasIniciais.ORDEM)
 class ContasIniciais implements ApplicationRunner {
 
@@ -45,15 +49,18 @@ class ContasIniciais implements ApplicationRunner {
     private final EspecialidadeRepository especialidades;
     private final UnidadeRepository unidades;
     private final PasswordEncoder codificador;
+    private final String senhaPadrao;
 
     ContasIniciais(Propriedades propriedades, UsuarioRepository usuarios, MedicoRepository medicos,
-            EspecialidadeRepository especialidades, UnidadeRepository unidades, PasswordEncoder codificador) {
+            EspecialidadeRepository especialidades, UnidadeRepository unidades, PasswordEncoder codificador,
+            @Value("${saudeplus.seed.senha-padrao:}") String senhaPadrao) {
         this.propriedades = propriedades;
         this.usuarios = usuarios;
         this.medicos = medicos;
         this.especialidades = especialidades;
         this.unidades = unidades;
         this.codificador = codificador;
+        this.senhaPadrao = senhaPadrao;
     }
 
     @Override
@@ -77,12 +84,19 @@ class ContasIniciais implements ApplicationRunner {
         if (existente.isPresent()) {
             return existente.get();
         }
-        if (vazio(conta.senha())) {
+        boolean usaSenhaPadrao = vazio(conta.senha());
+        String senha = usaSenhaPadrao ? senhaPadrao : conta.senha();
+        if (vazio(senha)) {
             log.warn("Conta inicial {} sem senha configurada; nada foi criado.", papel);
             return null;
         }
-        Usuario criada = usuarios.save(new Usuario(conta.nome(), email, codificador.encode(conta.senha()), null, papel));
-        log.info("Conta inicial {} criada: {}", papel, email);
+        Usuario criada = usuarios.save(new Usuario(conta.nome(), email, codificador.encode(senha), null, papel));
+        if (usaSenhaPadrao) {
+            log.warn("Conta inicial {} criada: {} com a senha padrão de teste. Defina SEED_{}_SENHA ou troque a senha.",
+                    papel, email, papel);
+        } else {
+            log.info("Conta inicial {} criada: {}", papel, email);
+        }
         return criada;
     }
 
@@ -95,6 +109,11 @@ class ContasIniciais implements ApplicationRunner {
             return;
         }
         Medico medico = new Medico(usuario, perfil.crm(), perfil.crmUf());
+        if (medicos.existsByCrmAndCrmUf(medico.getCrm(), medico.getCrmUf())) {
+            log.warn("CRM {}/{} já pertence a outro médico; o perfil profissional de {} não foi criado.",
+                    medico.getCrm(), medico.getCrmUf(), usuario.getEmail());
+            return;
+        }
         if (!vazio(perfil.especialidade())) {
             especialidades.findBySlug(perfil.especialidade()).ifPresentOrElse(medico::adicionarEspecialidade,
                     () -> log.warn("Especialidade '{}' não existe; médico inicial ficou sem especialidade.",

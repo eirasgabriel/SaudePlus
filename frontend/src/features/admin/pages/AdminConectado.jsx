@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useLocation, useOutletContext } from "react-router-dom";
 
 import AdminLayout from "../../../layouts/AdminLayout";
 import AdminDashboardPage from "../../../pages/AdminDashboardPage";
@@ -12,8 +13,12 @@ import AvisoDeOrigem from "../../medico/components/AvisoDeOrigem/AvisoDeOrigem.j
 import { useDadosDaApi } from "../../paciente/useDadosDaApi.js";
 import { useAuth } from "../../auth/auth.context.js";
 import AvisoDoAdmin from "../components/AvisoDoAdmin.jsx";
-import ModalNovoUsuario from "../components/ModalNovoUsuario.jsx";
+import DialogoAuditoria from "../components/DialogoAuditoria.jsx";
+import ModalConvenios from "../components/ModalConvenios.jsx";
+import ModalFormasPagamento from "../components/ModalFormasPagamento.jsx";
 import * as api from "../admin.api.js";
+import { useEdicaoDeUnidades, useEdicaoDeUsuarios } from "../useEdicaoDeCadastros.jsx";
+import NotificacoesDoAdmin from "./NotificacoesDoAdmin.jsx";
 import {
   metricasDeAgendamentos,
   metricasDeClinicas,
@@ -27,8 +32,11 @@ import {
   paraMarcacoes,
   paraRelatorios,
   paraTransacao,
+  paraUnidadeDaConfiguracao,
   paraUsuario,
+  paraUsuarioDaEquipe,
 } from "../adaptadores.js";
+import { dataHoraBr } from "../../../utils/formatos.js";
 import { metricas as modelosUsuarios } from "../../../services/dadosAdminUsuarios";
 import { metricas as modelosClinicas } from "../../../services/dadosAdminClinicas";
 import { metricas as modelosAgendamentos } from "../../../services/dadosAdminAgendamentos";
@@ -59,21 +67,40 @@ function useRetorno() {
 
 const carregarModulos = ({ sinal }) => api.buscarModulos({ sinal });
 
-/** Casca do admin: menu filtrado pelos módulos liberados e o nome de quem está logado. */
+/**
+ * Casca do admin: menu filtrado pelos módulos liberados, o nome de quem está
+ * logado e o contador do sino, relido a cada troca de página.
+ */
 export function LayoutDoAdmin() {
   const { usuario } = useAuth();
+  const { pathname } = useLocation();
   const { origem, dados } = useDadosDaApi(carregarModulos);
+  // `pathname` na dependência: trocar de página relê o contador.
+  const carregarContagem = useCallback(
+    ({ sinal }) => api.contarNotificacoesNaoLidas({ sinal }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pathname],
+  );
+  const contagem = useDadosDaApi(carregarContagem);
+  const contexto = useMemo(() => ({ recarregarNaoLidas: contagem.recarregar }), [contagem.recarregar]);
   return (
     <AdminLayout
       modulos={origem === "api" ? dados : null}
+      contexto={contexto}
       usuario={{
         nome: usuario?.nomeCompleto ?? "Administração",
         cargo: ROTULO_DO_PAPEL[usuario?.role] ?? "Equipe",
         foto: usuario?.fotoUrl ?? null,
-        naoLidas: 0,
+        naoLidas: contagem.origem === "api" ? contagem.dados.total : 0,
       }}
     />
   );
+}
+
+/** Notificações de quem está logado; marcar como lida já atualiza o sino. */
+export function NotificacoesDoAdminConectado() {
+  const contexto = useOutletContext();
+  return <NotificacoesDoAdmin aoMudar={contexto?.recarregarNaoLidas} />;
 }
 
 /* ------------------------------------------------------------ dashboard */
@@ -109,9 +136,19 @@ const carregarUsuarios = async ({ sinal }) => {
 export function UsuariosDoAdmin() {
   const { usuario } = useAuth();
   const { origem, dados, erro, recarregar } = useDadosDaApi(carregarUsuarios);
-  const [criando, definirCriando] = useState(false);
   const retorno = useRetorno();
   const comApi = origem === "api" && dados;
+  const edicao = useEdicaoDeUsuarios({
+    especialidades: comApi ? dados.especialidades : [],
+    unidades: comApi ? dados.unidades : [],
+    podeCriarAdmin: usuario?.role === "ADMIN",
+    aoConcluir: (texto) => {
+      retorno.sucesso(texto);
+      recarregar();
+    },
+  });
+  // As linhas da tabela são o formato do mock; as ações precisam da conta da API.
+  const daApi = (linha) => dados.pagina.conteudo.find((u) => u.id === linha.id);
 
   const alternarBloqueio = async (u) => {
     const novo = u.status === "bloqueado" ? "ativo" : "bloqueado";
@@ -122,12 +159,6 @@ export function UsuariosDoAdmin() {
     } catch (falha) {
       retorno.erro(falha);
     }
-  };
-
-  const criar = async (dadosDoFormulario) => {
-    const criado = await api.criarUsuario(dadosDoFormulario);
-    retorno.sucesso(`Conta de ${criado.nome} criada. O convite para definir a senha foi enviado para ${criado.email}.`);
-    recarregar();
   };
 
   return (
@@ -145,19 +176,12 @@ export function UsuariosDoAdmin() {
             {retorno.aviso}
           </>
         }
-        aoNovoUsuario={comApi ? () => definirCriando(true) : undefined}
+        aoNovoUsuario={comApi ? edicao.novo : undefined}
         aoAlternarBloqueio={comApi ? alternarBloqueio : undefined}
+        aoEditar={comApi ? (linha) => edicao.editar(daApi(linha)) : undefined}
+        aoExcluir={comApi ? (linha) => edicao.excluir(daApi(linha)) : undefined}
       />
-      {comApi && (
-        <ModalNovoUsuario
-          aberto={criando}
-          aoFechar={() => definirCriando(false)}
-          aoCriar={criar}
-          especialidades={dados.especialidades}
-          unidades={dados.unidades}
-          podeCriarAdmin={usuario?.role === "ADMIN"}
-        />
-      )}
+      {comApi && edicao.elementos}
     </>
   );
 }
@@ -174,20 +198,39 @@ const carregarClinicas = async ({ sinal }) => {
 
 export function ClinicasDoAdmin() {
   const { origem, dados, erro, recarregar } = useDadosDaApi(carregarClinicas);
+  const retorno = useRetorno();
   const comApi = origem === "api" && dados;
   const clinicas = comApi ? dados.unidades.map(paraClinica) : null;
+  const edicao = useEdicaoDeUnidades({
+    aoConcluir: (texto) => {
+      retorno.sucesso(texto);
+      recarregar();
+    },
+  });
+  const daApi = (linha) => dados.unidades.find((u) => u.id === linha.id);
   return (
-    <AdminClinicasPage
-      {...(comApi
-        ? {
-            clinicas,
-            metricas: metricasDeClinicas(modelosClinicas, dados.metricas),
-            filtrosEspecialidade: opcoesDe(clinicas, "especialidade", "Todas", "todas"),
-            filtrosMunicipio: opcoesDe(clinicas, "municipio", "Todos"),
-          }
-        : {})}
-      aviso={<AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />}
-    />
+    <>
+      <AdminClinicasPage
+        {...(comApi
+          ? {
+              clinicas,
+              metricas: metricasDeClinicas(modelosClinicas, dados.metricas),
+              filtrosEspecialidade: opcoesDe(clinicas, "especialidade", "Todas", "todas"),
+              filtrosMunicipio: opcoesDe(clinicas, "municipio", "Todos"),
+              aoNovaClinica: edicao.nova,
+              aoEditar: (linha) => edicao.editar(daApi(linha)),
+              aoExcluir: (linha) => edicao.excluir(daApi(linha)),
+            }
+          : {})}
+        aviso={
+          <>
+            <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
+            {retorno.aviso}
+          </>
+        }
+      />
+      {comApi && edicao.elementos}
+    </>
   );
 }
 
@@ -284,10 +327,16 @@ export function FinanceiroDoAdmin() {
   }, [periodo, hoje]);
   const { origem, dados, erro, recarregar } = useDadosDaApi(carregar);
   const comApi = origem === "api" && dados;
+  const [modal, definirModal] = useState(null); // "formas" | "convenios"
 
   const acaoRapida = async (id) => {
+    if (id === "formas" || id === "convenios") {
+      definirModal(id);
+      return;
+    }
     if (id !== "relatorio") {
-      retorno.erro({ message: "Esta ação ainda não está disponível." });
+      // Nota fiscal depende de integração com a prefeitura/SEFAZ: fora do escopo.
+      retorno.erro({ message: "A emissão de nota fiscal ainda não está disponível." });
       return;
     }
     try {
@@ -299,19 +348,27 @@ export function FinanceiroDoAdmin() {
   };
 
   return (
-    <AdminFinanceiroPage
-      {...(comApi
-        ? { ...paraFinanceiro(modelosFinanceiro, dados.resumo), transacoes: dados.pagina.conteudo.map(paraTransacao) }
-        : {})}
-      aviso={
-        <>
-          <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
-          {retorno.aviso}
-        </>
-      }
-      aoMudarPeriodo={definirPeriodo}
-      aoAcaoRapida={comApi ? acaoRapida : undefined}
-    />
+    <>
+      <AdminFinanceiroPage
+        {...(comApi
+          ? { ...paraFinanceiro(modelosFinanceiro, dados.resumo), transacoes: dados.pagina.conteudo.map(paraTransacao) }
+          : {})}
+        aviso={
+          <>
+            <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
+            {retorno.aviso}
+          </>
+        }
+        aoMudarPeriodo={definirPeriodo}
+        aoAcaoRapida={comApi ? acaoRapida : undefined}
+      />
+      <ModalFormasPagamento
+        aberto={modal === "formas"}
+        aoFechar={() => definirModal(null)}
+        aoSalvar={() => retorno.sucesso("Formas de pagamento atualizadas.")}
+      />
+      <ModalConvenios aberto={modal === "convenios"} aoFechar={() => definirModal(null)} />
+    </>
   );
 }
 
@@ -423,28 +480,114 @@ function matrizDaApi(tela, original) {
   );
 }
 
-const carregarPermissoes = ({ sinal }) => api.buscarPermissoes({ sinal });
+/**
+ * A matriz de permissões é o essencial (só ADMIN). O resto vem de outros
+ * módulos: o que for recusado fica `null`, e aquela aba mantém o protótipo.
+ */
+const carregarConfiguracoes = async ({ sinal }) => {
+  const opcional = (promessa) => promessa.catch(() => null);
+  const [permissoes, grupos, sistema, usuarios, unidades, especialidades] = await Promise.all([
+    api.buscarPermissoes({ sinal }),
+    opcional(api.buscarConfiguracoes({ sinal })),
+    opcional(api.buscarInformacoesDoSistema({ sinal })),
+    opcional(api.listarUsuarios({ sinal })),
+    opcional(api.listarUnidades({ sinal })),
+    opcional(api.listarEspecialidades({ sinal })),
+  ]);
+  return { permissoes, grupos, sistema, usuarios, unidades, especialidades };
+};
+
+/** `GET /api/admin/sistema` → pares do cartão "Informações do Sistema". */
+function informacoesDoSistema(s) {
+  return [
+    { rotulo: "Versão do sistema", valor: s.versao ?? "—" },
+    { rotulo: "Banco de dados", valor: s.banco },
+    { rotulo: "Última migração", valor: s.ultimaMigracao ? `V${s.ultimaMigracao.versao} – ${s.ultimaMigracao.descricao}` : "—" },
+    { rotulo: "No ar desde", valor: dataHoraBr(s.noArDesde) },
+    { rotulo: "Fuso horário", valor: s.fusoHorario },
+  ];
+}
 
 export function ConfiguracoesDoAdmin() {
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregarPermissoes);
+  const { usuario } = useAuth();
+  const { origem, dados, erro, recarregar } = useDadosDaApi(carregarConfiguracoes);
+  const retorno = useRetorno();
+  const [vendoLogs, definirVendoLogs] = useState(false);
   const comApi = origem === "api" && dados;
+  const aoConcluir = (texto) => {
+    retorno.sucesso(texto);
+    recarregar();
+  };
+  const usuarios = useEdicaoDeUsuarios({
+    especialidades: dados?.especialidades ?? [],
+    unidades: dados?.unidades ?? [],
+    podeCriarAdmin: usuario?.role === "ADMIN",
+    aoConcluir,
+  });
+  const unidades = useEdicaoDeUnidades({ aoConcluir });
+
+  // A aba de usuários mostra a equipe e os médicos; pacientes ficam na tela de Usuários.
+  const equipe = dados?.usuarios?.conteudo.filter((u) => u.papel !== "PACIENTE") ?? null;
+  const contaDaEquipe = (linha) => equipe.find((u) => u.id === linha.id);
+  const unidadeDaApi = (linha) => dados.unidades.find((u) => u.id === linha.id);
+  const cadastrosDaConfiguracao = dados?.unidades?.map(paraUnidadeDaConfiguracao) ?? null;
+
   return (
-    <AdminConfiguracoesPage
-      // Remonta quando os dados chegam: a aba guarda a matriz em estado próprio.
-      key={comApi ? "api" : "mocks"}
-      aviso={<AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />}
-      propsDasAbas={
-        comApi
-          ? {
-              usuarios: {
-                permissoes: matrizDaTela(dados),
-                aoSalvarPermissoes: async (tela) => {
-                  await api.salvarPermissoes(matrizDaApi(tela, dados));
+    <>
+      <AdminConfiguracoesPage
+        // Remonta quando os dados chegam: as abas guardam o formulário em estado próprio.
+        key={comApi ? "api" : "mocks"}
+        aviso={
+          <>
+            <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
+            {retorno.aviso}
+          </>
+        }
+        propsDasAbas={
+          comApi
+            ? {
+                geral: {
+                  valores: dados.grupos?.gerais,
+                  informacoes: dados.sistema ? informacoesDoSistema(dados.sistema) : undefined,
+                  aoSalvar: dados.grupos ? (grupo) => api.salvarConfiguracao("gerais", grupo) : undefined,
                 },
-              },
-            }
-          : {}
-      }
-    />
+                usuarios: {
+                  permissoes: matrizDaTela(dados.permissoes),
+                  aoSalvarPermissoes: async (tela) => {
+                    await api.salvarPermissoes(matrizDaApi(tela, dados.permissoes));
+                  },
+                  ...(equipe
+                    ? {
+                        usuarios: equipe.map(paraUsuarioDaEquipe),
+                        aoNovoUsuario: usuarios.novo,
+                        aoEditar: (linha) => usuarios.editar(contaDaEquipe(linha)),
+                        aoExcluir: (linha) => usuarios.excluir(contaDaEquipe(linha)),
+                      }
+                    : {}),
+                },
+                ...(cadastrosDaConfiguracao
+                  ? {
+                      clinicas: {
+                        unidades: cadastrosDaConfiguracao,
+                        filtrosUnidade: opcoesDe(cadastrosDaConfiguracao, "unidade", "Todas as unidades", "todas"),
+                        aoNovaClinica: unidades.nova,
+                        aoEditar: (linha) => unidades.editar(unidadeDaApi(linha)),
+                        aoExcluir: (linha) => unidades.excluir(unidadeDaApi(linha)),
+                      },
+                    }
+                  : {}),
+                seguranca: { aoVerLogs: () => definirVendoLogs(true) },
+              }
+            : {}
+        }
+      />
+      {comApi && (
+        <>
+          {usuarios.elementos}
+          {unidades.elementos}
+          <DialogoAuditoria aberto={vendoLogs} aoFechar={() => definirVendoLogs(false)} />
+        </>
+      )}
+    </>
   );
 }

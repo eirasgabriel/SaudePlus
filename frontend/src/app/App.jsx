@@ -17,6 +17,16 @@ import Login from '../features/auth/pages/Login.jsx'
 import RecuperarSenha from '../features/auth/pages/RecuperarSenha.jsx'
 import RedefinirSenha from '../features/auth/pages/RedefinirSenha.jsx'
 import PainelMedicoConectado from '../features/medico/pages/PainelMedicoConectado.jsx'
+import AgendaDoMedico from '../features/medico/telas/AgendaDoMedico.jsx'
+import ConsultasDoMedico from '../features/medico/telas/ConsultasDoMedico.jsx'
+import ConsultaDoMedico from '../features/medico/telas/ConsultaDoMedico.jsx'
+import ExamesDoMedico from '../features/medico/telas/ExamesDoMedico.jsx'
+import ExameDoMedico from '../features/medico/telas/ExameDoMedico.jsx'
+import PacientesDoMedico from '../features/medico/telas/PacientesDoMedico.jsx'
+import ProntuarioDoMedico from '../features/medico/telas/ProntuarioDoMedico.jsx'
+import UnidadesDoMedico from '../features/medico/telas/UnidadesDoMedico.jsx'
+import NotificacoesDoMedico from '../features/medico/telas/NotificacoesDoMedico.jsx'
+import ContaDoMedico from '../features/medico/telas/ContaDoMedico.jsx'
 import {
   PainelDoPaciente,
   ConsultasDoPaciente,
@@ -24,6 +34,8 @@ import {
   HistoricoDoPaciente,
   ClinicasDoPaciente,
 } from '../features/paciente/pages/PacienteConectado.jsx'
+import MinhasInformacoes from '../features/paciente/pages/MinhasInformacoes.jsx'
+import NotificacoesDoPaciente from '../features/paciente/pages/NotificacoesDoPaciente.jsx'
 import '../styles/area-paciente.css'
 import {
   LayoutDoAdmin,
@@ -34,7 +46,9 @@ import {
   ConfiguracoesDoAdmin,
   FinanceiroDoAdmin,
   RelatoriosDoAdmin,
+  NotificacoesDoAdminConectado,
 } from '../features/admin/pages/AdminConectado.jsx'
+import ExamesDoAdmin from '../features/admin/pages/ExamesDoAdmin.jsx'
 import AdminSuportePage from '../pages/AdminSuportePage.jsx'
 import RouteEffects from './RouteEffects.jsx'
 import styles from './App.module.css'
@@ -107,8 +121,24 @@ export default function App() {
           <Route path="exames" element={<ExamesDoPaciente />} />
           <Route path="historico" element={<HistoricoDoPaciente />} />
           <Route path="clinicas" element={<ClinicasDoPaciente />} />
+          <Route path="perfil" element={<MinhasInformacoes />} />
+          <Route path="notificacoes" element={<NotificacoesDoPaciente />} />
         </Route>
-        <Route path="/medico" element={<RotaProtegida permitir={['MEDICO']}><PainelMedicoConectado /></RotaProtegida>} />
+        <Route path="/medico" element={<RotaProtegida permitir={['MEDICO']}><Outlet /></RotaProtegida>}>
+          {/* Os caminhos repetem os de features/medico/rotas.js. */}
+          <Route index element={<PainelMedicoConectado />} />
+          <Route path="agenda" element={<AgendaDoMedico />} />
+          <Route path="consultas" element={<ConsultasDoMedico />} />
+          <Route path="consultas/:consultaId" element={<ConsultaDoMedico />} />
+          <Route path="exames" element={<ExamesDoMedico />} />
+          <Route path="exames/:exameId" element={<ExameDoMedico />} />
+          <Route path="pacientes" element={<PacientesDoMedico />} />
+          <Route path="pacientes/:pacienteId" element={<ProntuarioDoMedico />} />
+          <Route path="busca" element={<PacientesDoMedico titulo="Busca" />} />
+          <Route path="unidade" element={<UnidadesDoMedico />} />
+          <Route path="notificacoes" element={<NotificacoesDoMedico />} />
+          <Route path="conta" element={<ContaDoMedico />} />
+        </Route>
         <Route
           path="/admin"
           element={
@@ -122,6 +152,8 @@ export default function App() {
           <Route path="usuarios" element={<UsuariosDoAdmin />} />
           <Route path="clinicas" element={<ClinicasDoAdmin />} />
           <Route path="agendamentos" element={<AgendamentosDoAdmin />} />
+          <Route path="exames" element={<ExamesDoAdmin />} />
+          <Route path="notificacoes" element={<NotificacoesDoAdminConectado />} />
           <Route path="relatorios" element={<RelatoriosDoAdmin />} />
           <Route path="financeiro" element={<FinanceiroDoAdmin />} />
           {/* As abas ficam na query string: /admin/configuracoes?aba=seguranca */}

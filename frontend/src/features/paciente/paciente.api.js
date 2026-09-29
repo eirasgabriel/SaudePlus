@@ -65,6 +65,28 @@ export function buscarNotificacoes({ sinal } = {}) {
   return http.get("/api/paciente/notificacoes", { sinal, autenticado });
 }
 
+export function marcarNotificacaoComoLida(notificacaoId, { sinal } = {}) {
+  return http.patch(`/api/paciente/notificacoes/${notificacaoId}/lida`, undefined, { sinal, autenticado });
+}
+
+/** "Minhas informações": conta, CPF, nascimento, sexo e convênio. */
+export function buscarMeuPerfil({ sinal } = {}) {
+  return http.get("/api/paciente/perfil", { sinal, autenticado });
+}
+
+/**
+ * CPF já gravado não muda (422); CPF de outra conta, 409; convênio inativo
+ * ou data no futuro, 400 no campo.
+ */
+export function atualizarMeuPerfil(dados, { sinal } = {}) {
+  return http.put("/api/paciente/perfil", dados, { sinal, autenticado });
+}
+
+/** Convênios ativos (rota pública), para o seletor de convênio. */
+export function listarConvenios({ sinal } = {}) {
+  return http.get("/api/publico/convenios", { sinal });
+}
+
 export function marcarTodasComoLidas({ sinal } = {}) {
   return http.patch("/api/paciente/notificacoes/lidas", undefined, { sinal, autenticado });
 }

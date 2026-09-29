@@ -25,15 +25,32 @@ const opcoesPapel = [
 const opcoesStatus = [
   { valor: "todos", rotulo: "Todos os status" },
   { valor: "ativo", rotulo: "Ativos" },
+  { valor: "bloqueado", rotulo: "Bloqueados" },
   { valor: "inativo", rotulo: "Inativos" },
 ];
+
+const STATUS = {
+  ativo: { rotulo: "Ativo", variante: "sucesso" },
+  bloqueado: { rotulo: "Bloqueado", variante: "erro" },
+  inativo: { rotulo: "Inativo", variante: "neutro" },
+};
 
 /**
  * `permissoes` (formato de `permissoesIniciais`) e `aoSalvarPermissoes`
  * ligam a matriz à API. Com a API, a coluna do administrador fica travada:
  * o servidor sempre libera tudo para ele.
+ *
+ * `usuarios` (formato de `usuariosSistema`) troca a lista do protótipo pela
+ * equipe real; `aoNovoUsuario`, `aoEditar(u)` e `aoExcluir(u)` ligam os botões.
  */
-export default function AdminConfigUsuarios({ permissoes: permissoesRecebidas = permissoesIniciais, aoSalvarPermissoes }) {
+export default function AdminConfigUsuarios({
+  permissoes: permissoesRecebidas = permissoesIniciais,
+  aoSalvarPermissoes,
+  usuarios = usuariosSistema,
+  aoNovoUsuario,
+  aoEditar,
+  aoExcluir,
+}) {
   const [permissoes, definirPermissoes] = useState(permissoesRecebidas);
   const [salvando, definirSalvando] = useState(false);
   const [mensagem, definirMensagem] = useState(null);
@@ -52,7 +69,7 @@ export default function AdminConfigUsuarios({ permissoes: permissoesRecebidas = 
   }
 
   const tabela = useTabela({
-    dados: usuariosSistema,
+    dados: usuarios,
     porPagina: 7,
     camposBusca: ["nome", "email", "cargo"],
     valoresIniciais: { papel: "todos", status: "todos" },
@@ -76,7 +93,7 @@ export default function AdminConfigUsuarios({ permissoes: permissoesRecebidas = 
       <Cartao
         titulo="Usuários do Sistema"
         icone="usuarios"
-        extra={<Botao icone="mais">Novo usuário</Botao>}
+        extra={<Botao icone="mais" onClick={aoNovoUsuario}>Novo usuário</Botao>}
         semPadding
       >
         <div style={{ padding: "0 16px 12px" }}>
@@ -126,15 +143,17 @@ export default function AdminConfigUsuarios({ permissoes: permissoesRecebidas = 
                   </td>
                   <td>{u.unidade}</td>
                   <td>
-                    <Etiqueta variante="sucesso" comPonto>
-                      Ativo
+                    <Etiqueta variante={STATUS[u.status]?.variante ?? "neutro"} comPonto>
+                      {STATUS[u.status]?.rotulo ?? u.status}
                     </Etiqueta>
                   </td>
                   <td>
                     <AcoesLinha
                       acoes={[
-                        { icone: "lapis", rotulo: "Editar" },
-                        { icone: "lixeira", rotulo: "Excluir", tom: "perigo" },
+                        { icone: "lapis", rotulo: "Editar", aoClicar: aoEditar && (() => aoEditar(u)) },
+                        ...(u.status !== "inativo"
+                          ? [{ icone: "lixeira", rotulo: "Excluir", tom: "perigo", aoClicar: aoExcluir && (() => aoExcluir(u)) }]
+                          : []),
                       ]}
                     />
                   </td>
@@ -156,7 +175,7 @@ export default function AdminConfigUsuarios({ permissoes: permissoesRecebidas = 
       {/* ---------- resumo dos papéis + matriz ---------- */}
       <div className={estilos.coluna}>
         <Cartao titulo="Resumo dos Papéis" icone="usuarios">
-          {papeis.map((p) => (
+          {papeis.map((p) => ({ ...p, quantidade: usuarios.filter((u) => u.papel === p.id).length })).map((p) => (
             <div key={p.id} className={estilos.papel}>
               <span
                 className={estilos.papelIcone}

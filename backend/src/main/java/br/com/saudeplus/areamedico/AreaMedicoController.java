@@ -29,11 +29,17 @@ import br.com.saudeplus.areamedico.dto.ExamePendenteResposta;
 import br.com.saudeplus.areamedico.dto.PacienteDetalheResposta;
 import br.com.saudeplus.areamedico.dto.PacienteResumoResposta;
 import br.com.saudeplus.areamedico.dto.PainelMedicoResposta;
+import br.com.saudeplus.areamedico.dto.RequisicoesDoMedico.AtualizarPerfilProfissional;
 import br.com.saudeplus.areamedico.dto.RequisicoesDoMedico.AtualizarStatus;
 import br.com.saudeplus.areamedico.dto.RequisicoesDoMedico.CriarBloqueio;
 import br.com.saudeplus.areamedico.dto.RequisicoesDoMedico.RegistrarAtendimento;
 import br.com.saudeplus.areamedico.dto.RequisicoesDoMedico.SalvarDisponibilidade;
 import br.com.saudeplus.areamedico.dto.RequisicoesDoMedico.SolicitarExame;
+import br.com.saudeplus.areamedico.dto.RespostasDoMedico.ConsultaDetalhe;
+import br.com.saudeplus.areamedico.dto.RespostasDoMedico.ConsultaDoPeriodo;
+import br.com.saudeplus.areamedico.dto.RespostasDoMedico.ExameDetalhe;
+import br.com.saudeplus.areamedico.dto.RespostasDoMedico.PerfilProfissional;
+import br.com.saudeplus.areamedico.dto.RespostasDoMedico.UnidadeDoMedico;
 import br.com.saudeplus.comum.Downloads;
 import br.com.saudeplus.comum.Pagina;
 import br.com.saudeplus.notificacoes.NotificacaoService;
@@ -56,16 +62,18 @@ public class AreaMedicoController {
     private final ConfiguracaoDeAgendaService configuracao;
     private final NotificacaoService notificacoes;
     private final ExamesDoMedicoService exames;
+    private final PerfilDoMedicoService perfil;
 
     public AreaMedicoController(PainelMedicoService painel, AgendaDoMedicoService agenda,
             PacientesDoMedicoService pacientes, ConfiguracaoDeAgendaService configuracao,
-            NotificacaoService notificacoes, ExamesDoMedicoService exames) {
+            NotificacaoService notificacoes, ExamesDoMedicoService exames, PerfilDoMedicoService perfil) {
         this.painel = painel;
         this.agenda = agenda;
         this.pacientes = pacientes;
         this.configuracao = configuracao;
         this.notificacoes = notificacoes;
         this.exames = exames;
+        this.perfil = perfil;
     }
 
     /** Tela inicial. Sem `data`, usa o dia de hoje. */
@@ -84,6 +92,28 @@ public class AreaMedicoController {
                 ? null
                 : StatusAgendamento.porChave(status);
         return agenda.agendaDoDia(usuario, data, filtro);
+    }
+
+    /**
+     * Consultas num período (padrão: 30 dias antes e depois de hoje), paginadas.
+     * `status` filtra por um status; `q`, pelo nome do paciente; `ordem=recentes`
+     * traz as mais novas primeiro.
+     */
+    @GetMapping("/consultas")
+    public Pagina<ConsultaDoPeriodo> consultas(@AuthenticationPrincipal UsuarioAutenticado usuario,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate de,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ate,
+            @RequestParam(required = false) String status, @RequestParam(required = false) String q,
+            @RequestParam(required = false) String ordem,
+            @RequestParam(defaultValue = "0") int pagina, @RequestParam(defaultValue = "20") int tamanho) {
+        return agenda.consultas(usuario, new AgendaDoMedicoService.FiltroDeConsultas(de, ate,
+                status == null || status.isBlank() || "todas".equalsIgnoreCase(status) ? null : StatusAgendamento.porChave(status),
+                q, "recentes".equalsIgnoreCase(ordem)), pagina, tamanho);
+    }
+
+    @GetMapping("/agendamentos/{id}")
+    public ConsultaDetalhe consulta(@AuthenticationPrincipal UsuarioAutenticado usuario, @PathVariable UUID id) {
+        return agenda.detalhe(usuario, id);
     }
 
     @PatchMapping("/agendamentos/{id}/status")
@@ -116,6 +146,19 @@ public class AreaMedicoController {
     @GetMapping("/exames-pendentes")
     public List<ExamePendenteResposta> examesPendentes(@AuthenticationPrincipal UsuarioAutenticado usuario) {
         return exames.pendentes(usuario);
+    }
+
+    /** Exames que você pediu, mais recentes primeiro. `status`: a chave de um status, ou "pendentes". */
+    @GetMapping("/exames")
+    public Pagina<ExamePendenteResposta> exames(@AuthenticationPrincipal UsuarioAutenticado usuario,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int pagina, @RequestParam(defaultValue = "20") int tamanho) {
+        return exames.listar(usuario, status, pagina, tamanho);
+    }
+
+    @GetMapping("/exames/{id}")
+    public ExameDetalhe exame(@AuthenticationPrincipal UsuarioAutenticado usuario, @PathVariable UUID id) {
+        return exames.detalhe(usuario, id);
     }
 
     /** Pede um exame para um paciente seu (com consulta com você); os demais dão 404. */
@@ -192,5 +235,30 @@ public class AreaMedicoController {
     public NotificacaoResposta marcarComoLida(@AuthenticationPrincipal UsuarioAutenticado usuario,
             @PathVariable UUID id) {
         return notificacoes.marcarComoLida(usuario.id(), id);
+    }
+
+    @PatchMapping("/notificacoes/lidas")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void marcarTodasComoLidas(@AuthenticationPrincipal UsuarioAutenticado usuario) {
+        notificacoes.marcarTodasComoLidas(usuario.id());
+    }
+
+    // ------------------------------------------------------------ perfil e unidades
+
+    @GetMapping("/perfil")
+    public PerfilProfissional perfil(@AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return perfil.perfil(usuario);
+    }
+
+    /** Apresentação e valor da consulta. CRM, especialidades e unidades ficam com a administração. */
+    @PutMapping("/perfil")
+    public PerfilProfissional atualizarPerfil(@AuthenticationPrincipal UsuarioAutenticado usuario,
+            @Valid @RequestBody AtualizarPerfilProfissional requisicao) {
+        return perfil.atualizar(usuario, requisicao);
+    }
+
+    @GetMapping("/unidades")
+    public List<UnidadeDoMedico> unidades(@AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return perfil.unidades(usuario);
     }
 }

@@ -7,7 +7,10 @@ import java.util.UUID;
 import br.com.saudeplus.agenda.Modalidade;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /** Corpos de requisição da área do paciente. */
@@ -36,6 +39,23 @@ public final class RequisicoesDoPaciente {
     }
 
     public record Cancelar(@Size(max = 300, message = "O motivo deve ter até 300 caracteres") String motivo) {
+    }
+
+    /**
+     * "Minhas informações". O e-mail não muda (é o login). O CPF pode ser
+     * informado uma vez; depois, só a administração corrige.
+     */
+    public record AtualizarPerfil(
+            @NotBlank(message = "Informe o nome completo")
+            @Size(min = 3, max = 120, message = "O nome deve ter entre 3 e 120 caracteres") String nomeCompleto,
+            @Size(max = 20, message = "O telefone deve ter até 20 caracteres")
+            @Pattern(regexp = "[0-9 ()+-]*", message = "Use apenas números, espaços e ( ) + -") String telefone,
+            @Past(message = "A data de nascimento precisa ser no passado") LocalDate dataNascimento,
+            @Pattern(regexp = "(feminino|masculino|outro|nao_informado)?",
+                    message = "Use feminino, masculino, outro ou nao_informado") String sexo,
+            String cpf,
+            UUID convenioId,
+            @Size(max = 40, message = "A carteirinha deve ter até 40 caracteres") String numeroCarteirinha) {
     }
 
     public record Avaliar(

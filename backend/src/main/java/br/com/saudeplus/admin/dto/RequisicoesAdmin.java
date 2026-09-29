@@ -82,7 +82,10 @@ public final class RequisicoesAdmin {
             @NotBlank(message = "Informe a UF") @Pattern(regexp = "[A-Za-z]{2}", message = "Use a sigla do estado") String uf,
             @Size(max = 20, message = "Até 20 caracteres") String telefone,
             @Size(max = 200, message = "Até 200 caracteres") String horarioFuncionamento,
-            @Size(max = 500, message = "Até 500 caracteres") @Pattern(regexp = "(https://\\S+)?", message = "Use um endereço https") String mapUrl) {
+            @Size(max = 500, message = "Até 500 caracteres") @Pattern(regexp = "(https://\\S+)?", message = "Use um endereço https") String mapUrl,
+            /** Com ou sem pontuação; os dígitos verificadores são conferidos. */
+            String cnpj,
+            @Email(message = "Informe um e-mail válido") @Size(max = 180, message = "Até 180 caracteres") String email) {
     }
 
     public record AlterarStatusDaUnidade(@NotNull(message = "Informe o status") StatusUnidade status) {

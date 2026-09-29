@@ -49,6 +49,19 @@ public class Paciente extends EntidadeComId {
         dataNascimento = data;
     }
 
+    /** `feminino`, `masculino` etc., como no cadastro de demonstração. */
+    public void informarSexo(String sexo) {
+        this.sexo = sexo == null || sexo.isBlank() ? null : sexo.strip();
+    }
+
+    /** Sem convênio, a carteirinha não faz sentido e é apagada junto. */
+    public void informarConvenio(UUID convenioId, String numeroCarteirinha) {
+        this.convenioId = convenioId;
+        this.numeroCarteirinha = convenioId == null || numeroCarteirinha == null || numeroCarteirinha.isBlank()
+                ? null
+                : numeroCarteirinha.strip();
+    }
+
     /** Idade em anos completos na data informada, ou `null` sem data de nascimento. */
     public Integer idadeEm(LocalDate data) {
         return dataNascimento == null ? null : Period.between(dataNascimento, data).getYears();

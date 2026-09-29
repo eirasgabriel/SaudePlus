@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,6 +31,18 @@ public interface ExameRepository extends JpaRepository<Exame, UUID> {
     /** Restrito ao médico que pediu: exame de outro médico não é encontrado (404). */
     @EntityGraph(attributePaths = {"tipo", "paciente.usuario"})
     Optional<Exame> findByIdAndMedicoSolicitanteId(UUID id, UUID medicoId);
+
+    /** Como o anterior, com a unidade da coleta, para a tela de detalhe. */
+    @EntityGraph(attributePaths = {"tipo", "paciente.usuario", "unidade"})
+    Optional<Exame> findDetalheByIdAndMedicoSolicitanteId(UUID id, UUID medicoId);
+
+    /** Exames que o médico pediu, nos status informados, paginados. */
+    @EntityGraph(attributePaths = {"tipo", "paciente.usuario"})
+    Page<Exame> findByMedicoSolicitanteIdAndStatusIn(UUID medicoId, Collection<StatusExame> status, Pageable pagina);
+
+    /** Exames pedidos numa consulta. */
+    @EntityGraph(attributePaths = "tipo")
+    List<Exame> findByAgendamentoOrigemIdOrderByCriadoEmAsc(UUID agendamentoId);
 
     /** Com paciente, médico e tipo carregados, para avisos e para a fila da clínica. */
     @EntityGraph(attributePaths = {"tipo", "paciente.usuario", "medicoSolicitante.usuario", "unidade"})

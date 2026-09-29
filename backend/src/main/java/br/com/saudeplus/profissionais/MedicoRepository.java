@@ -16,6 +16,8 @@ public interface MedicoRepository extends JpaRepository<Medico, UUID>, JpaSpecif
 
     Optional<Medico> findByUsuarioId(UUID usuarioId);
 
+    boolean existsByCrmAndCrmUf(String crm, String crmUf);
+
     @EntityGraph(attributePaths = "usuario")
     List<Medico> findByUsuarioIdIn(Collection<UUID> usuarioIds);
 

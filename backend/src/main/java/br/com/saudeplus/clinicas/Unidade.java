@@ -1,6 +1,7 @@
 package br.com.saudeplus.clinicas;
 
 import java.time.Instant;
+import java.util.Locale;
 
 import br.com.saudeplus.comum.EntidadeComId;
 import jakarta.persistence.Column;
@@ -37,6 +38,13 @@ public class Unidade extends EntidadeComId {
     @Column(name = "map_url", length = 500)
     private String mapUrl;
 
+    /** Formatado (ver `Cnpj`); único quando informado. */
+    @Column(length = 18)
+    private String cnpj;
+
+    @Column(length = 180)
+    private String email;
+
     @Column(nullable = false, length = 20)
     private StatusUnidade status = StatusUnidade.ATIVA;
 
@@ -61,6 +69,12 @@ public class Unidade extends EntidadeComId {
         this.telefone = vazioComoNulo(telefone);
         this.horarioFuncionamento = vazioComoNulo(horarioFuncionamento);
         this.mapUrl = vazioComoNulo(mapUrl);
+    }
+
+    /** `cnpj` já normalizado. */
+    public void alterarContato(String cnpj, String email) {
+        this.cnpj = vazioComoNulo(cnpj);
+        this.email = email == null || email.isBlank() ? null : email.strip().toLowerCase(Locale.ROOT);
     }
 
     public void alterarStatus(StatusUnidade status) {
@@ -114,6 +128,14 @@ public class Unidade extends EntidadeComId {
 
     public String getMapUrl() {
         return mapUrl;
+    }
+
+    public String getCnpj() {
+        return cnpj;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public StatusUnidade getStatus() {

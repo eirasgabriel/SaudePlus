@@ -33,8 +33,8 @@ const MENU_LATERAL = [
   { rotulo: 'Minhas consultas', icone: 'calendario', para: '/paciente/consultas' },
   { rotulo: 'Meus exames', icone: 'frasco', para: '/paciente/exames' },
   { rotulo: 'Meu histórico', icone: 'arquivo', para: '/paciente/historico' },
-  { rotulo: 'Minhas informações', icone: 'usuario', para: null },
-  { rotulo: 'Notificações', icone: 'sino', para: null },
+  { rotulo: 'Minhas informações', icone: 'usuario', para: '/paciente/perfil' },
+  { rotulo: 'Notificações', icone: 'sino', para: '/paciente/notificacoes' },
 ];
 
 const CARDS_ATALHO = [
@@ -68,15 +68,16 @@ const CARDS_ATALHO = [
     titulo: 'Clínicas',
     descricao: 'Encontre endereços, horários e contatos.',
     rotuloLink: 'Ver clínicas',
-    para: null,
+    para: '/paciente/clinicas',
   },
 ];
 
 const ACESSO_RAPIDO = [
   { rotulo: 'Consultar resultados de exames', icone: 'frasco', para: '/paciente/exames' },
   { rotulo: 'Ver minhas consultas', icone: 'calendario', para: '/paciente/consultas' },
-  { rotulo: 'Atualizar meus dados', icone: 'usuario', para: null },
-  { rotulo: 'Falar com a clínica', icone: 'conversa', para: null },
+  { rotulo: 'Atualizar meus dados', icone: 'usuario', para: '/paciente/perfil' },
+  // Sem chat: leva aos contatos (telefone e endereço) das unidades.
+  { rotulo: 'Falar com a clínica', icone: 'conversa', para: '/paciente/clinicas' },
 ];
 
 /* 
@@ -316,11 +317,15 @@ export default function PacienteDashboard({
 
   const { sair } = useAuth();
 
-  /* Sem "Minha conta": a área do paciente ainda não tem tela de perfil, e um
-     item que leva a 404 é pior do que item nenhum. Quando `/paciente/perfil`
-     entrar no App.jsx, acrescente aqui:
-       { rotulo: 'Minha conta', href: '/paciente/perfil' }, */
   const itensDaConta = [
+    {
+      rotulo: 'Minha conta',
+      href: '/paciente/perfil',
+      onSelecionar: (evento) => {
+        evento.preventDefault();
+        navegar('/paciente/perfil');
+      },
+    },
     { rotulo: 'Ajuda', href: '/ajuda' },
     {
       rotulo: 'Sair',
@@ -388,7 +393,12 @@ export default function PacienteDashboard({
           </nav>
 
           <div className={estilos.acoes}>
-            <button type="button" className={estilos.botaoIcone} aria-label="Pesquisar" onClick={aoPesquisar}>
+            <button
+              type="button"
+              className={estilos.botaoIcone}
+              aria-label="Pesquisar profissionais"
+              onClick={aoPesquisar ?? (() => navegar('/buscar'))}
+            >
               <Icone nome="busca" />
             </button>
 
@@ -396,7 +406,7 @@ export default function PacienteDashboard({
               type="button"
               className={estilos.botaoIcone}
               aria-label={totalNotificacoes > 0 ? `Notificações, ${totalNotificacoes} não lidas` : 'Notificações'}
-              onClick={aoAbrirNotificacoes}
+              onClick={aoAbrirNotificacoes ?? (() => navegar('/paciente/notificacoes'))}
             >
               <Icone nome="sino" />
               {totalNotificacoes > 0 && (

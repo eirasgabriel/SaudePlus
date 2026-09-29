@@ -127,6 +127,14 @@ export const papeis = [
     variante: "ciano",
     icone: "usuario",
   },
+  {
+    id: "agente",
+    rotulo: "Agente comunitário",
+    descricao: "Acompanhamento das famílias do território.",
+    quantidade: 0,
+    variante: "rosa",
+    icone: "usuario",
+  },
 ];
 
 export const usuariosSistema = [

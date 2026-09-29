@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,6 +62,13 @@ public class CadastrosAdminController {
     @PatchMapping("/unidades/{id}/status")
     public UnidadeAdmin alterarStatusDaUnidade(@PathVariable UUID id, @Valid @RequestBody AlterarStatusDaUnidade dados) {
         return cadastros.alterarStatusDaUnidade(id, dados.status());
+    }
+
+    /** Exclusão lógica: a unidade fica inativa e o histórico continua. */
+    @DeleteMapping("/unidades/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void excluirUnidade(@PathVariable UUID id) {
+        cadastros.excluirUnidade(id);
     }
 
     @GetMapping("/especialidades")

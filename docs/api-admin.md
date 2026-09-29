@@ -50,6 +50,7 @@ entra em `/admin` pelo login, como o ADMIN.
 | `PUT /api/admin/usuarios/{id}` | `{ nomeCompleto, telefone, cpf, papel, medico? }` |
 | `PATCH /api/admin/usuarios/{id}/status` | `{ "status": "ativo" \| "bloqueado" \| "inativo" }` |
 | `POST /api/admin/usuarios/{id}/convite` | reenvia o link para definir a senha → `204` |
+| `DELETE /api/admin/usuarios/{id}` | exclusão lógica: a conta vira `inativo` e para de entrar → `204`; mesmas regras do status (abaixo) |
 
 Criar:
 
@@ -85,13 +86,34 @@ Bloquear derruba o token já emitido: a situação da conta é relida a cada req
 | --- | --- |
 | `GET /api/admin/unidades` | todas, inclusive fora de operação, com `especialidades` (dos médicos vinculados), `medicos` e `agendamentosNoMes` |
 | `GET /api/admin/unidades/metricas` | `{ total, ativas, manutencao, inativas }` |
-| `POST /api/admin/unidades` · `PUT /api/admin/unidades/{id}` | `{ nome, endereco, bairro, cidade, uf, telefone, horarioFuncionamento, mapUrl }` |
+| `POST /api/admin/unidades` · `PUT /api/admin/unidades/{id}` | `{ nome, endereco, bairro, cidade, uf, telefone, horarioFuncionamento, mapUrl, cnpj, email }` |
 | `PATCH /api/admin/unidades/{id}/status` | `{ "status": "ativa" \| "manutencao" \| "inativa" }`; fora de `ativa`, some da busca e deixa de oferecer horários (consultas marcadas continuam) |
+| `DELETE /api/admin/unidades/{id}` | exclusão lógica: a unidade vira `inativa` → `204` |
 | `GET/POST /api/admin/especialidades` · `PUT …/{id}` | `{ nome, descricao }`; o slug sai do nome e não muda; nome repetido `409` |
 | `GET/POST /api/admin/convenios` · `PUT …/{id}` | `{ nome, ativo }`; convênio inativo some da busca |
 | `GET/POST /api/admin/tipos-exame` · `PUT …/{id}` | `{ nome, categoria, preparo, prazoResultadoDias }` |
 
-Nada é apagado: há agendamentos e exames apontando para esses registros.
+Nada é apagado: há agendamentos e exames apontando para esses registros. O
+`DELETE` de usuário e de unidade é só o atalho da tela "Excluir" para o status
+inativo.
+
+CNPJ e e-mail da unidade são opcionais. O CNPJ vai com ou sem pontuação, tem
+os dígitos verificadores conferidos (`400`, `campos.cnpj`), é guardado como
+`00.000.000/0000-00` e é único (`409`). O e-mail é guardado em minúsculas.
+
+## Notificações da equipe (sem módulo)
+
+O sino do cabeçalho. Vale para toda a equipe (ADMIN, gestor, enfermagem,
+recepção, agente), sem depender da matriz; cada um só vê e marca as suas
+(notificação de outra pessoa → `404`). Médico e paciente usam as das
+próprias áreas (`403` aqui).
+
+| Rota | Faz |
+| --- | --- |
+| `GET /api/admin/notificacoes` | as 30 mais recentes (formato das demais áreas) |
+| `GET /api/admin/notificacoes/nao-lidas` | `{ "total": 3 }` |
+| `PATCH /api/admin/notificacoes/{id}/lida` | marca uma como lida → a notificação |
+| `PATCH /api/admin/notificacoes/lidas` | marca todas → `204` |
 
 ## Agendamentos (`agendamentos`)
 
@@ -157,6 +179,20 @@ vierem (objeto JSON) para as telas de configuração.
 editáveis (papel ausente fica sem nenhum módulo). Módulo ou papel desconhecido
 — inclusive `ADMIN` e `PACIENTE` — é `400`. Vale a partir da próxima requisição.
 
+## Informações do sistema (só ADMIN)
+
+`GET /api/admin/sistema`, para "Informações do sistema" em Configurações › Geral:
+
+```json
+{ "versao": "0.0.1-SNAPSHOT", "compiladoEm": "2026-09-29T18:00:00Z", "java": "21.0.4+7",
+  "banco": "PostgreSQL 17.2", "ultimaMigracao": { "versao": "7", "descricao": "contato das unidades",
+  "aplicadaEm": "2026-09-29T18:01:00Z" }, "fusoHorario": "America/Sao_Paulo", "noArDesde": "2026-09-29T18:01:00Z" }
+```
+
+`versao` e `compiladoEm` vêm do `build-info` do Maven; rodando pela IDE sem
+ele, saem nulos. Não traz endereço, usuário nem segredo de nada. Backup não
+aparece aqui: quem faz é o provedor do banco (Neon).
+
 ## Auditoria (só ADMIN)
 
 `GET /api/admin/auditoria?usuarioId=&acao=&de=&ate=&pagina=&tamanho=` — mais
@@ -170,10 +206,10 @@ recentes primeiro; `acao` aceita prefixo (`usuario` traz `usuario.criar`,
 ```
 
 Registradas: `login`; `usuario.criar|alterar|status|convite`;
-`unidade.*`, `especialidade.*`, `convenio.*`, `tipo_exame.*`;
+`unidade.*` (inclusive `unidade.excluir`), `especialidade.*`, `convenio.*`, `tipo_exame.*`;
 `agendamento.status` (pela administração); `exame.agendar|analise|cancelar|resultado`;
-`permissoes.alterar`; `configuracao.alterar`; `financeiro.lancar|status`;
-`relatorio.exportar`; e as leituras de dado de saúde pelo médico,
+`permissoes.alterar`; `configuracao.alterar`; `financeiro.lancar|status|formas`;
+`relatorio.exportar`; `medico.perfil` e `paciente.perfil` (sem os valores); e as leituras de dado de saúde pelo médico,
 `paciente.ficha.ver` e `exame.resultado.ver` (LGPD, ver
 [banco-de-dados.md](banco-de-dados.md#lgpd-e-retenção)). O registro é gravado na mesma
 transação da ação: se ela falhar, não fica registro. O IP é o da conexão

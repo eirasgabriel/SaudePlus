@@ -27,9 +27,9 @@ import br.com.saudeplus.usuarios.Papel;
 import tools.jackson.databind.JsonNode;
 
 /**
- * Dashboard, configurações, permissões e auditoria. Dashboard e
- * configurações são módulos da matriz; permissões e auditoria são só do
- * ADMIN (ver `AcessoAoAdmin`).
+ * Dashboard, configurações, permissões, auditoria e informações do sistema.
+ * Dashboard e configurações são módulos da matriz; permissões, auditoria e
+ * sistema são só do ADMIN (ver `AcessoAoAdmin`).
  */
 @RestController
 @RequestMapping("/api/admin")
@@ -39,13 +39,15 @@ public class SistemaAdminController {
     private final ConfiguracoesService configuracoes;
     private final PermissoesService permissoes;
     private final AuditoriaService auditoria;
+    private final InformacoesDoSistemaService informacoes;
 
     public SistemaAdminController(DashboardAdminService dashboard, ConfiguracoesService configuracoes,
-            PermissoesService permissoes, AuditoriaService auditoria) {
+            PermissoesService permissoes, AuditoriaService auditoria, InformacoesDoSistemaService informacoes) {
         this.dashboard = dashboard;
         this.configuracoes = configuracoes;
         this.permissoes = permissoes;
         this.auditoria = auditoria;
+        this.informacoes = informacoes;
     }
 
     /** `meses`: quantos meses o gráfico de agendamentos cobre (1 a 24). */
@@ -81,6 +83,12 @@ public class SistemaAdminController {
     @PutMapping("/permissoes")
     public Permissoes alterarPermissoes(@RequestBody Map<String, Map<String, Boolean>> matriz) {
         return comRotulos(permissoes.salvar(matriz));
+    }
+
+    /** Versão, banco, última migração e início do servidor. Só do ADMIN (não é módulo da matriz). */
+    @GetMapping("/sistema")
+    public InformacoesDoSistemaService.Informacoes sistema() {
+        return informacoes.montar();
     }
 
     @GetMapping("/auditoria")

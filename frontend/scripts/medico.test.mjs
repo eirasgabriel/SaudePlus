@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import { after, before, describe, test } from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { MemoryRouter } from "react-router-dom";
 
 import { AGENDA, EXAMES_PENDENTES, NOTIFICACOES, PACIENTES, STATUS_CONSULTA } from "../src/features/medico/data/medico.js";
 import {
@@ -111,9 +112,13 @@ describe("selectors", () => {
 /* ------------------------------------------------------------------
    Renderização da página.
    ------------------------------------------------------------------ */
+/** Conta de médico logada, sem AuthProvider (que buscaria o perfil na API). */
+const SESSAO = { usuario: { nomeCompleto: "Dra. Teste", role: "MEDICO", fotoUrl: null }, sair() {}, atualizarUsuario() {} };
+
 describe("página", () => {
   let server;
   let DashboardMedico;
+  let AuthContext;
   let html;
 
   before(async () => {
@@ -122,7 +127,15 @@ describe("página", () => {
     const { createServer } = await import("vite");
     server = await createServer({ server: { middlewareMode: true, hmr: false }, appType: "custom" });
     DashboardMedico = (await server.ssrLoadModule("/src/features/medico/pages/DashboardMedico.jsx")).default;
-    html = renderToStaticMarkup(createElement(DashboardMedico));
+    ({ AuthContext } = await server.ssrLoadModule("/src/features/auth/auth.context.js"));
+    // A navegação do painel (links, item ativo) depende do roteador e da sessão.
+    html = renderToStaticMarkup(
+      createElement(
+        AuthContext.Provider,
+        { value: SESSAO },
+        createElement(MemoryRouter, { initialEntries: ["/medico"] }, createElement(DashboardMedico)),
+      ),
+    );
   });
 
   after(async () => {
@@ -161,9 +174,9 @@ describe("página", () => {
     const resumo = resumoDoDia(AGENDA, EXAMES_PENDENTES);
     assert.ok(html.includes(`de ${resumo.consultasHoje}`));
     assert.ok(html.includes(`a partir das ${resumo.primeiroHorarioPendente}`));
-    assert.ok(html.includes(`aria-label="Consultas hoje: ${resumo.consultasHoje}. Ver detalhes"`));
-    assert.ok(html.includes(`aria-label="Pacientes atendidos: ${resumo.pacientesAtendidos}. Ver detalhes"`));
-    assert.ok(html.includes(`aria-label="Exames pendentes: ${resumo.examesPendentes}. Ver detalhes"`));
+    assert.ok(html.includes(`aria-label="Consultas hoje: ${resumo.consultasHoje}. Ver a agenda do dia"`));
+    assert.ok(html.includes(`aria-label="Pacientes atendidos: ${resumo.pacientesAtendidos}. Ver as consultas já realizadas"`));
+    assert.ok(html.includes(`aria-label="Exames pendentes: ${resumo.examesPendentes}. Ver os exames aguardando resultado"`));
   });
 
   test("a agenda renderiza uma linha por consulta do dia", () => {
@@ -198,5 +211,54 @@ describe("página", () => {
   test("o filtro da agenda começa em Todas", () => {
     assert.ok(html.includes('aria-label="Filtrar agenda por status"'));
     assert.ok(/aria-pressed="true"[^>]*>Todas/.test(html) || /Todas/.test(html));
+  });
+
+  test("com as telas no roteador, os menus viram links e o Início fica marcado", () => {
+    assert.ok(html.includes('href="/medico/agenda"'));
+    assert.ok(html.includes('href="/medico/pacientes"'));
+    assert.match(html, /aria-current="page"[^>]*>(?:(?!<\/a>).)*Início/s);
+  });
+
+  /* Telas além do painel: no SSR os efeitos não rodam, então cada uma fica
+     em "carregando", já com o layout, o título e o item do menu marcado. */
+  for (const [caminho, modulo, titulo, itemAtivo] of [
+    ["/medico/consultas", "ConsultasDoMedico", "Consultas", "Consultas"],
+    ["/medico/exames", "ExamesDoMedico", "Exames", "Exames"],
+    ["/medico/pacientes", "PacientesDoMedico", "Pacientes", "Pacientes"],
+    ["/medico/unidade", "UnidadesDoMedico", "Unidades", "Unidade"],
+    ["/medico/notificacoes", "NotificacoesDoMedico", "Notificações", null],
+    ["/medico/conta", "ContaDoMedico", "Minha conta", "Meu perfil"],
+  ]) {
+    test(`${caminho} renderiza com um <main>, um <h1> e o menu certo`, async () => {
+      const Tela = (await server.ssrLoadModule(`/src/features/medico/telas/${modulo}.jsx`)).default;
+      const pagina = renderToStaticMarkup(
+        createElement(
+          AuthContext.Provider,
+          { value: SESSAO },
+          createElement(MemoryRouter, { initialEntries: [caminho] }, createElement(Tela)),
+        ),
+      );
+      assert.equal((pagina.match(/<main\b/g) ?? []).length, 1);
+      assert.equal((pagina.match(/<h1\b/g) ?? []).length, 1);
+      assert.ok(pagina.includes(`>${titulo}</h1>`), `faltou o título "${titulo}"`);
+      assert.ok(pagina.includes("Dra. Teste"), "o cabeçalho mostra quem está logado");
+      if (itemAtivo) {
+        assert.match(pagina, new RegExp(`aria-current="page"[^>]*>(?:(?!</a>).)*${itemAtivo}`, "s"));
+      }
+    });
+  }
+});
+
+describe("rotas", () => {
+  test("destinoAtivo marca a página e as filhas; o Início só no caminho exato", async () => {
+    const { destinoAtivo, rotaExiste } = await import("../src/features/medico/rotas.js");
+    assert.equal(destinoAtivo("inicio", "/medico"), true);
+    assert.equal(destinoAtivo("inicio", "/medico/agenda"), false);
+    assert.equal(destinoAtivo("consultas", "/medico/consultas/abc"), true);
+    assert.equal(destinoAtivo("consultas", "/medico/consultasx"), false);
+    assert.equal(destinoAtivo("sair", "/login"), false);
+    for (const destino of ["agenda", "consultas", "consulta", "exames", "exame", "pacientes", "prontuario", "unidade", "notificacoes", "conta", "busca"]) {
+      assert.equal(rotaExiste(destino), true, `${destino} deveria estar ativo`);
+    }
   });
 });

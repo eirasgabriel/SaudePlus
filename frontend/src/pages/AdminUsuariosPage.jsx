@@ -36,7 +36,8 @@ const COLUNAS = [
 
 /**
  * Dados por prop, com os mocks como padrão. `aoNovoUsuario` liga o botão
- * "Novo usuário"; `aoAlternarBloqueio(usuario)` liga o cadeado de cada linha.
+ * "Novo usuário"; `aoAlternarBloqueio(usuario)` liga o cadeado de cada linha;
+ * `aoEditar(usuario)` e `aoExcluir(usuario)`, o lápis e a lixeira.
  */
 export default function AdminUsuariosPage({
   usuarios = usuariosMock,
@@ -44,6 +45,8 @@ export default function AdminUsuariosPage({
   aviso = null,
   aoNovoUsuario,
   aoAlternarBloqueio,
+  aoEditar,
+  aoExcluir,
 }) {
   const [hoje] = useState(() => new Date());
   const tabela = useTabela({
@@ -137,8 +140,10 @@ export default function AdminUsuariosPage({
                   <td>
                     <AcoesLinha
                       acoes={[
-                        { icone: "olho", rotulo: "Ver detalhes" },
-                        { icone: "lapis", rotulo: "Editar" },
+                        // Com a API, "Editar" já mostra tudo da conta; o "Ver detalhes" do protótipo sai.
+                        ...(aoEditar
+                          ? [{ icone: "lapis", rotulo: "Editar", aoClicar: () => aoEditar(u) }]
+                          : [{ icone: "olho", rotulo: "Ver detalhes" }, { icone: "lapis", rotulo: "Editar" }]),
                         aoAlternarBloqueio
                           ? {
                               icone: "cadeado",
@@ -147,6 +152,9 @@ export default function AdminUsuariosPage({
                               aoClicar: () => aoAlternarBloqueio(u),
                             }
                           : { icone: "maisOpcoes", rotulo: "Mais opções", tom: "neutra" },
+                        ...(aoExcluir && u.status !== "inativo"
+                          ? [{ icone: "lixeira", rotulo: "Excluir", tom: "perigo", aoClicar: () => aoExcluir(u) }]
+                          : []),
                       ]}
                     />
                   </td>

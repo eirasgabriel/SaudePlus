@@ -2,6 +2,7 @@ package br.com.saudeplus.admin;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,6 +29,8 @@ import br.com.saudeplus.financeiro.FinanceiroService.Lancar;
 import br.com.saudeplus.financeiro.FinanceiroService.Resumo;
 import br.com.saudeplus.financeiro.FinanceiroService.TransacaoResposta;
 import br.com.saudeplus.financeiro.FormaPagamento;
+import br.com.saudeplus.financeiro.FormasDePagamentoService;
+import br.com.saudeplus.financeiro.FormasDePagamentoService.FormaResposta;
 import br.com.saudeplus.financeiro.StatusTransacao;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
@@ -44,10 +48,13 @@ import jakarta.validation.constraints.Size;
 public class FinanceiroERelatoriosController {
 
     private final FinanceiroService financeiro;
+    private final FormasDePagamentoService formas;
     private final RelatoriosService relatorios;
 
-    public FinanceiroERelatoriosController(FinanceiroService financeiro, RelatoriosService relatorios) {
+    public FinanceiroERelatoriosController(FinanceiroService financeiro, FormasDePagamentoService formas,
+            RelatoriosService relatorios) {
         this.financeiro = financeiro;
+        this.formas = formas;
         this.relatorios = relatorios;
     }
 
@@ -72,21 +79,22 @@ public class FinanceiroERelatoriosController {
         return financeiro.resumo(de, ate);
     }
 
-    /** Lançamento manual. `jaPago: true` exige a `forma`. */
+    /** Lançamento manual. `jaPago: true` exige a `forma`; ausente, a cobrança fica pendente. */
     public record LancarTransacao(
             @NotNull(message = "Informe o paciente") UUID pacienteId,
             UUID agendamentoId,
             @NotBlank(message = "Descreva a cobrança") @Size(max = 200, message = "Até 200 caracteres") String descricao,
             @NotNull(message = "Informe o valor") @DecimalMin(value = "0", message = "O valor não pode ser negativo") BigDecimal valor,
             FormaPagamento forma,
-            boolean jaPago) {
+            // Boolean, e não boolean: o Jackson 3 recusa primitivo ausente no corpo.
+            Boolean jaPago) {
     }
 
     @PostMapping("/financeiro/transacoes")
     @ResponseStatus(HttpStatus.CREATED)
     public TransacaoResposta lancar(@Valid @RequestBody LancarTransacao dados) {
         return financeiro.lancar(new Lancar(dados.pacienteId(), dados.agendamentoId(), dados.descricao(), dados.valor(),
-                dados.forma(), dados.jaPago()));
+                dados.forma(), Boolean.TRUE.equals(dados.jaPago())));
     }
 
     /** `{ "status": "pago", "forma": "pix" }` dá baixa; `{ "status": "estornado" }` estorna ou anula. */
@@ -97,6 +105,21 @@ public class FinanceiroERelatoriosController {
     @PatchMapping("/financeiro/transacoes/{id}/status")
     public TransacaoResposta alterarStatus(@PathVariable UUID id, @Valid @RequestBody AlterarStatusDaTransacao dados) {
         return financeiro.alterarStatus(id, dados.status(), dados.forma());
+    }
+
+    /** Todas as formas, com `ativa` indicando se a baixa aceita cada uma. */
+    @GetMapping("/financeiro/formas-pagamento")
+    public List<FormaResposta> formasDePagamento() {
+        return formas.listar();
+    }
+
+    /** `{ "ativas": ["pix", "credito"] }`: as que ficarem de fora são desativadas. */
+    public record DefinirFormas(@NotNull(message = "Informe as formas ativas") List<FormaPagamento> ativas) {
+    }
+
+    @PutMapping("/financeiro/formas-pagamento")
+    public List<FormaResposta> definirFormasDePagamento(@Valid @RequestBody DefinirFormas dados) {
+        return formas.definirAtivas(dados.ativas());
     }
 
     /** CSV (padrão, abre no Excel) ou PDF, dos lançamentos do período (padrão: últimos 30 dias). */

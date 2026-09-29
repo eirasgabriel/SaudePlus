@@ -28,10 +28,12 @@ import br.com.saudeplus.auditoria.Auditoria;
 import br.com.saudeplus.clinicas.StatusUnidade;
 import br.com.saudeplus.clinicas.Unidade;
 import br.com.saudeplus.clinicas.UnidadeRepository;
+import br.com.saudeplus.comum.Cnpj;
 import br.com.saudeplus.exames.TipoExame;
 import br.com.saudeplus.exames.TipoExameRepository;
 import br.com.saudeplus.exception.ConflitoException;
 import br.com.saudeplus.exception.RecursoNaoEncontradoException;
+import br.com.saudeplus.exception.RequisicaoInvalidaException;
 import br.com.saudeplus.profissionais.Convenio;
 import br.com.saudeplus.profissionais.ConvenioRepository;
 import br.com.saudeplus.profissionais.Especialidade;
@@ -97,8 +99,14 @@ public class CadastrosAdminService {
 
     @Transactional
     public UnidadeAdmin criarUnidade(SalvarUnidade dados) {
-        Unidade unidade = unidades.save(new Unidade(dados.nome(), dados.endereco(), dados.bairro(), dados.cidade(),
-                dados.uf(), dados.telefone(), dados.horarioFuncionamento(), dados.mapUrl()));
+        String cnpj = cnpj(dados.cnpj());
+        if (cnpj != null && unidades.existsByCnpj(cnpj)) {
+            throw new ConflitoException("Já existe uma unidade com este CNPJ.");
+        }
+        Unidade unidade = new Unidade(dados.nome(), dados.endereco(), dados.bairro(), dados.cidade(),
+                dados.uf(), dados.telefone(), dados.horarioFuncionamento(), dados.mapUrl());
+        unidade.alterarContato(cnpj, dados.email());
+        unidades.save(unidade);
         auditoria.registrar("unidade.criar", "unidade", unidade.getId(), Map.of("nome", unidade.getNome()));
         return UnidadeAdmin.de(unidade, List.of(), 0, 0);
     }
@@ -106,10 +114,34 @@ public class CadastrosAdminService {
     @Transactional
     public UnidadeAdmin alterarUnidade(UUID id, SalvarUnidade dados) {
         Unidade unidade = unidade(id);
+        String cnpj = cnpj(dados.cnpj());
+        if (cnpj != null && unidades.existsByCnpjAndIdNot(cnpj, id)) {
+            throw new ConflitoException("Já existe uma unidade com este CNPJ.");
+        }
         unidade.alterar(dados.nome(), dados.endereco(), dados.bairro(), dados.cidade(), dados.uf(), dados.telefone(),
                 dados.horarioFuncionamento(), dados.mapUrl());
+        unidade.alterarContato(cnpj, dados.email());
         auditoria.registrar("unidade.alterar", "unidade", id, Map.of("nome", unidade.getNome()));
         return resumo(unidade);
+    }
+
+    /**
+     * "Excluir" da tela: a unidade fica inativa. O registro fica, porque
+     * agendamentos, exames e o histórico dos médicos apontam para ele.
+     */
+    @Transactional
+    public void excluirUnidade(UUID id) {
+        Unidade unidade = unidade(id);
+        unidade.alterarStatus(StatusUnidade.INATIVA);
+        auditoria.registrar("unidade.excluir", "unidade", id, Map.of("nome", unidade.getNome()));
+    }
+
+    private static String cnpj(String informado) {
+        try {
+            return Cnpj.normalizar(informado);
+        } catch (IllegalArgumentException excecao) {
+            throw RequisicaoInvalidaException.noCampo("cnpj", "CNPJ inválido.");
+        }
     }
 
     /** Fora de `ativa`, a unidade some da busca e deixa de oferecer horários; consultas já marcadas continuam. */

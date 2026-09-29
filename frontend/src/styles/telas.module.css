@@ -1,0 +1,335 @@
+/* Peças das telas da área logada do médico e do paciente (listas, detalhes e
+   formulários). Os tokens vêm de styles/tokens.css. */
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.titulo {
+  margin: 0;
+  font-size: var(--fs-section-title);
+  font-weight: var(--fw-bold);
+  letter-spacing: -0.02em;
+  color: var(--color-navy-950);
+}
+
+.subtitulo {
+  margin: 4px 0 0;
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+}
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.cartaoTitulo {
+  margin: 0;
+  font-size: 17px;
+  font-weight: var(--fw-semibold);
+  color: var(--color-navy-950);
+}
+
+.cartaoTopo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ---------------------------------------------------------------- filtros */
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.campoLargo {
+  flex: 1 1 220px;
+}
+
+.rotulo {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-strong);
+}
+
+.input,
+.select,
+.area {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-button);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--fs-small);
+  color: var(--color-text);
+}
+
+.area {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.input:focus,
+.select:focus,
+.area:focus {
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary-light);
+}
+
+.invalido {
+  border-color: #d92544;
+}
+
+.erroCampo {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: var(--fw-semibold);
+  color: #b3122f;
+}
+
+.grade2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ---------------------------------------------------------------- botões */
+
+.botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.botao,
+.botaoSecundario,
+.botaoPerigo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+
+.botao {
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.botao:hover {
+  background: var(--color-primary-hover);
+}
+
+.botaoSecundario {
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-primary-dark);
+}
+
+.botaoSecundario:hover {
+  border-color: var(--color-border-hover);
+  background: var(--color-primary-light);
+}
+
+.botaoPerigo {
+  border: 1px solid #f3b7c2;
+  background: #fff5f7;
+  color: #b3122f;
+}
+
+.botaoPerigo:hover {
+  background: #ffe5ea;
+}
+
+.botao:disabled,
+.botaoSecundario:disabled,
+.botaoPerigo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------- listas */
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.item:first-child {
+  border-top: 0;
+}
+
+.itemTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemPrincipal {
+  font-weight: var(--fw-semibold);
+  color: var(--color-navy-900);
+  text-decoration: none;
+}
+
+a.itemPrincipal:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.itemSecundario {
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+}
+
+.naoLida {
+  box-shadow: inset 3px 0 0 var(--color-primary);
+  padding-left: var(--space-3);
+}
+
+/* Pares rótulo/valor dos detalhes. */
+.dados {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-3) var(--space-5);
+  margin: 0;
+}
+
+.dados dt {
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+}
+
+.dados dd {
+  margin: 2px 0 0;
+  font-weight: var(--fw-medium);
+  color: var(--color-navy-900);
+  overflow-wrap: anywhere;
+}
+
+.texto {
+  margin: 0;
+  white-space: pre-line;
+  color: var(--color-text);
+}
+
+/* ---------------------------------------------------------------- estados */
+
+.vazio,
+.carregando {
+  margin: 0;
+  padding: var(--space-4) 0;
+  color: var(--color-text-soft);
+}
+
+.mensagem {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-button);
+  font-size: var(--fs-small);
+}
+
+.sucesso {
+  background: #e7f8ef;
+  color: #0b6b3a;
+}
+
+.erro {
+  background: #ffe5ea;
+  color: #8c0f26;
+}
+
+.info {
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+}
+
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: var(--fw-medium);
+  color: var(--color-primary-dark);
+  text-decoration: none;
+}
+
+.voltar:hover {
+  text-decoration: underline;
+}
+
+/* Página avulsa da área do paciente (sem o layout do painel). */
+.paginaAvulsa {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background: #f8fafc;
+}
+
+.paginaAvulsaConteudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: 900px;
+  margin: 0 auto;
+}

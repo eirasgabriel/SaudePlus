@@ -20,6 +20,51 @@ export function buscarAgenda({ data, status, sinal } = {}) {
   return http.get("/api/medico/agenda", { parametros: { data, status }, sinal, autenticado });
 }
 
+/**
+ * Consultas num período, paginadas (padrão do servidor: 30 dias antes e
+ * depois de hoje). `ordem: "recentes"` traz as mais novas primeiro.
+ */
+export function listarConsultas({ de, ate, status, q, ordem, pagina, tamanho, sinal } = {}) {
+  return http.get("/api/medico/consultas", {
+    parametros: { de, ate, status, q, ordem, pagina, tamanho },
+    sinal,
+    autenticado,
+  });
+}
+
+/** Detalhe da consulta, com o atendimento registrado e os exames pedidos nela. */
+export function buscarConsulta(consultaId, { sinal } = {}) {
+  return http.get(`/api/medico/agendamentos/${consultaId}`, { sinal, autenticado });
+}
+
+/** Exames pedidos por este médico. `status`: a chave de um status, ou "pendentes". */
+export function listarExames({ status, pagina, tamanho, sinal } = {}) {
+  return http.get("/api/medico/exames", { parametros: { status, pagina, tamanho }, sinal, autenticado });
+}
+
+export function buscarExame(exameId, { sinal } = {}) {
+  return http.get(`/api/medico/exames/${exameId}`, { sinal, autenticado });
+}
+
+/** Unidades vinculadas, com o status de cada uma. */
+export function listarUnidades({ sinal } = {}) {
+  return http.get("/api/medico/unidades", { sinal, autenticado });
+}
+
+/** Perfil profissional: CRM, especialidades, unidades, apresentação e valor. */
+export function buscarPerfilProfissional({ sinal } = {}) {
+  return http.get("/api/medico/perfil", { sinal, autenticado });
+}
+
+/** O médico muda só `bio` e `valorConsulta`. */
+export function atualizarPerfilProfissional({ bio, valorConsulta }, { sinal } = {}) {
+  return http.put("/api/medico/perfil", { bio, valorConsulta }, { sinal, autenticado });
+}
+
+export function marcarTodasComoLidas({ sinal } = {}) {
+  return http.patch("/api/medico/notificacoes/lidas", undefined, { sinal, autenticado });
+}
+
 /** Pacientes com consulta com este médico, paginados; `q` filtra pelo nome. */
 export function buscarPacientes({ q, pagina, tamanho, sinal } = {}) {
   return http.get("/api/medico/pacientes", { parametros: { q, pagina, tamanho }, sinal, autenticado });

@@ -58,6 +58,26 @@ Formato de toda consulta devolvida por estas rotas:
 | `GET /api/paciente/notificacoes` | as 30 mais recentes |
 | `PATCH /api/paciente/notificacoes/{id}/lida` | marca uma como lida |
 | `PATCH /api/paciente/notificacoes/lidas` | marca todas como lidas → `204` |
+| `GET /api/paciente/perfil` | "Minhas informações" (abaixo) |
+| `PUT /api/paciente/perfil` | atualiza "Minhas informações" → o perfil |
+
+### Minhas informações
+
+```json
+{ "nomeCompleto": "Ana Paula Ferreira", "telefone": "(22) 99811-0001", "dataNascimento": "1994-03-12",
+  "sexo": "feminino", "cpf": "529.982.247-25", "convenioId": "…", "numeroCarteirinha": "0001-ABC" }
+```
+
+A resposta traz `{ id, nome, email, telefone, fotoUrl, cpf, dataNascimento, idade, sexo, convenio {id, nome}, numeroCarteirinha }`.
+
+| Resposta | Quando |
+| --- | --- |
+| `400` | nome em branco, data de nascimento no futuro, `sexo` fora de `feminino`/`masculino`/`outro`/`nao_informado`, CPF inválido, convênio inexistente ou inativo (`campos`) |
+| `409` | o CPF já está em outra conta |
+| `422` | tentou trocar um CPF já gravado: só a administração corrige |
+
+CPF vazio mantém o que já existe. Sem `convenioId`, a consulta é particular e a
+carteirinha é apagada. O e-mail não muda (é o login).
 
 ### Reservar
 

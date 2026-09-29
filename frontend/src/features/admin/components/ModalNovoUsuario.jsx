@@ -15,6 +15,9 @@ const PERFIS = [
   { valor: "ADMIN", rotulo: "Administrador(a)" },
 ];
 
+/** Médico e paciente têm cadastro próprio e não trocam de perfil (o servidor recusa com 422). */
+const PERFIL_FIXO = new Set(["MEDICO", "PACIENTE"]);
+
 const VAZIO = {
   nomeCompleto: "",
   email: "",
@@ -24,9 +27,27 @@ const VAZIO = {
   crm: "",
   crmUf: "",
   valorConsulta: "",
+  bio: "",
   especialidadeIds: [],
   unidadeIds: [],
 };
+
+/** Conta da API (`UsuarioAdminResposta`) → formulário. */
+function doUsuario(u) {
+  return {
+    nomeCompleto: u.nome ?? "",
+    email: u.email ?? "",
+    telefone: u.telefone ?? "",
+    cpf: u.cpf ?? "",
+    papel: u.papel,
+    crm: u.medico?.crm ?? "",
+    crmUf: u.medico?.crmUf ?? "",
+    valorConsulta: u.medico?.valorConsulta ?? "",
+    bio: u.medico?.bio ?? "",
+    especialidadeIds: u.medico?.especialidades?.map((e) => e.id) ?? [],
+    unidadeIds: u.medico?.unidades?.map((un) => un.id) ?? [],
+  };
+}
 
 /** Erros da API por campo (`medico.crm` vira `crm`) para destacar o input certo. */
 function errosDoServidor(campos = {}) {
@@ -34,26 +55,37 @@ function errosDoServidor(campos = {}) {
 }
 
 /**
- * Cadastro de conta pela administração. Não pede senha: a pessoa recebe um
- * convite por e-mail para definir a sua. Para médico, pede CRM, especialidades
- * e unidades.
+ * Cadastro e edição de conta pela administração.
+ *
+ * Sem `usuario`, cria: não pede senha, a pessoa recebe um convite por e-mail.
+ * Com `usuario`, edita: o e-mail não muda, e médico e paciente não trocam de
+ * perfil. Para médico, pede CRM, especialidades, unidades, valor e apresentação.
  *
  * `aoCriar(dados)` devolve uma promessa; se falhar, o modal mostra os erros
  * (por campo, quando a API os informa) e continua aberto.
  */
-export default function ModalNovoUsuario({ aberto, aoFechar, aoCriar, especialidades = [], unidades = [], podeCriarAdmin }) {
+export default function ModalNovoUsuario({
+  aberto,
+  aoFechar,
+  aoCriar,
+  usuario = null,
+  especialidades = [],
+  unidades = [],
+  podeCriarAdmin,
+}) {
   const prefixo = `nu-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const [formulario, setFormulario] = useState(VAZIO);
   const [erros, setErros] = useState({});
   const [erroGeral, setErroGeral] = useState(null);
   const [enviando, setEnviando] = useState(false);
   const refPrimeiro = useRef(null);
+  const editando = Boolean(usuario);
 
   const [abertoAnterior, setAbertoAnterior] = useState(aberto);
   if (aberto !== abertoAnterior) {
     setAbertoAnterior(aberto);
     if (aberto) {
-      setFormulario(VAZIO);
+      setFormulario(usuario ? doUsuario(usuario) : VAZIO);
       setErros({});
       setErroGeral(null);
     }
@@ -75,7 +107,12 @@ export default function ModalNovoUsuario({ aberto, aoFechar, aoCriar, especialid
   if (!aberto) return null;
 
   const medico = formulario.papel === "MEDICO";
-  const perfis = PERFIS.filter((p) => p.valor !== "ADMIN" || podeCriarAdmin);
+  const perfilFixo = editando && PERFIL_FIXO.has(usuario.papel);
+  const perfis = PERFIS.filter((p) => {
+    if (p.valor === "ADMIN" && !podeCriarAdmin) return false;
+    if (perfilFixo) return p.valor === usuario.papel;
+    return !editando || !PERFIL_FIXO.has(p.valor);
+  });
 
   const alterar = (campo, valor) => {
     setFormulario((atual) => ({ ...atual, [campo]: valor }));
@@ -95,7 +132,7 @@ export default function ModalNovoUsuario({ aberto, aoFechar, aoCriar, especialid
     if (enviando) return;
     const locais = {};
     if (formulario.nomeCompleto.trim().length < 3) locais.nomeCompleto = "Informe o nome completo.";
-    if (!/^\S+@\S+\.\S+$/.test(formulario.email.trim())) locais.email = "Informe um e-mail válido.";
+    if (!editando && !/^\S+@\S+\.\S+$/.test(formulario.email.trim())) locais.email = "Informe um e-mail válido.";
     if (medico && !formulario.crm.trim()) locais.crm = "Informe o CRM.";
     if (medico && !/^[A-Za-z]{2}$/.test(formulario.crmUf.trim())) locais.crmUf = "Use a sigla do estado.";
     if (medico && formulario.especialidadeIds.length === 0) locais.especialidadeIds = "Escolha ao menos uma.";
@@ -109,7 +146,7 @@ export default function ModalNovoUsuario({ aberto, aoFechar, aoCriar, especialid
     try {
       await aoCriar({
         nomeCompleto: formulario.nomeCompleto.trim(),
-        email: formulario.email.trim(),
+        email: editando ? undefined : formulario.email.trim(),
         telefone: formulario.telefone.trim() || undefined,
         cpf: formulario.cpf.trim() || undefined,
         papel: formulario.papel,
@@ -119,14 +156,15 @@ export default function ModalNovoUsuario({ aberto, aoFechar, aoCriar, especialid
               crmUf: formulario.crmUf.trim().toUpperCase(),
               especialidadeIds: formulario.especialidadeIds,
               unidadeIds: formulario.unidadeIds,
-              valorConsulta: formulario.valorConsulta ? Number(formulario.valorConsulta) : undefined,
+              valorConsulta: formulario.valorConsulta !== "" ? Number(formulario.valorConsulta) : undefined,
+              bio: formulario.bio.trim() || undefined,
             }
           : undefined,
       });
       aoFechar?.();
     } catch (erro) {
       setErros(errosDoServidor(erro?.campos));
-      setErroGeral(erro?.message ?? "Não foi possível criar a conta.");
+      setErroGeral(erro?.message ?? (editando ? "Não foi possível salvar a conta." : "Não foi possível criar a conta."));
     } finally {
       setEnviando(false);
     }
@@ -173,8 +211,10 @@ export default function ModalNovoUsuario({ aberto, aoFechar, aoCriar, especialid
       <div className={estilos.dialogo} role="dialog" aria-modal="true" aria-labelledby={`${prefixo}-titulo`}>
         <header className={estilos.cabecalho}>
           <div className={estilos.textoCabecalho}>
-            <h2 id={`${prefixo}-titulo`} className={estilos.titulo}>Novo usuário</h2>
-            <p className={estilos.descricao}>A pessoa recebe um e-mail para definir a própria senha.</p>
+            <h2 id={`${prefixo}-titulo`} className={estilos.titulo}>{editando ? "Editar usuário" : "Novo usuário"}</h2>
+            <p className={estilos.descricao}>
+              {editando ? "O e-mail de acesso não muda." : "A pessoa recebe um e-mail para definir a própria senha."}
+            </p>
           </div>
           <button type="button" className={estilos.botaoFechar} onClick={aoFechar} aria-label="Fechar">×</button>
         </header>
@@ -187,13 +227,14 @@ export default function ModalNovoUsuario({ aberto, aoFechar, aoCriar, especialid
               ref={refPrimeiro}
               className={estilos.select}
               value={formulario.papel}
+              disabled={perfilFixo}
               onChange={(e) => alterar("papel", e.target.value)}
             >
               {perfis.map((p) => <option key={p.valor} value={p.valor}>{p.rotulo}</option>)}
             </select>
           </div>
           {campo("nomeCompleto", "Nome completo", { autoComplete: "off" })}
-          {campo("email", "E-mail", { type: "email", autoComplete: "off" })}
+          {campo("email", "E-mail", { type: "email", autoComplete: "off", disabled: editando })}
           <div className={proprios.linha}>
             {campo("telefone", "Telefone (opcional)", { inputMode: "tel" })}
             {campo("cpf", "CPF (opcional)", { inputMode: "numeric" })}
@@ -208,6 +249,17 @@ export default function ModalNovoUsuario({ aberto, aoFechar, aoCriar, especialid
               </div>
               {listaDeMarcar("especialidadeIds", "Especialidades", especialidades)}
               {listaDeMarcar("unidadeIds", "Unidades onde atende", unidades)}
+              <div className={estilos.campo}>
+                <label className={estilos.rotulo} htmlFor={`${prefixo}-bio`}>Apresentação (opcional)</label>
+                <textarea
+                  id={`${prefixo}-bio`}
+                  className={estilos.input}
+                  rows={3}
+                  maxLength={2000}
+                  value={formulario.bio}
+                  onChange={(e) => alterar("bio", e.target.value)}
+                />
+              </div>
             </>
           )}
 
@@ -216,7 +268,7 @@ export default function ModalNovoUsuario({ aberto, aoFechar, aoCriar, especialid
           <div className={estilos.acoes}>
             <button type="button" className={estilos.botaoSecundario} onClick={aoFechar}>Cancelar</button>
             <button type="submit" className={estilos.botaoPrimario} disabled={enviando} aria-busy={enviando}>
-              {enviando ? "Criando…" : "Criar e enviar convite"}
+              {enviando ? "Salvando…" : editando ? "Salvar alterações" : "Criar e enviar convite"}
             </button>
           </div>
         </form>

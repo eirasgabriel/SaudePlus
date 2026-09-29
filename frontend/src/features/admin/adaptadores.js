@@ -70,6 +70,19 @@ export function paraUsuario(u) {
   };
 }
 
+/** Conta da API → linha da aba "Usuários e Permissões" (papel no id do mock: "gestor", "medico"...). */
+export function paraUsuarioDaEquipe(u) {
+  return {
+    id: u.id,
+    nome: u.nome,
+    cargo: CARGO_POR_PAPEL[u.papel] ?? u.papel,
+    email: u.email,
+    papel: PERFIL_POR_PAPEL[u.papel] ?? u.papel,
+    unidade: u.medico?.unidades?.map((un) => un.nome).join(", ") || "Todas",
+    status: u.status,
+  };
+}
+
 export function metricasDeUsuarios(modelos, m) {
   return cartoes(modelos, {
     total: { valor: m.total },
@@ -90,6 +103,23 @@ export function paraClinica(u) {
     municipio: `${u.cidade} - ${u.uf}`,
     telefone: u.telefone ?? "—",
     status: u.status,
+  };
+}
+
+/** Unidade da API → cadastro da aba "Clínicas e Unidades" (com CNPJ e e-mail). */
+export function paraUnidadeDaConfiguracao(u) {
+  return {
+    id: u.id,
+    nome: u.nome,
+    cnpj: u.cnpj ?? "",
+    unidade: `${u.cidade} - ${u.uf}`,
+    endereco: u.endereco,
+    bairro: [u.bairro, `${u.cidade}/${u.uf}`].filter(Boolean).join(" - "),
+    telefone: u.telefone ?? "—",
+    email: u.email ?? "",
+    funcionamento: [u.horarioFuncionamento || "Horário não informado"],
+    status: u.status,
+    vinculadas: [],
   };
 }
 

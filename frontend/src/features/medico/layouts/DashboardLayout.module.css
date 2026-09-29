@@ -42,6 +42,17 @@
   }
 }
 
+/* Telas sem a coluna direita (listas e detalhes): o conteúdo ocupa o resto. */
+.grade.semTrilha {
+  grid-template-columns: 236px minmax(0, 1fr);
+}
+
+@media (max-width: 1400px) {
+  .grade.semTrilha {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+}
+
 /* A grade do painel é mais larga que o container do site institucional;
    o rodapé acompanha para as colunas não ficarem desalinhadas. */
 .rodape {
@@ -71,7 +82,8 @@
 }
 
 @media (max-width: 1100px) {
-  .grade {
+  .grade,
+  .grade.semTrilha {
     grid-template-columns: minmax(0, 1fr);
   }
 }

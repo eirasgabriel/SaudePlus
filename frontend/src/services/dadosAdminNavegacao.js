@@ -8,6 +8,8 @@ export const itensMenu = [
   { id: "usuarios", rotulo: "Usuários", icone: "usuarios", para: "/admin/usuarios" },
   { id: "clinicas", rotulo: "Clínicas", icone: "clinica", para: "/admin/clinicas" },
   { id: "agendamentos", rotulo: "Agendamentos", icone: "calendario", para: "/admin/agendamentos" },
+  // Não é módulo próprio: a fila de exames vem com o módulo de agendamentos (ModuloAdmin no back-end).
+  { id: "exames", modulo: "agendamentos", rotulo: "Exames", icone: "frasco", para: "/admin/exames" },
   { id: "relatorios", rotulo: "Relatórios", icone: "grafico", para: "/admin/relatorios" },
   { id: "financeiro", rotulo: "Financeiro", icone: "banco", para: "/admin/financeiro" },
   { id: "configuracoes", rotulo: "Configurações", icone: "engrenagem", para: "/admin/configuracoes" },

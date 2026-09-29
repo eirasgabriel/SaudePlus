@@ -22,13 +22,14 @@ public final class CadastrosAdminResposta {
      * @param agendamentosNoMes consultas do mês corrente na unidade
      */
     public record UnidadeAdmin(UUID id, String nome, String endereco, String bairro, String cidade, String uf,
-            String telefone, String horarioFuncionamento, String mapUrl, StatusUnidade status,
+            String telefone, String horarioFuncionamento, String mapUrl, String cnpj, String email, StatusUnidade status,
             List<String> especialidades, long medicos, long agendamentosNoMes) {
 
         public static UnidadeAdmin de(Unidade unidade, List<String> especialidades, long medicos, long agendamentosNoMes) {
             return new UnidadeAdmin(unidade.getId(), unidade.getNome(), unidade.getEndereco(), unidade.getBairro(),
                     unidade.getCidade(), unidade.getUf(), unidade.getTelefone(), unidade.getHorarioFuncionamento(),
-                    unidade.getMapUrl(), unidade.getStatus(), especialidades, medicos, agendamentosNoMes);
+                    unidade.getMapUrl(), unidade.getCnpj(), unidade.getEmail(), unidade.getStatus(), especialidades, medicos,
+                    agendamentosNoMes);
         }
     }
 

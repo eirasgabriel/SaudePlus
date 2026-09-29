@@ -5,7 +5,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -35,6 +37,8 @@ import br.com.saudeplus.Cenarios;
 import br.com.saudeplus.TesteDeIntegracao;
 import br.com.saudeplus.agendamentos.Agendamento;
 import br.com.saudeplus.agendamentos.StatusAgendamento;
+import br.com.saudeplus.notificacoes.NotificacaoService;
+import br.com.saudeplus.notificacoes.TipoNotificacao;
 import br.com.saudeplus.pacientes.Paciente;
 import br.com.saudeplus.profissionais.Medico;
 import br.com.saudeplus.usuarios.Papel;
@@ -58,6 +62,8 @@ class AdminApiTest {
     private JsonMapper json;
     @Autowired
     private Clock relogio;
+    @Autowired
+    private NotificacaoService notificador;
 
     private MockMvc mvc;
     private Cenarios cenarios;
@@ -170,6 +176,20 @@ class AdminApiTest {
 
             como(admin, json(patch("/api/admin/usuarios/{id}/status", adminId), "{\"status\":\"bloqueado\"}"))
                     .andExpect(status().isUnprocessableContent());
+        }
+
+        @Test
+        @DisplayName("excluir é lógico: a conta fica inativa e para de entrar; ninguém exclui a si mesmo")
+        void excluir() throws Exception {
+            var alvo = cenarios.usuario("Pessoa Excluível", Papel.RECEPCIONISTA);
+            String tokenDoAlvo = cenarios.bearer(alvo);
+            como(admin, delete("/api/admin/usuarios/{id}", alvo.getId())).andExpect(status().isNoContent());
+            como(admin, get("/api/admin/usuarios/{id}", alvo.getId())).andExpect(jsonPath("$.status").value("inativo"));
+            como(tokenDoAlvo, get("/api/auth/perfil")).andExpect(status().isUnauthorized());
+
+            como(admin, delete("/api/admin/usuarios/{id}", adminId)).andExpect(status().isUnprocessableContent());
+            como(equipe(Papel.GESTOR), delete("/api/admin/usuarios/{id}", adminId)).andExpect(status().isForbidden());
+            mvc.perform(delete("/api/admin/usuarios/{id}", alvo.getId())).andExpect(status().isUnauthorized());
         }
 
         @Test
@@ -290,6 +310,48 @@ class AdminApiTest {
         }
 
         @Test
+        @DisplayName("CNPJ é validado, gravado formatado e único; e-mail inválido dá 400")
+        void cnpjEEmail() throws Exception {
+            String corpo = """
+                    {"nome":"UBS Com CNPJ","endereco":"Rua A, 1","cidade":"Araruama","uf":"RJ",
+                     "cnpj":"%s","email":"%s"}""";
+            String criada = como(admin, json(post("/api/admin/unidades"), corpo.formatted("11222333000181", "UBS@Teste.com")))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.cnpj").value("11.222.333/0001-81"))
+                    .andExpect(jsonPath("$.email").value("ubs@teste.com"))
+                    .andReturn().getResponse().getContentAsString();
+            como(admin, json(post("/api/admin/unidades"), corpo.formatted("11.222.333/0001-81", "outra@teste.com")))
+                    .andExpect(status().isConflict());
+            como(admin, json(post("/api/admin/unidades"), corpo.formatted("11.222.333/0001-80", "outra@teste.com")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.campos.cnpj").exists());
+            como(admin, json(post("/api/admin/unidades"), corpo.formatted("", "sem-arroba")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.campos.email").exists());
+
+            // Alterar a própria unidade mantendo o CNPJ não é conflito.
+            String id = json.readTree(criada).get("id").asString();
+            como(admin, json(put("/api/admin/unidades/{id}", id), corpo.formatted("11222333000181", "nova@teste.com")))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.email").value("nova@teste.com"));
+        }
+
+        @Test
+        @DisplayName("excluir unidade a deixa inativa; quem não tem o módulo recebe 403")
+        void excluirUnidade() throws Exception {
+            String corpo = como(admin, json(post("/api/admin/unidades"),
+                    "{\"nome\":\"UBS Excluível\",\"endereco\":\"Rua B, 2\",\"cidade\":\"Araruama\",\"uf\":\"RJ\"}"))
+                    .andReturn().getResponse().getContentAsString();
+            String id = json.readTree(corpo).get("id").asString();
+
+            como(equipe(Papel.RECEPCIONISTA), delete("/api/admin/unidades/{id}", id)).andExpect(status().isForbidden());
+            como(admin, delete("/api/admin/unidades/{id}", id)).andExpect(status().isNoContent());
+            como(admin, get("/api/admin/unidades"))
+                    .andExpect(jsonPath("$[?(@.id == '%s')].status".formatted(id), contains("inativa")));
+            como(admin, delete("/api/admin/unidades/{id}", UUID.randomUUID())).andExpect(status().isNotFound());
+        }
+
+        @Test
         @DisplayName("especialidade nova ganha slug; repetida dá 409")
         void especialidade() throws Exception {
             como(admin, json(post("/api/admin/especialidades"), "{\"nome\":\"Medicina Esportiva\"}"))
@@ -299,6 +361,108 @@ class AdminApiTest {
                     .andExpect(status().isConflict());
             mvc.perform(get("/api/publico/especialidades"))
                     .andExpect(jsonPath("$[*].slug", hasItem("medicina-esportiva")));
+        }
+    }
+
+    @Nested
+    @DisplayName("Notificações da equipe")
+    class Notificacoes {
+
+        @Test
+        @DisplayName("cada um vê, conta e marca só as suas; notificação alheia dá 404")
+        void isolamento() throws Exception {
+            var recepcionista = cenarios.usuario("Recepção Notificada", Papel.RECEPCIONISTA);
+            var gestor = cenarios.usuario("Gestão Notificada", Papel.GESTOR);
+            notificador.notificar(recepcionista, TipoNotificacao.SISTEMA, "Aviso da recepção", "Detalhe");
+            notificador.notificar(recepcionista, TipoNotificacao.AGENDAMENTO, "Novo agendamento", null);
+            notificador.notificar(gestor, TipoNotificacao.SISTEMA, "Aviso da gestão", null);
+            String recepcao = cenarios.bearer(recepcionista);
+            String gestao = cenarios.bearer(gestor);
+
+            String lista = como(recepcao, get("/api/admin/notificacoes"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(2)))
+                    .andExpect(jsonPath("$[*].titulo", not(hasItem("Aviso da gestão"))))
+                    .andReturn().getResponse().getContentAsString();
+            como(recepcao, get("/api/admin/notificacoes/nao-lidas")).andExpect(jsonPath("$.total").value(2));
+
+            String daRecepcao = json.readTree(lista).get(0).get("id").asString();
+            como(gestao, patch("/api/admin/notificacoes/{id}/lida", daRecepcao)).andExpect(status().isNotFound());
+            como(recepcao, patch("/api/admin/notificacoes/{id}/lida", daRecepcao))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.lida").value(true));
+            como(recepcao, get("/api/admin/notificacoes/nao-lidas")).andExpect(jsonPath("$.total").value(1));
+
+            como(recepcao, patch("/api/admin/notificacoes/lidas")).andExpect(status().isNoContent());
+            como(recepcao, get("/api/admin/notificacoes/nao-lidas")).andExpect(jsonPath("$.total").value(0));
+            como(gestao, get("/api/admin/notificacoes/nao-lidas")).andExpect(jsonPath("$.total").value(1));
+        }
+
+        @Test
+        @DisplayName("sem token 401; médico e paciente usam as próprias áreas (403 aqui)")
+        void acesso() throws Exception {
+            mvc.perform(get("/api/admin/notificacoes")).andExpect(status().isUnauthorized());
+            como(cenarios.bearer(cenarios.medico()), get("/api/admin/notificacoes")).andExpect(status().isForbidden());
+            como(cenarios.bearer(cenarios.paciente("Paciente Intruso", null).getUsuario()), get("/api/admin/notificacoes"))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
+    @Nested
+    @DisplayName("Formas de pagamento")
+    class FormasDePagamento {
+
+        @Test
+        @DisplayName("forma desativada não serve para dar baixa; lista vazia dá 400; recepção não altera")
+        void ativarEDesativar() throws Exception {
+            Paciente paciente = cenarios.paciente("Pagante Teste", null);
+            String cobranca = como(admin, json(post("/api/admin/financeiro/transacoes"),
+                    "{\"pacienteId\":\"%s\",\"descricao\":\"Taxa\",\"valor\":50}".formatted(paciente.getId())))                    .andExpect(status().isCreated())
+                    .andReturn().getResponse().getContentAsString();
+            String id = json.readTree(cobranca).get("id").asString();
+            try {
+                como(admin, json(put("/api/admin/financeiro/formas-pagamento"), "{\"ativas\":[\"pix\",\"credito\"]}"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$", hasSize(6)))
+                        .andExpect(jsonPath("$[?(@.forma == 'boleto')].ativa", contains(false)))
+                        .andExpect(jsonPath("$[?(@.forma == 'pix')].ativa", contains(true)));
+                como(admin, json(patch("/api/admin/financeiro/transacoes/{id}/status", id),
+                        "{\"status\":\"pago\",\"forma\":\"boleto\"}"))
+                        .andExpect(status().isUnprocessableContent());
+                como(admin, json(patch("/api/admin/financeiro/transacoes/{id}/status", id),
+                        "{\"status\":\"pago\",\"forma\":\"pix\"}"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.status").value("pago"));
+
+                como(admin, json(put("/api/admin/financeiro/formas-pagamento"), "{\"ativas\":[]}"))
+                        .andExpect(status().isBadRequest())
+                        .andExpect(jsonPath("$.campos.ativas").exists());
+                como(admin, json(put("/api/admin/financeiro/formas-pagamento"), "{\"ativas\":[\"cheque\"]}"))
+                        .andExpect(status().isBadRequest());
+                como(equipe(Papel.RECEPCIONISTA), json(put("/api/admin/financeiro/formas-pagamento"),
+                        "{\"ativas\":[\"pix\"]}"))
+                        .andExpect(status().isForbidden());
+            } finally {
+                como(admin, json(put("/api/admin/financeiro/formas-pagamento"),
+                        "{\"ativas\":[\"credito\",\"debito\",\"pix\",\"boleto\",\"dinheiro\",\"convenio\"]}"))
+                        .andExpect(status().isOk());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Informações do sistema")
+    class Sistema {
+
+        @Test
+        @DisplayName("ADMIN vê banco e última migração; a equipe não")
+        void informacoes() throws Exception {
+            como(admin, get("/api/admin/sistema"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.banco").value(startsWith("PostgreSQL")))
+                    .andExpect(jsonPath("$.ultimaMigracao.versao").value("7"))
+                    .andExpect(jsonPath("$.noArDesde").isString());
+            como(equipe(Papel.GESTOR), get("/api/admin/sistema")).andExpect(status().isForbidden());
         }
     }
 

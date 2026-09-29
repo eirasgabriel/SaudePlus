@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.saudeplus.agendamentos.StatusAgendamento;
 import br.com.saudeplus.areapaciente.dto.ConsultaDoPacienteResposta;
+import br.com.saudeplus.areapaciente.dto.RequisicoesDoPaciente.AtualizarPerfil;
 import br.com.saudeplus.areapaciente.dto.RequisicoesDoPaciente.Avaliar;
 import br.com.saudeplus.areapaciente.dto.RequisicoesDoPaciente.Cancelar;
 import br.com.saudeplus.areapaciente.dto.RequisicoesDoPaciente.Remarcar;
@@ -44,18 +46,33 @@ public class AreaPacienteController {
     private final ExamesDoPacienteService exames;
     private final NotificacaoService notificacoes;
     private final FinanceiroService financeiro;
+    private final PerfilDoPacienteService perfil;
 
     public AreaPacienteController(ConsultasDoPacienteService consultas, ExamesDoPacienteService exames,
-            NotificacaoService notificacoes, FinanceiroService financeiro) {
+            NotificacaoService notificacoes, FinanceiroService financeiro, PerfilDoPacienteService perfil) {
         this.consultas = consultas;
         this.exames = exames;
         this.notificacoes = notificacoes;
         this.financeiro = financeiro;
+        this.perfil = perfil;
     }
 
     @GetMapping("/painel")
     public RespostasDoPaciente.Painel painel(@AuthenticationPrincipal UsuarioAutenticado usuario) {
         return consultas.painel(usuario);
+    }
+
+    /** "Minhas informações": conta, CPF, nascimento, sexo e convênio. */
+    @GetMapping("/perfil")
+    public RespostasDoPaciente.Perfil perfil(@AuthenticationPrincipal UsuarioAutenticado usuario) {
+        return perfil.perfil(usuario);
+    }
+
+    /** CPF já gravado não muda por aqui (422); CPF de outra conta, 409; convênio inativo, 400. */
+    @PutMapping("/perfil")
+    public RespostasDoPaciente.Perfil atualizarPerfil(@AuthenticationPrincipal UsuarioAutenticado usuario,
+            @Valid @RequestBody AtualizarPerfil requisicao) {
+        return perfil.atualizar(usuario, requisicao);
     }
 
     /** `situacao`: `futuras` ou `passadas` (sem ela, todas); `status`: uma chave de status. */

@@ -86,9 +86,12 @@ export default function AuthProvider({ children }) {
     setUsuario(null)
   }, [])
 
+  /** Troca os dados da conta em memória depois de salvar o perfil (nome e foto do cabeçalho). */
+  const atualizarUsuario = useCallback((perfil) => setUsuario(perfil), [])
+
   const valor = useMemo(
-    () => ({ usuario, carregando, entrar, registrar, aplicarSessao, sair }),
-    [usuario, carregando, entrar, registrar, aplicarSessao, sair],
+    () => ({ usuario, carregando, entrar, registrar, aplicarSessao, sair, atualizarUsuario }),
+    [usuario, carregando, entrar, registrar, aplicarSessao, sair, atualizarUsuario],
   )
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>

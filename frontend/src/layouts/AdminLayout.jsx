@@ -12,11 +12,13 @@ import estilos from "./AdminLayout.module.css";
  * Cada página é renderizada no lugar do Outlet pelas rotas filhas.
  */
 /**
+ * `contexto`: repassado às páginas pelo `<Outlet context>`.
  * `modulos`: ids liberados para quem está logado (ex.: ["dashboard", "agendamentos"]).
- * Sem a lista (mocks), o menu mostra tudo. "Suporte" não é módulo e aparece sempre.
+ * Sem a lista (mocks), o menu mostra tudo. "Suporte" não é módulo e aparece sempre;
+ * um item com `modulo` (ex.: Exames) segue o módulo que o protege.
  */
-export default function AdminLayout({ usuario = usuarioLogado, modulos = null }) {
-  const visivel = (item) => modulos == null || item.id === "suporte" || modulos.includes(item.id);
+export default function AdminLayout({ usuario = usuarioLogado, modulos = null, contexto }) {
+  const visivel = (item) => modulos == null || item.id === "suporte" || modulos.includes(item.modulo ?? item.id);
 
   /* Menu da conta, o mesmo componente do painel do médico. Antes o botão do
      nome no canto superior direito não abria nada — era um <button> sem ação,
@@ -95,6 +97,7 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null })
             type="button"
             className={estilos.iconeBtn}
             aria-label={`Notificações: ${usuario.naoLidas} não lidas`}
+            onClick={() => navegar("/admin/notificacoes")}
           >
             <Icone nome="sino" tam={20} />
             {usuario.naoLidas > 0 && (
@@ -185,7 +188,8 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null })
         </aside>
 
         <main className={estilos.conteudo}>
-          <Outlet />
+          {/* `contexto` chega às páginas por useOutletContext (ex.: reler o contador do sino). */}
+          <Outlet context={contexto} />
         </main>
       </div>
     </div>

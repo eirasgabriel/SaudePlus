@@ -32,13 +32,19 @@ const COLUNAS = [
   "Ações",
 ];
 
-/** Dados e opções de filtro por prop, com os mocks como padrão. */
+/**
+ * Dados e opções de filtro por prop, com os mocks como padrão. Com a API,
+ * `aoNovaClinica`, `aoEditar(clinica)` e `aoExcluir(clinica)` ligam os botões.
+ */
 export default function AdminClinicasPage({
   clinicas = clinicasMock,
   metricas = metricasMock,
   filtrosEspecialidade = filtrosEspecialidadeMock,
   filtrosMunicipio = filtrosMunicipioMock,
   aviso = null,
+  aoNovaClinica,
+  aoEditar,
+  aoExcluir,
 }) {
   const [hoje] = useState(() => new Date());
   const tabela = useTabela({
@@ -97,7 +103,7 @@ export default function AdminClinicasPage({
           aoMudar={(v) => tabela.definirFiltro("municipio", v)}
           opcoes={filtrosMunicipio}
         />
-        <Botao icone="mais">Nova clínica</Botao>
+        <Botao icone="mais" onClick={aoNovaClinica}>Nova clínica</Botao>
       </div>
 
       <Cartao semPadding>
@@ -124,11 +130,20 @@ export default function AdminClinicasPage({
                   </td>
                   <td>
                     <AcoesLinha
-                      acoes={[
-                        { icone: "olho", rotulo: "Ver detalhes" },
-                        { icone: "lapis", rotulo: "Editar" },
-                        { icone: "maisOpcoes", rotulo: "Mais opções", tom: "neutra" },
-                      ]}
+                      acoes={
+                        aoEditar
+                          ? [
+                              { icone: "lapis", rotulo: "Editar", aoClicar: () => aoEditar(c) },
+                              ...(c.status !== "inativa"
+                                ? [{ icone: "lixeira", rotulo: "Excluir", tom: "perigo", aoClicar: () => aoExcluir(c) }]
+                                : []),
+                            ]
+                          : [
+                              { icone: "olho", rotulo: "Ver detalhes" },
+                              { icone: "lapis", rotulo: "Editar" },
+                              { icone: "maisOpcoes", rotulo: "Mais opções", tom: "neutra" },
+                            ]
+                      }
                     />
                   </td>
                 </tr>
