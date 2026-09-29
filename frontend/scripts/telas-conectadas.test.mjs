@@ -9,15 +9,42 @@ let Agenda
 let PerfilPaciente
 let Notificacoes
 let ExamesAdmin
+let ModalUsuario
 before(async () => {
   ;({ AuthContext } = await carregar('/src/features/auth/auth.context.js'))
   Agenda = (await carregar('/src/features/medico/telas/AgendaDoMedico.jsx')).default
   PerfilPaciente = (await carregar('/src/features/paciente/pages/MinhasInformacoes.jsx')).default
   Notificacoes = (await carregar('/src/features/paciente/pages/NotificacoesDoPaciente.jsx')).default
   ExamesAdmin = (await carregar('/src/features/admin/pages/ExamesDoAdmin.jsx')).default
+  ModalUsuario = (await carregar('/src/features/admin/components/ModalNovoUsuario.jsx')).default
 })
 afterEach(limpar)
 after(encerrar)
+
+test('edição de usuário valida a confirmação e só envia senha quando selecionada', async () => {
+  const salvos = []
+  await renderizar(createElement(ModalUsuario, {
+    aberto: true, usuario: { nome: 'Maria Teste', email: 'maria@example.com', papel: 'GESTOR' },
+    aoCriar: async dados => salvos.push(dados), aoFechar() {}, podeCriarAdmin: true,
+  }))
+  await digitar(document.querySelector('input[id$="-nomeCompleto"]'), 'Maria Teste')
+  await enviar(document.querySelector('form'))
+  assert.equal(salvos.length, 1)
+  assert.equal(Object.hasOwn(salvos[0], 'novaSenha'), false)
+  await clicar(document.querySelector('input[type="checkbox"]'))
+  await digitar(document.querySelector('input[id$="-novaSenha"]'), 'novaSenha123')
+  await digitar(document.querySelector('input[id$="-confirmarSenha"]'), 'diferente123')
+  await enviar(document.querySelector('form'))
+  assert.equal(salvos.length, 1)
+  assert.ok(porTexto('As senhas não conferem.', 'p'))
+  await digitar(document.querySelector('input[id$="-confirmarSenha"]'), 'novaSenha123')
+  await enviar(document.querySelector('form'))
+  assert.equal(salvos[1].novaSenha, 'novaSenha123')
+  assert.equal(Object.hasOwn(salvos[1], 'confirmarSenha'), false)
+  await clicar(document.querySelector('input[type="checkbox"]'))
+  await enviar(document.querySelector('form'))
+  assert.equal(Object.hasOwn(salvos[2], 'novaSenha'), false)
+})
 
 const sessao = { usuario: { nomeCompleto: 'Maria Teste', role: 'MEDICO' }, sair() {}, atualizarUsuario() {} }
 const montar = (Componente, endereco) => renderizar(

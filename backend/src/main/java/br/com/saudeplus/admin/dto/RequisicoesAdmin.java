@@ -54,7 +54,9 @@ public final class RequisicoesAdmin {
             @Pattern(regexp = "[0-9 ()+-]*", message = "Use apenas números, espaços e ( ) + -") String telefone,
             String cpf,
             @NotNull(message = "Escolha o perfil") Papel papel,
-            @Valid DadosDeMedico medico) {
+            @Valid DadosDeMedico medico,
+            @Size(min = 8, max = 72, message = "A senha deve ter entre 8 e 72 caracteres")
+            @Pattern(regexp = "(?s).*\\S.*", message = "Informe a nova senha") String novaSenha) {
     }
 
     public record DadosDeMedico(

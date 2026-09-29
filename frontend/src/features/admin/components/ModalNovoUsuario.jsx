@@ -30,11 +30,14 @@ const VAZIO = {
   bio: "",
   especialidadeIds: [],
   unidadeIds: [],
+  novaSenha: "",
+  confirmarSenha: "",
 };
 
 /** Conta da API (`UsuarioAdminResposta`) → formulário. */
 function doUsuario(u) {
   return {
+    ...VAZIO,
     nomeCompleto: u.nome ?? "",
     email: u.email ?? "",
     telefone: u.telefone ?? "",
@@ -74,10 +77,11 @@ export default function ModalNovoUsuario({
   podeCriarAdmin,
 }) {
   const prefixo = `nu-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
-  const [formulario, setFormulario] = useState(VAZIO);
+  const [formulario, setFormulario] = useState(() => usuario ? doUsuario(usuario) : VAZIO);
   const [erros, setErros] = useState({});
   const [erroGeral, setErroGeral] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  const [redefinirSenha, setRedefinirSenha] = useState(false);
   const refPrimeiro = useRef(null);
   const editando = Boolean(usuario);
 
@@ -88,6 +92,7 @@ export default function ModalNovoUsuario({
       setFormulario(usuario ? doUsuario(usuario) : VAZIO);
       setErros({});
       setErroGeral(null);
+      setRedefinirSenha(false);
     }
   }
 
@@ -136,6 +141,12 @@ export default function ModalNovoUsuario({
     if (medico && !formulario.crm.trim()) locais.crm = "Informe o CRM.";
     if (medico && !/^[A-Za-z]{2}$/.test(formulario.crmUf.trim())) locais.crmUf = "Use a sigla do estado.";
     if (medico && formulario.especialidadeIds.length === 0) locais.especialidadeIds = "Escolha ao menos uma.";
+    if (editando && redefinirSenha) {
+      if (!formulario.novaSenha.trim() || formulario.novaSenha.length < 8 || formulario.novaSenha.length > 72) {
+        locais.novaSenha = "A senha deve ter entre 8 e 72 caracteres.";
+      }
+      if (formulario.confirmarSenha !== formulario.novaSenha) locais.confirmarSenha = "As senhas não conferem.";
+    }
     if (Object.keys(locais).length) {
       setErros(locais);
       return;
@@ -150,6 +161,7 @@ export default function ModalNovoUsuario({
         telefone: formulario.telefone.trim() || undefined,
         cpf: formulario.cpf.trim() || undefined,
         papel: formulario.papel,
+        ...(editando && redefinirSenha ? { novaSenha: formulario.novaSenha } : {}),
         medico: medico
           ? {
               crm: formulario.crm.trim(),
@@ -261,6 +273,27 @@ export default function ModalNovoUsuario({
                 />
               </div>
             </>
+          )}
+
+          {editando && (
+            <fieldset className={estilos.campo} disabled={enviando}>
+              <legend className={estilos.rotulo}>Senha de acesso</legend>
+              <label className={proprios.opcao}>
+                <input type="checkbox" checked={redefinirSenha} onChange={(e) => {
+                  setRedefinirSenha(e.target.checked);
+                  alterar("novaSenha", "");
+                  alterar("confirmarSenha", "");
+                }} />
+                Redefinir senha
+              </label>
+              {redefinirSenha && (
+                <>
+                  <p className={estilos.descricao}>A nova senha será aplicada ao salvar. Use entre 8 e 72 caracteres.</p>
+                  {campo("novaSenha", "Nova senha", { type: "password", autoComplete: "new-password", maxLength: 72 })}
+                  {campo("confirmarSenha", "Confirmar nova senha", { type: "password", autoComplete: "new-password", maxLength: 72 })}
+                </>
+              )}
+            </fieldset>
           )}
 
           {erroGeral && <p className={estilos.erro} role="alert">{erroGeral}</p>}

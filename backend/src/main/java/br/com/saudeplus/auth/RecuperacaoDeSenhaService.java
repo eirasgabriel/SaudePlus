@@ -89,6 +89,13 @@ public class RecuperacaoDeSenhaService {
         token.getUsuario().trocarSenha(codificador.encode(novaSenha));
     }
 
+    /** Troca administrativa: invalida também convites e links de recuperação pendentes. */
+    @Transactional
+    public void redefinirPelaAdministracao(Usuario usuario, String novaSenha) {
+        tokens.apagarPendentesDoUsuario(usuario.getId());
+        usuario.trocarSenha(codificador.encode(novaSenha));
+    }
+
     /** Emite um token novo (invalidando os pendentes) e devolve o link do front. */
     private String novoLink(Usuario usuario, Duration duracao) {
         tokens.apagarPendentesDoUsuario(usuario.getId());

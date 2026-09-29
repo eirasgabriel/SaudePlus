@@ -98,6 +98,38 @@ class AdminApiTest {
         return "adm-" + UUID.randomUUID() + "@teste.saudeplus.com";
     }
 
+    @Test
+    void edicaoRedefineSenhaERejeitaSenhaInvalida() throws Exception {
+        var alvo = cenarios.usuario("Pessoa Teste", Papel.RECEPCIONISTA);
+        String corpo = """
+                {"nomeCompleto":"Pessoa Teste","papel":"RECEPCIONISTA","novaSenha":"%s"}
+                """;
+        for (String invalida : new String[] { "curta", "        ", "a".repeat(73) }) {
+            como(admin, json(put("/api/admin/usuarios/{id}", alvo.getId()), corpo.formatted(invalida)))
+                    .andExpect(status().isBadRequest());
+        }
+        como(admin, json(put("/api/admin/usuarios/{id}", alvo.getId()), corpo.formatted("novaSenha123")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.novaSenha").doesNotExist());
+        // Uma edição posterior sem senha preserva a senha definida.
+        como(admin, json(put("/api/admin/usuarios/{id}", alvo.getId()),
+                """
+                {"nomeCompleto":"Pessoa Atualizada","papel":"RECEPCIONISTA"}
+                """ )).andExpect(status().isOk());
+        mvc.perform(json(post("/api/auth/login"),
+                """
+                {"email":"%s","senha":"senhaDeTeste1"}
+                """.formatted(alvo.getEmail()))).andExpect(status().isUnauthorized());
+        mvc.perform(json(post("/api/auth/login"),
+                """
+                {"email":"%s","senha":"novaSenha123"}
+                """.formatted(alvo.getEmail()))).andExpect(status().isOk());
+        var gestor = cenarios.usuario("Gestor Teste", Papel.GESTOR);
+        como(cenarios.bearer(gestor), json(put("/api/admin/usuarios/{id}", adminId),
+                """
+                {"nomeCompleto":"Admin Teste","papel":"ADMIN","novaSenha":"novaSenha123"}
+                """ )).andExpect(status().isForbidden());
+    }
+
     private String equipe(Papel papel) {
         return cenarios.bearer(cenarios.usuario("Equipe " + papel.name(), papel));
     }

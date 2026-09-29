@@ -199,6 +199,10 @@ public class UsuariosAdminService {
             aplicar(medico, requisicao.medico());
             gravarMedico(medico);
         }
+        if (requisicao.novaSenha() != null) {
+            convites.redefinirPelaAdministracao(usuario, requisicao.novaSenha());
+            auditoria.registrar("usuario.redefinirSenha", "usuario", id, Map.of());
+        }
         auditoria.registrar("usuario.alterar", "usuario", id, Map.of("papel", usuario.getPapel().name()));
         return resposta(usuario);
     }

@@ -47,10 +47,16 @@ entra em `/admin` pelo login, como o ADMIN.
 | `GET /api/admin/usuarios/metricas` | `{ total, ativos, bloqueados, inativos, novosNoMes, novosNoMesAnterior }` |
 | `GET /api/admin/usuarios/{id}` | uma conta |
 | `POST /api/admin/usuarios` | cria a conta e envia o convite → `201` |
-| `PUT /api/admin/usuarios/{id}` | `{ nomeCompleto, telefone, cpf, papel, medico? }` |
+| `PUT /api/admin/usuarios/{id}` | `{ nomeCompleto, telefone, cpf, papel, medico?, novaSenha? }` |
 | `PATCH /api/admin/usuarios/{id}/status` | `{ "status": "ativo" \| "bloqueado" \| "inativo" }` |
 | `POST /api/admin/usuarios/{id}/convite` | reenvia o link para definir a senha → `204` |
 | `DELETE /api/admin/usuarios/{id}` | exclusão lógica: a conta vira `inativo` e para de entrar → `204`; mesmas regras do status (abaixo) |
+
+Na edição, `novaSenha` é opcional: omitida ou `null`, mantém a senha atual.
+Quando informada, deve ter de 8 a 72 caracteres e não pode conter apenas
+espaços. A troca respeita as permissões de edição da conta, invalida links
+pendentes de convite/recuperação e registra `usuario.redefinirSenha` na
+auditoria sem guardar a senha. A tela pede confirmação antes de salvar.
 
 Criar:
 

@@ -19,7 +19,7 @@ export function useEdicaoDeUsuarios({ especialidades = [], unidades = [], podeCr
   const salvar = async (dados) => {
     if (modal.usuario) {
       const salvo = await api.alterarUsuario(modal.usuario.id, dados);
-      aoConcluir(`Conta de ${salvo.nome} atualizada.`);
+      aoConcluir(`Conta de ${salvo.nome} atualizada.${dados.novaSenha ? " Senha redefinida com sucesso." : ""}`);
     } else {
       const criado = await api.criarUsuario(dados);
       aoConcluir(`Conta de ${criado.nome} criada. O convite para definir a senha foi enviado para ${criado.email}.`);
