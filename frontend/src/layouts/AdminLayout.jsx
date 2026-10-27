@@ -48,6 +48,10 @@ export default function AdminLayout() {
   const classeLateral = ({ isActive }) =>
     `${estilos.menuItem} ${isActive ? estilos.menuAtivo : ""}`;
 
+  // No desktop, as opções que já estão no topo ficam ocultas na lateral.
+  // Em telas menores, o topo desaparece e todas voltam a ser exibidas na lateral.
+  const caminhosDoTopo = new Set(itensTopo.map((item) => item.para));
+
   /* A div `.app` carrega o reset da área administrativa, escopado
      para não afetar as telas do paciente. */
   return (
@@ -158,7 +162,9 @@ export default function AdminLayout() {
                 key={item.id}
                 to={item.para}
                 end={item.para === "/admin"}
-                className={classeLateral}
+                className={({ isActive }) =>
+                  `${classeLateral({ isActive })} ${caminhosDoTopo.has(item.para) ? estilos.menuDuplicado : ""}`
+                }
                 title={item.rotulo}
               >
                 <Icone nome={item.icone} tam={20} />

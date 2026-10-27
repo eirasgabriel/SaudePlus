@@ -352,6 +352,13 @@
   font-weight: 600;
 }
 
+/* No desktop, não repetir na lateral os links já disponíveis no topo. */
+@media (min-width: 1281px) {
+  .menuDuplicado {
+    display: none;
+  }
+}
+
 /* --- cartão promocional --- */
 .promo {
   margin-top: auto;
