@@ -152,7 +152,7 @@ describe("página", () => {
   test("mantém o contrato de acessibilidade do layout institucional", () => {
     assert.ok(html.includes('class="skip-link"'));
     assert.ok(html.includes('id="conteudo"'));
-    assert.ok(html.includes('aria-label="Principal"'));
+    assert.ok(html.includes('role="search"'));
     assert.ok(html.includes('aria-label="Menu do médico"'));
   });
 
@@ -164,7 +164,6 @@ describe("página", () => {
       "Exames pendentes",
       "Agenda do dia",
       "Unidade",
-      "Notificações",
     ]) {
       assert.ok(html.includes(titulo), `faltou "${titulo}"`);
     }
@@ -181,9 +180,40 @@ describe("página", () => {
 
   test("a agenda renderiza uma linha por consulta do dia", () => {
     assert.equal(vezes(/aria-label="Abrir consulta de /g), AGENDA.length);
-    for (const { rotulo } of Object.values(STATUS_CONSULTA)) {
+    for (const status of new Set(AGENDA.map((c) => c.status))) {
+      const { rotulo } = STATUS_CONSULTA[status];
       assert.ok(html.includes(rotulo), `faltou o selo "${rotulo}"`);
     }
+  });
+
+  test("o cabeçalho tem busca, sino e conta, sem menu de navegação", () => {
+    assert.ok(!html.includes('aria-label="Principal"'));
+    const naoLidas = NOTIFICACOES.filter((n) => !n.lida).length;
+    assert.ok(html.includes(`aria-label="Notificações, ${naoLidas} não lidas"`));
+    assert.ok(html.includes('aria-label="Menu da conta de '));
+  });
+
+  test("as notificações ficam só no sino, sem painel na página", () => {
+    assert.ok(!html.includes(">Notificações</h2>"));
+  });
+
+  test("a área do médico começa no tema claro", () => {
+    assert.ok(html.includes('data-tema="claro"'));
+  });
+
+  test("o filtro esconde status sem consultas no dia", () => {
+    const vazios = Object.entries(STATUS_CONSULTA).filter(([chave]) => !AGENDA.some((c) => c.status === chave));
+    for (const [, { rotulo }] of vazios) {
+      assert.ok(!html.includes(`>${rotulo}<`), `o filtro mostrou "${rotulo}" sem consultas`);
+    }
+  });
+
+  test("a agenda do dia mostra o atendimento atual e o próximo", () => {
+    const atual = AGENDA.find((c) => c.status === "em_andamento");
+    const proxima = proximasConsultas(AGENDA)[0];
+    assert.ok(html.includes("Em atendimento"));
+    assert.ok(html.includes(atual.horario));
+    assert.ok(html.includes(proxima.horario));
   });
 
   test("a lista de pacientes respeita o limite do painel", () => {

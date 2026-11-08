@@ -5,10 +5,8 @@ import {
   UsersIcon,
   ClockIcon,
   BuildingIcon,
-  StethoscopeIcon,
-  ShieldHeartIcon,
 } from "../../../components/icons/Icons.jsx";
-import { FlaskIcon, BellIcon } from "../components/icons/MedicoIcons.jsx";
+import { FlaskIcon } from "../components/icons/MedicoIcons.jsx";
 
 import DashboardLayout from "../layouts/DashboardLayout.jsx";
 import WelcomeBanner from "../components/WelcomeBanner/WelcomeBanner.jsx";
@@ -18,10 +16,8 @@ import AgendaList from "../components/AgendaList/AgendaList.jsx";
 import AgendaFilter from "../components/AgendaList/AgendaFilter.jsx";
 import PatientList from "../components/PatientList/PatientList.jsx";
 import PendingExamList from "../components/PendingExamList/PendingExamList.jsx";
-import NotificationList from "../components/NotificationList/NotificationList.jsx";
 import UnitCard from "../components/UnitCard/UnitCard.jsx";
 import DayAgendaCard from "../components/DayAgendaCard/DayAgendaCard.jsx";
-import HighlightCard from "../components/HighlightCard/HighlightCard.jsx";
 
 import { NavegacaoProvider } from "../navegacao/NavegacaoProvider.jsx";
 import { irAtePainel } from "../foco.js";
@@ -30,7 +26,6 @@ import {
   AGENDA,
   DATA_REFERENCIA,
   EXAMES_PENDENTES,
-  FRASE_DO_DIA,
   MEDICO,
   NOTIFICACOES,
   PACIENTES,
@@ -42,6 +37,7 @@ import {
   dataPorExtenso,
   examesComPacientes,
   filtrarAgenda,
+  proximasConsultas,
   resumoDoDia,
 } from "../selectors.js";
 
@@ -57,7 +53,7 @@ const PACIENTES_NO_PAINEL = 5;
    Funciona hoje, sem depender de tela nova:
    - os quatro cartões de resumo levam ao painel que resumem, já filtrado;
    - o filtro da agenda (inclusive "Próximas", o mesmo recorte do cartão);
-   - o sino do cabeçalho desce até as Notificações;
+   - o sino do cabeçalho abre as notificações não lidas;
    - o menu da conta, no avatar;
    - "Ver no mapa", que abre o endereço da unidade no Google Maps;
    - o telefone da unidade, que abre o discador.
@@ -99,7 +95,6 @@ function PainelDoMedico({
   exames = EXAMES_PENDENTES,
   notificacoes = NOTIFICACOES,
   dataReferencia = DATA_REFERENCIA,
-  fraseDoDia = FRASE_DO_DIA,
   imagemBoasVindas = heroMedico,
 }) {
   const prefixo = `dm-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
@@ -111,7 +106,6 @@ function PainelDoMedico({
     exames: `${prefixo}-exames`,
     dia: `${prefixo}-dia`,
     unidade: `${prefixo}-unidade`,
-    notificacoes: `${prefixo}-notificacoes`,
   };
 
   const [statusFiltro, setStatusFiltro] = useState("todas");
@@ -124,6 +118,9 @@ function PainelDoMedico({
   const contagem = useMemo(() => contagemPorStatus(agenda), [agenda]);
   const resumo = useMemo(() => resumoDoDia(agenda, exames), [agenda, exames]);
   const examesResolvidos = useMemo(() => examesComPacientes(exames, pacientes), [exames, pacientes]);
+
+  const proximas = useMemo(() => proximasConsultas(agendaCompleta), [agendaCompleta]);
+  const emAtendimento = agendaCompleta.find(({ status }) => status === "em_andamento") ?? null;
 
   const naoLidas = notificacoes.filter(({ lida }) => !lida).length;
 
@@ -179,34 +176,26 @@ function PainelDoMedico({
 
   const colunaDireita = (
     <>
-      <DayAgendaCard data={dataPorExtenso(dataReferencia)} frase={fraseDoDia} tituloId={ids.dia} />
+      <DayAgendaCard
+        data={dataPorExtenso(dataReferencia)}
+        atual={emAtendimento}
+        proxima={proximas[0] ?? null}
+        restantes={proximas.length}
+        tituloId={ids.dia}
+        aoVerProximas={() => verAgendaFiltradaPor("pendentes")}
+      />
 
       <Panel icon={BuildingIcon} titulo="Unidade" titleId={ids.unidade}>
         <UnitCard unidade={unidade} />
       </Panel>
-
-      <Panel
-        icon={BellIcon}
-        titulo="Notificações"
-        titleId={ids.notificacoes}
-        acao={{ rotulo: "Ver todas", destino: "notificacoes" }}
-      >
-        <NotificationList notificacoes={notificacoes} />
-      </Panel>
-
-      <HighlightCard
-        variante="linha"
-        icon={ShieldHeartIcon}
-        titulo={`Juntos por uma saúde melhor em ${unidade?.cidade ?? "sua cidade"}!`}
-      />
     </>
   );
 
   return (
     <DashboardLayout
       medico={medico}
+      notificacoes={notificacoes}
       totalNotificacoes={naoLidas}
-      idPainelNotificacoes={ids.notificacoes}
       aside={colunaDireita}
     >
       <WelcomeBanner
@@ -264,7 +253,7 @@ function PainelDoMedico({
           </Panel>
 
           <Panel
-            icon={StethoscopeIcon}
+            icon={FlaskIcon}
             titulo="Exames pendentes"
             titleId={ids.exames}
             acao={{ rotulo: "Ver todos", destino: "exames" }}

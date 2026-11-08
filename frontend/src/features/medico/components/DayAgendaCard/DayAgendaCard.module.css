@@ -37,28 +37,81 @@
   white-space: nowrap;
 }
 
-.citacao {
+.blocos {
   display: flex;
-  align-items: center;
-  gap: var(--space-4);
+  flex-direction: column;
+  gap: var(--space-2);
   margin: var(--space-4) 0 0;
-  padding: var(--space-4);
+}
+
+.bloco {
+  padding: var(--space-3) var(--space-4);
   background: rgba(255, 255, 255, 0.16);
   border-radius: var(--radius-float);
 }
 
-.frase {
-  margin: 0;
-  font-size: var(--fs-small);
-  line-height: 1.5;
+.rotulo {
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
 }
 
-.frase::before { content: "\201C"; }
-.frase::after { content: "\201D"; }
+.linha {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 4px 0 0;
+  min-width: 0;
+}
 
-.coracao {
-  flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.9);
+.hora {
+  font-size: var(--fs-card-title);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.paciente {
+  overflow: hidden;
+  font-weight: var(--fw-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tipo {
+  margin: 2px 0 0;
+  font-size: var(--fs-xs);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.vazio {
+  margin: var(--space-4) 0 0;
+  font-size: var(--fs-small);
+}
+
+.acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-3);
+  padding: 0;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-on-dark);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.acao:hover {
+  text-decoration: underline;
+}
+
+.acao:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 @media (max-width: 768px) {

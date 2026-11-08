@@ -1,202 +1,216 @@
-## 🩺 SaúdePlus
+# SaúdePlus
 
-O SaúdePlus é um sistema Web/Mobile de agendamento de consultas e exames médicos, projetado e desenvolvido para facilitar a conexão entre pacientes, profissionais, clínicas, hospitais, oferecendo uma experiência simples, rápida e organizada para o gerenciamento de consultas.
+Sistema web de agendamento de consultas e exames médicos, que integra pacientes, profissionais de saúde e clínicas em uma única plataforma.
 
-> 🚧 **Status do Projeto:** Em desenvolvimento.
+**Status:** MVP em desenvolvimento. A aplicação web funciona de ponta a ponta; o aplicativo mobile ainda não foi iniciado.
 
----
-## 📋 Sobre o Projeto
+## Sumário
 
-O sistema tem como objetivo principal trazer mais acessibilidade à saúde a cada um que deseja cuidar um pouco mais de si mesmo, além de modernizar e simplificar o processo de agendamento e gerenciamento de consultas e exames médicos.
+1. [Sobre o projeto](#sobre-o-projeto)
+2. [Funcionalidades implementadas](#funcionalidades-implementadas)
+3. [Tecnologias](#tecnologias)
+4. [Execução local](#execução-local)
+5. [Contas de desenvolvimento](#contas-de-desenvolvimento)
+6. [Perfis e controle de acesso](#perfis-e-controle-de-acesso)
+7. [Testes](#testes)
+8. [Estrutura do repositório](#estrutura-do-repositório)
+9. [Documentação técnica](#documentação-técnica)
+10. [Limitações e próximos passos](#limitações-e-próximos-passos)
+11. [Equipe](#equipe)
 
-A plataforma permite que os pacientes encontrem profissionais, especialidades, clínicas, consulte horários e agende sua consulta remotamente, facilitando o processo de modo que acabe com problemas relacionados à acessibilidade à saúde dentro do nosso país. 
+## Sobre o projeto
 
----
-## Equipe do Projeto: 
-A nossa equipe é composta de 6 Alunos de Engenharia de Software, da Universidade de Vassouras. 
+O SaúdePlus tem como objetivo ampliar o acesso à saúde e simplificar o processo de agendamento. O paciente localiza profissionais, especialidades e clínicas, consulta horários efetivamente disponíveis e agenda o atendimento remotamente. Profissionais e clínicas gerenciam agendas, atendimentos, exames e informações financeiras na mesma plataforma.
 
-> [Ana Júlia da Silva](https://github.com/AnaSoftEng) - <br> 
-> [Danielle Gil Silva](https://github.com/Daniellesilva-7) - <br>
-> [Fabricio Lima Galisa](https://github.com/backgroundGalisa) - <br>
-> [Gabriel J. Eiras](https://github.com/eirasgabriel) - <br> 
-> [Gabriel P. Marins Moreira](https://github.com/moreira-2203) - <br>
-> [Raissa Queiroz](https://github.com/Raissaqueirozz) - <br>
----
+O projeto é desenvolvido como trabalho acadêmico do curso de Engenharia de Software da Universidade de Vassouras.
 
+## Funcionalidades implementadas
 
-## ✨ Funcionalidades esperadas para o Sistema
+### Visitante
 
-### 👤 Pacientes
+- Página inicial e páginas institucionais.
+- Busca de profissionais com filtros e horários livres calculados pela API.
+- Perfil do profissional com horários, unidades, convênios e avaliações.
+- Cadastro, login e recuperação de senha.
+- Ao selecionar "Agendar" sem estar autenticado, o usuário é direcionado ao login e retorna ao agendamento com os dados preenchidos.
 
-* 🔐 Cadastro e autenticação de usuários
-* 👤 Gerenciamento de dados pessoais e perfil
-* 🔎 Busca por especialidades, profissionais, clínicas e exames
-* 📍 Busca por localização e unidades de atendimento
-* 🩺 Visualização de informações de profissionais e clínicas
-* 🧪 Catálogo de exames disponíveis
-* 📅 Consulta de dias e horários disponíveis
-* 🩺 Agendamento de consultas
-* 🧪 Agendamento de exames
-* 🔄 Reagendamento de consultas e exames
-* ❌ Cancelamento de agendamentos
-* 📋 Visualização de agendamentos futuros e histórico
-* 📄 Visualização de informações e orientações para realização de exames
-* 🔔 Notificações e lembretes de consultas e exames
-* ⭐ Avaliação de profissionais, clínicas e serviços
-* 📆 Integração com calendário pessoal
+### Paciente
 
-### 👨‍⚕️ Profissionais de Saúde
+- Painel pessoal.
+- Agendamento, remarcação e cancelamento de consultas.
+- Histórico de atendimentos.
+- Avaliação de profissionais.
+- Exames com orientações de preparo e download do resultado.
+- Notificações e pagamentos.
 
-* 🔐 Autenticação e gerenciamento de conta
-* 👤 Gerenciamento do perfil profissional
-* 🩺 Cadastro de especialidades e áreas de atuação
-* 📅 Configuração de agenda e horários disponíveis
-* 🚫 Bloqueio de datas e horários
-* 📋 Visualização e gerenciamento de consultas
-* 🔄 Confirmação, reagendamento e cancelamento de atendimentos
-* 🔔 Notificações sobre novos agendamentos
-* 📊 Histórico de atendimentos
+### Profissional de saúde
 
-### 🏥 Clínicas e Laboratórios
+- Painel com os atendimentos do dia.
+- Agenda com controle de status das consultas.
+- Registro do atendimento.
+- Lista de pacientes e solicitação de exames.
+- Configuração de janelas de atendimento e bloqueios de agenda.
 
-* 🏢 Cadastro e gerenciamento da unidade
-* 👨‍⚕️ Gerenciamento de profissionais
-* 🧪 Cadastro e gerenciamento de exames
-* 💰 Definição de valores e condições de atendimento
-* 📅 Gerenciamento de agendas
-* ⏰ Configuração de horários para consultas e exames
-* 🚫 Bloqueio de datas, horários e períodos
-* 📋 Gerenciamento de agendamentos
-* 👥 Controle de usuários e permissões
-* 📊 Dashboard administrativo
-* 📈 Relatórios de consultas, exames e atendimentos
+### Administração
 
-### 🧪 Exames
+- Painel geral da plataforma.
+- Gestão de usuários, incluindo o cadastro de profissionais e equipe.
+- Gestão de clínicas, unidades e catálogos (especialidades, convênios e formas de pagamento).
+- Gestão de agendamentos e fila de exames, com envio de resultados.
+- Módulo financeiro e relatórios com exportação em PDF e CSV.
+- Configurações do sistema, matriz de permissões e auditoria.
 
-* 🔎 Catálogo de exames disponíveis
-* 📋 Informações detalhadas sobre cada exame
-* 🏥 Seleção da unidade para realização
-* 📅 Seleção de data e horário
-* 📄 Exibição de preparo e orientações
-* 🔄 Reagendamento de exames
-* ❌ Cancelamento de exames
-* 📋 Histórico de exames realizados ou agendados
+Caso a API esteja indisponível, as telas exibem dados de demonstração acompanhados de um aviso, sem interromper a navegação.
 
-### 🔔 Notificações
+## Tecnologias
 
-* 📅 Confirmação de agendamentos
-* ⏰ Lembretes automáticos
-* 🔄 Avisos de alterações e reagendamentos
-* ❌ Notificações de cancelamento
-* 🧪 Orientações e lembretes relacionados ao preparo de exames
+| Camada | Tecnologia |
+| --- | --- |
+| Front-end | React 19, Vite 8, React Router 7, CSS Modules |
+| Back-end | Java 21, Spring Boot 4 (Web MVC, Security, Data JPA, Validation) |
+| Banco de dados | PostgreSQL 17, com migrações gerenciadas pelo Flyway |
+| Autenticação | JWT (HS256) enviado no cabeçalho `Authorization`, com perfis e permissões por módulo |
+| Documentação da API | OpenAPI/Swagger, disponível em `/swagger-ui.html` no perfil `dev` |
+| Relatórios | OpenPDF (PDF) e exportação em CSV |
+| Testes | JUnit e Testcontainers (back-end); `node --test` com jsdom (front-end) |
 
-### 🛠️ Administração
+## Execução local
 
-* 👥 Gerenciamento de usuários
-* 🔐 Controle de acesso por perfil
-* 🩺 Gerenciamento de especialidades
-* 🏥 Gerenciamento de clínicas e unidades
-* 👨‍⚕️ Gerenciamento de profissionais
-* 🧪 Gerenciamento de exames
-* 📊 Dashboard geral da plataforma
-* 📈 Relatórios e indicadores
-* 📝 Registro de atividades e alterações
-* ⚙️ Configurações gerais do sistema
+### Pré-requisitos
 
----
+- JDK 21
+- Node.js 20.19+ ou 22.13+ (versões exigidas pelo Vite 8 e pelo jsdom)
+- Docker Desktop em execução
 
-## Stack técnica
-
-> **Front-end:** React 19 + Vite + React Router <br>
-> **Back-end:** Java 21 + Spring Boot 4 (Spring Security, JPA/Hibernate) <br>
-> **Banco de dados:** PostgreSQL 17, com migrações Flyway <br>
-> **Autenticação:** JWT (HS256) no cabeçalho `Authorization`, com perfis e permissões por módulo <br>
-> **Documentação da API:** Swagger em `/swagger-ui.html` (perfil `dev`) e os arquivos de [docs/](docs/) <br>
-> **Mobile:** ainda não iniciado <br>
-
-## O que já funciona
-
-A aplicação roda de ponta a ponta: o front-end chama a API, e a API grava tudo
-no PostgreSQL.
-
-- **Visitante:** homepage, páginas institucionais, busca de profissionais com
-  filtros e horários livres reais, perfil do profissional (horários, unidades,
-  convênios e avaliações), cadastro, login e recuperação de senha. "Agendar"
-  leva ao login e volta para o agendamento já preenchido.
-- **Paciente:** painel, agendar, remarcar e cancelar consultas, histórico,
-  avaliação de profissionais, exames com preparo e download do resultado,
-  notificações e pagamentos.
-- **Profissional de saúde:** painel do dia, agenda com as transições de status,
-  registro do atendimento, pacientes, pedido de exames, janelas de atendimento
-  e bloqueios de agenda.
-- **Administração:** dashboard, usuários (é aqui que se cria médico e equipe),
-  clínicas, catálogos, agendamentos, fila de exames com envio de resultado,
-  financeiro, relatórios com exportação em PDF/CSV, configurações, matriz de
-  permissões e auditoria.
-
-Se a API estiver fora do ar, as telas mostram dados de demonstração com um
-aviso, em vez de quebrar.
-
-Ainda não existem: envio real de e-mail (o conteúdo sai no log do servidor),
-gateway de pagamento, login com Google/Apple, a tela de suporte e o app mobile.
-
-## Como rodar
-
-Pré-requisitos: **JDK 21**, **Node.js 20.19+ ou 22.13+** (exigido pelo Vite 8 e pelo jsdom dos testes) e **Docker Desktop** rodando.
+### Back-end e front-end
 
 ```powershell
-# terminal 1: API na porta 8080 (sobe o PostgreSQL pelo Docker)
+# Terminal 1: API na porta 8080 (o PostgreSQL é iniciado automaticamente via Docker)
 cd backend
 .\mvnw.cmd spring-boot:run
 
-# terminal 2: front-end na porta 5173
+# Terminal 2: front-end na porta 5173
 cd frontend
 npm ci
 npm run dev
 ```
 
-Abra http://localhost:5173. Contas de desenvolvimento:
+Em Linux ou macOS, utilize `sh ./mvnw spring-boot:run`.
+
+Após a inicialização, acesse `http://localhost:5173`.
+
+### Alternativa com Docker Compose
+
+O arquivo `docker-compose.yml` na raiz sobe o banco de dados e a API no perfil `dev`:
+
+```bash
+docker compose up --build
+```
+
+O front-end continua sendo executado separadamente com `npm run dev`.
+
+### Variáveis de ambiente
+
+- **Front-end:** copie `frontend/.env.example` para `frontend/.env`. Com `VITE_API_URL` vazio, o Vite redireciona as chamadas `/api` para `http://localhost:8080`.
+- **Back-end:** a lista completa está em [backend/README.md](backend/README.md).
+
+## Contas de desenvolvimento
+
+As contas abaixo são criadas automaticamente quando o back-end é iniciado no perfil `dev`:
 
 | Perfil | E-mail | Senha |
 | --- | --- | --- |
 | Administração | `admin@saudeplus.com` | `teste@saudeplus` |
 | Profissional | `medico@saudeplus.com` | `teste@saudeplus` |
-| Paciente inicial | `paciente@saudeplus.com` | `teste@saudeplus` |
+| Paciente | `paciente@saudeplus.com` | `teste@saudeplus` |
 
-Essas contas são criadas com status ativo quando o backend inicia no perfil
-`dev`. O frontend sozinho não autentica: mantenha a API e o banco rodando.
-As variáveis `SEED_*` podem substituir essas credenciais. Contas existentes
-mantêm a senha e o status já salvos, inclusive após reiniciar o servidor.
+Observações:
 
-Ou crie um paciente na tela **Criar conta**. Detalhes, variáveis de ambiente e
-testes estão em [backend/README.md](backend/README.md) e
-[frontend/README.md](frontend/README.md).
+- As credenciais podem ser substituídas pelas variáveis `SEED_*`.
+- Contas já existentes mantêm a senha e o status salvos, mesmo após reiniciar o servidor.
+- O front-end não autentica sem a API e o banco de dados em execução.
+- Novos pacientes podem ser cadastrados pela tela **Criar conta**.
 
-### Perfis e acesso
+Essas credenciais destinam-se exclusivamente ao ambiente de desenvolvimento e não são carregadas no perfil `prod`.
 
-| Perfil | Como a conta é criada |
+## Perfis e controle de acesso
+
+| Perfil | Forma de criação da conta |
 | --- | --- |
-| Paciente | cadastro público na tela **Criar conta** |
-| Profissional de saúde | pela administração, em **Usuários** (a conta inicial nasce com o servidor) |
-| Equipe (gestor, enfermeiro, recepcionista, agente) | pela administração; vê só os módulos liberados na matriz de permissões |
-| Administração | conta inicial criada pelo servidor, ou pela administração |
+| Paciente | Cadastro público na tela **Criar conta** |
+| Profissional de saúde | Pela administração, no módulo **Usuários** |
+| Equipe (gestor, enfermeiro, recepcionista, agente) | Pela administração, com acesso restrito aos módulos liberados na matriz de permissões |
+| Administração | Conta inicial criada pelo servidor ou cadastrada pela administração |
 
-Todos entram pela mesma tela de login. Quem decide o acesso é o servidor; as
-proteções de rota do React são só navegação.
+Todos os perfis utilizam a mesma tela de login. O controle de acesso é aplicado no servidor; as rotas protegidas do front-end servem apenas à navegação.
 
----
+## Testes
 
-## Documentação
+```powershell
+# Back-end (requer Docker em execução): testes de integração e empacotamento
+cd backend
+.\mvnw.cmd verify
+
+# Front-end: testes e análise estática
+cd frontend
+npm test
+npm run lint
+```
+
+## Estrutura do repositório
+
+```
+SaudePlus/
+├── backend/              API Spring Boot, organizada em pacotes por domínio
+├── frontend/             Aplicação React + Vite
+│   ├── scripts/          testes automatizados do front-end
+│   └── src/
+│       ├── app/          rotas e estrutura principal da aplicação
+│       ├── components/   componentes reutilizáveis
+│       ├── features/     módulos por área (auth, paciente, medico, admin, exames etc.)
+│       ├── layouts/      layouts e navegação
+│       └── services/     comunicação com a API
+├── docs/                 documentação de arquitetura, banco de dados e API
+└── docker-compose.yml    banco de dados e API para ambiente local
+```
+
+## Documentação técnica
 
 | Documento | Conteúdo |
 | --- | --- |
-| [docs/arquitetura.md](docs/arquitetura.md) | organização do front-end e do back-end, e como eles conversam |
-| [docs/banco-de-dados.md](docs/banco-de-dados.md) | modelo de dados, diagrama, o que o banco garante e evoluções previstas |
-| [docs/api.md](docs/api.md) | autenticação, busca pública, formato de erro e autorização |
-| [docs/api-area-paciente.md](docs/api-area-paciente.md) | rotas `/api/paciente/*` |
-| [docs/api-painel-medico.md](docs/api-painel-medico.md) | rotas `/api/medico/*`, status de consulta e cálculo de horários |
-| [docs/api-exames.md](docs/api-exames.md) | ciclo do exame, do pedido ao resultado |
-| [docs/api-admin.md](docs/api-admin.md) | rotas `/api/admin/*`, permissões e auditoria |
-| [docs/api-financeiro-relatorios.md](docs/api-financeiro-relatorios.md) | cobranças, resumo financeiro e exportação de relatórios |
-| [docs/admin.md](docs/admin.md) | como a área administrativa do front está montada |
-| [docs/dashboard-medico.md](docs/dashboard-medico.md) | como o painel do médico do front está montado |
+| [docs/arquitetura.md](docs/arquitetura.md) | Organização do front-end e do back-end e integração entre eles |
+| [docs/banco-de-dados.md](docs/banco-de-dados.md) | Modelo de dados, diagrama, garantias do banco e evoluções previstas |
+| [docs/api.md](docs/api.md) | Autenticação, busca pública, formato de erro e autorização |
+| [docs/api-area-paciente.md](docs/api-area-paciente.md) | Rotas `/api/paciente/*` |
+| [docs/api-painel-medico.md](docs/api-painel-medico.md) | Rotas `/api/medico/*`, status de consulta e cálculo de horários |
+| [docs/api-exames.md](docs/api-exames.md) | Ciclo do exame, do pedido ao resultado |
+| [docs/api-admin.md](docs/api-admin.md) | Rotas `/api/admin/*`, permissões e auditoria |
+| [docs/api-financeiro-relatorios.md](docs/api-financeiro-relatorios.md) | Cobranças, resumo financeiro e exportação de relatórios |
+| [docs/admin.md](docs/admin.md) | Estrutura da área administrativa no front-end |
+| [docs/dashboard-medico.md](docs/dashboard-medico.md) | Estrutura do painel do médico no front-end |
+| [backend/README.md](backend/README.md) | Variáveis de ambiente, dados iniciais e organização da API |
+| [frontend/README.md](frontend/README.md) | Configuração e organização do front-end |
+
+## Limitações e próximos passos
+
+Ainda não implementado:
+
+- Envio real de e-mails (atualmente o conteúdo é registrado no log do servidor).
+- Integração com gateway de pagamento.
+- Login com Google e Apple.
+- Tela de suporte.
+- Integração com calendário pessoal.
+- Aplicativo mobile.
+
+## Equipe
+
+Alunos do curso de Engenharia de Software da Universidade de Vassouras:
+
+| Nome | GitHub |
+| --- | --- |
+| Ana Júlia da Silva | [AnaSoftEng](https://github.com/AnaSoftEng) |
+| Danielle Gil Silva | [Daniellesilva-7](https://github.com/Daniellesilva-7) |
+| Fabricio Lima Galisa | [backgroundGalisa](https://github.com/backgroundGalisa) |
+| Gabriel J. Eiras | [eirasgabriel](https://github.com/eirasgabriel) |
+| Gabriel P. Marins Moreira | [moreira-2203](https://github.com/moreira-2203) |
+| Raissa Queiroz | [Raissaqueirozz](https://github.com/Raissaqueirozz) |

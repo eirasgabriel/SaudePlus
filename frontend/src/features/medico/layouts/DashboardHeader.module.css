@@ -15,56 +15,49 @@
   padding: var(--space-3) var(--space-6);
 }
 
-/* ---------- navegação ---------- */
-.menu {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+/* ---------- busca ---------- */
+.busca {
+  position: relative;
+  flex: 1;
+  max-width: 560px;
   margin: 0 auto;
 }
 
-/* Estes itens são <button> enquanto não há rota — daí o reset de
-   background e borda. Viram <NavLink> sem mudar nada neste arquivo. */
-.link {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: transparent;
-  border: 0;
-  font-size: var(--fs-nav);
-  font-weight: var(--fw-medium);
-  color: var(--color-text-muted);
-  border-radius: var(--radius-button);
-  transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
-  white-space: nowrap;
-}
-
-.link:hover {
-  color: var(--color-primary);
-  background: var(--color-surface-muted);
-}
-
-.ativo {
-  color: var(--color-primary);
-  font-weight: var(--fw-semibold);
-}
-
-/* sublinhado do item ativo */
-.ativo::after {
-  content: "";
+.buscaIcone {
   position: absolute;
-  right: 14px;
-  bottom: 2px;
-  left: 14px;
-  height: 2.5px;
-  border-radius: var(--radius-pill);
-  background: var(--color-primary);
+  top: 50%;
+  left: 16px;
+  color: var(--color-text-subtle);
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
-.linkIcone {
-  color: currentColor;
+.busca input {
+  width: 100%;
+  padding: 12px 16px 12px 44px;
+  font: inherit;
+  font-size: var(--fs-small);
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease),
+    box-shadow var(--duration) var(--ease);
+}
+
+.busca input::placeholder {
+  color: var(--color-text-subtle);
+}
+
+.busca input:hover {
+  border-color: var(--color-border-strong);
+}
+
+.busca input:focus {
+  outline: none;
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 /* ---------- ações ---------- */
@@ -88,7 +81,8 @@
   transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
 }
 
-.botaoIcone:hover {
+.botaoIcone:hover,
+.botaoIconeAtivo {
   color: var(--color-primary);
   background: var(--color-surface-muted);
 }
@@ -117,8 +111,8 @@
   background: var(--color-border-strong);
 }
 
-/* Âncora do menu suspenso da conta. */
-.perfilArea {
+/* Âncora dos menus suspensos (sino e conta). */
+.ancora {
   position: relative;
 }
 
@@ -184,88 +178,31 @@
   transform: rotate(180deg);
 }
 
-/* ---------- painel de busca ---------- */
-.busca {
-  display: flex;
-  gap: var(--space-3);
-  padding: 0 var(--space-6) var(--space-4);
-}
-
-.busca input {
-  flex: 1;
-  min-width: 0;
-  padding: 12px 16px;
-  font: inherit;
-  font-size: var(--fs-small);
-  color: var(--color-text);
-  background: var(--color-surface-muted);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-button);
-}
-
-.busca input::placeholder {
-  color: var(--color-text-subtle);
-}
-
-.buscaEnviar {
-  padding: 12px 22px;
-  font-size: var(--fs-small);
-  font-weight: var(--fw-semibold);
-  color: #FFFFFF;
-  background: var(--color-primary);
-  border: 0;
-  border-radius: var(--radius-button);
-  transition: background var(--duration) var(--ease);
-}
-
-.buscaEnviar:hover {
-  background: var(--color-primary-hover);
-}
-
 /* ---------- responsivo ---------- */
-@media (max-width: 1280px) {
+@media (max-width: 900px) {
   .barra {
-    gap: var(--space-4);
-  }
-
-  .link {
-    gap: 6px;
-    padding: 10px 9px;
-    font-size: var(--fs-small);
-  }
-
-  .ativo::after {
-    right: 9px;
-    left: 9px;
-  }
-}
-
-@media (max-width: 1100px) {
-  /* Com pouca largura o menu vira uma faixa rolável abaixo da marca,
-     em vez de espremer os rótulos até ficarem ilegíveis. */
-  .barra {
-    flex-wrap: wrap;
+    gap: var(--space-3);
     padding: var(--space-3) var(--space-4);
   }
 
-  .menu {
-    order: 3;
-    width: 100%;
-    margin: 0;
-    padding-bottom: 4px;
-    overflow-x: auto;
-    scrollbar-width: thin;
+  .perfilTexto {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  /* A busca desce para uma linha própria, abaixo da marca e das ações. */
+  .barra {
+    flex-wrap: wrap;
   }
 
   .acoes {
     margin-left: auto;
   }
 
-  .perfilTexto {
-    display: none;
-  }
-
   .busca {
-    padding: 0 var(--space-4) var(--space-3);
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
   }
 }

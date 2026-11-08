@@ -26,7 +26,7 @@ export default function NotificacoesDoMedico() {
     <TelaDoMedico
       titulo="Notificações"
       subtitulo={naoLidas ? `${naoLidas} não lida(s).` : "Tudo em dia."}
-      naoLidas={notificacoes.origem === "api" ? naoLidas : undefined}
+      notificacoes={notificacoes.origem === "api" ? notificacoes.dados : undefined}
       acoes={
         naoLidas > 0 && (
           <button type="button" className={estilos.botaoSecundario} onClick={() => agir(() => marcarTodasComoLidas())}>

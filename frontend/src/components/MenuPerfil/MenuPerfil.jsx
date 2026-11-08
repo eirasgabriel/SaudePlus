@@ -29,10 +29,20 @@ import styles from "./MenuPerfil.module.css";
  *                 ainda inexistente mostra o aviso em vez de dar 404
  *   separado      desenha um traço acima do item (para isolar o "Sair")
  *   destaque      pinta o item de forma diferente (idem)
+ *   alternar      `{ ligado, aoAlternar }`: vira uma chave liga/desliga
+ *                 (role="menuitemcheckbox"). Não fecha o menu ao clicar,
+ *                 para a pessoa ver o efeito na hora.
  */
 export default function MenuPerfil({ aberto, aoFechar, botaoDeOrigem, id, itens = [], rotulo = "Conta" }) {
   const caixa = useRef(null);
   const primeiroItem = useRef(null);
+  /* Em ref: o pai passa uma função nova a cada render (por exemplo, ao
+     trocar o tema pelo próprio menu), e isso não pode reiniciar o efeito —
+     o foco voltaria para o primeiro item. */
+  const fechar = useRef(aoFechar);
+  useEffect(() => {
+    fechar.current = aoFechar;
+  });
 
   useEffect(() => {
     if (!aberto) return undefined;
@@ -41,14 +51,14 @@ export default function MenuPerfil({ aberto, aoFechar, botaoDeOrigem, id, itens 
 
     const aoTeclar = (evento) => {
       if (evento.key !== "Escape") return;
-      aoFechar();
+      fechar.current();
       botaoDeOrigem?.current?.focus();
     };
 
     const aoClicarFora = (evento) => {
       if (caixa.current?.contains(evento.target)) return;
       if (botaoDeOrigem?.current?.contains(evento.target)) return;
-      aoFechar();
+      fechar.current();
     };
 
     document.addEventListener("keydown", aoTeclar);
@@ -57,7 +67,7 @@ export default function MenuPerfil({ aberto, aoFechar, botaoDeOrigem, id, itens 
       document.removeEventListener("keydown", aoTeclar);
       document.removeEventListener("mousedown", aoClicarFora);
     };
-  }, [aberto, aoFechar, botaoDeOrigem]);
+  }, [aberto, botaoDeOrigem]);
 
   if (!aberto) return null;
 
@@ -76,7 +86,26 @@ export default function MenuPerfil({ aberto, aoFechar, botaoDeOrigem, id, itens 
 }
 
 function ItemDoMenu({ item, aoFechar, referencia }) {
-  const { rotulo, icone: Icone, href, onSelecionar, separado, destaque } = item;
+  const { rotulo, icone: Icone, href, onSelecionar, separado, destaque, alternar } = item;
+
+  if (alternar) {
+    return (
+      <button
+        ref={referencia}
+        type="button"
+        role="menuitemcheckbox"
+        aria-checked={alternar.ligado}
+        className={cx(styles.item, styles.alternar, separado && styles.separado)}
+        onClick={alternar.aoAlternar}
+      >
+        {Icone && <Icone size={18} className={styles.icone} />}
+        <span className={styles.rotulo}>{rotulo}</span>
+        <span className={cx(styles.chave, alternar.ligado && styles.chaveLigada)} aria-hidden="true">
+          <span className={styles.botaoChave} />
+        </span>
+      </button>
+    );
+  }
 
   const classe = cx(styles.item, separado && styles.separado, destaque && styles.sair);
 

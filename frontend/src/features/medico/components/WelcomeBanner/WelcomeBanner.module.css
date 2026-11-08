@@ -6,9 +6,11 @@
   min-height: 186px;
   padding: var(--space-8) var(--space-8) var(--space-6);
   overflow: hidden;
-  background:
+  background: var(
+    --banner-fundo,
     radial-gradient(120% 150% at 88% 100%, #D9EAFB 0%, rgba(217, 234, 251, 0) 58%),
-    linear-gradient(180deg, #F4F9FE 0%, #E9F3FD 100%);
+    linear-gradient(180deg, #F4F9FE 0%, #E9F3FD 100%)
+  );
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
@@ -19,9 +21,11 @@
   content: "";
   position: absolute;
   inset: 0;
-  background:
+  background: var(
+    --banner-brilho,
     radial-gradient(60% 90% at 70% 120%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 60%),
-    radial-gradient(40% 70% at 30% -10%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 70%);
+    radial-gradient(40% 70% at 30% -10%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 70%)
+  );
   pointer-events: none;
 }
 

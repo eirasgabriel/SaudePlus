@@ -16,11 +16,11 @@ export default function AgendaFilter({ valor, onChange, contagem, total, pendent
   const opcoes = [
     { chave: "todas", rotulo: "Todas", quantidade: total },
     { chave: "pendentes", rotulo: "Próximas", quantidade: pendentes },
-    ...Object.entries(STATUS_CONSULTA).map(([chave, { rotulo }]) => ({
-      chave,
-      rotulo,
-      quantidade: contagem[chave] ?? 0,
-    })),
+    ...Object.entries(STATUS_CONSULTA)
+      .map(([chave, { rotulo }]) => ({ chave, rotulo, quantidade: contagem[chave] ?? 0 }))
+      /* Status sem nenhuma consulta no dia só ocupa espaço: some do filtro.
+         O ativo fica, para a pessoa sempre ver o que está selecionado. */
+      .filter(({ chave, quantidade }) => quantidade > 0 || chave === valor),
   ];
 
   return (

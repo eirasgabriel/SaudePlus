@@ -4,7 +4,7 @@
   gap: var(--space-3);
   padding: var(--space-5);
   overflow: hidden;
-  background: linear-gradient(180deg, #E8F2FD 0%, #DCEBFB 100%);
+  background: var(--destaque-fundo, linear-gradient(180deg, #E8F2FD 0%, #DCEBFB 100%));
   border-radius: var(--radius-card);
 }
 
@@ -51,8 +51,10 @@
   bottom: 0;
   left: 0;
   height: 62px;
-  background:
+  background: var(
+    --destaque-brilho,
     radial-gradient(120% 100% at 20% 100%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 60%),
-    radial-gradient(120% 100% at 85% 120%, rgba(150, 195, 245, 0.55) 0%, rgba(150, 195, 245, 0) 65%);
+    radial-gradient(120% 100% at 85% 120%, rgba(150, 195, 245, 0.55) 0%, rgba(150, 195, 245, 0) 65%)
+  );
   pointer-events: none;
 }

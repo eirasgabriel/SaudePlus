@@ -25,7 +25,6 @@ export default function PainelMedicoConectado({ data }) {
           exames: dados.examesPendentes,
           notificacoes: dados.notificacoes,
           dataReferencia: dados.dataReferencia,
-          fraseDoDia: dados.fraseDoDia,
         }
       : {};
 

@@ -61,6 +61,9 @@
   width: 26px;
   height: 26px;
   color: var(--color-primary);
+  /* Reset: com color-scheme escuro, o <button> nativo ganha fundo cinza. */
+  background: transparent;
+  border: 0;
   border-radius: 8px;
   transition: transform var(--duration) var(--ease);
 }
@@ -82,9 +85,9 @@
 
 /* Tons dos ícones */
 .azul .icone { color: var(--color-primary); background: var(--color-primary-light); }
-.verde .icone { color: #0F6B4F; background: #DCF5EA; }
-.roxo .icone { color: #5B3BC4; background: #EBE5FC; }
-.ambar .icone { color: #8A5300; background: #FCEFD6; }
+.verde .icone { color: var(--tom-sucesso-fg, #0F6B4F); background: var(--tom-sucesso-bg, #DCF5EA); }
+.roxo .icone { color: var(--tom-roxo-fg, #5B3BC4); background: var(--tom-roxo-bg, #EBE5FC); }
+.ambar .icone { color: var(--tom-alerta-fg, #8A5300); background: var(--tom-alerta-bg, #FCEFD6); }
 
 @media (max-width: 768px) {
   .card {

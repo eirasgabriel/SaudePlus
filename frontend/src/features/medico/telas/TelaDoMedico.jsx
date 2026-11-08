@@ -13,7 +13,7 @@ const carregarNotificacoes = ({ sinal }) => buscarNotificacoes({ sinal });
  * Casca das telas do médico além do painel: o mesmo cabeçalho e menu, sem a
  * coluna direita, com título e um link de volta opcional.
  *
- * `voltar`: `{ destino, parametros?, rotulo }`. `naoLidas` sobrepõe a contagem
+ * `voltar`: `{ destino, parametros?, rotulo }`. `notificacoes` sobrepõe a lista
  * do sino (a tela de notificações passa a sua, que muda na hora).
  */
 export default function TelaDoMedico(props) {
@@ -24,11 +24,10 @@ export default function TelaDoMedico(props) {
   );
 }
 
-function Casca({ titulo, subtitulo, voltar, acoes, naoLidas, children }) {
+function Casca({ titulo, subtitulo, voltar, acoes, notificacoes: listaPropria, children }) {
   const { usuario } = useAuth();
   const notificacoes = useDadosDaApi(carregarNotificacoes);
-  const contagem =
-    naoLidas ?? (notificacoes.origem === "api" ? notificacoes.dados.filter((n) => !n.lida).length : 0);
+  const lista = listaPropria ?? (notificacoes.origem === "api" ? notificacoes.dados : undefined);
 
   const medico = {
     nome: usuario?.nomeCompleto ?? "Médico(a)",
@@ -37,7 +36,7 @@ function Casca({ titulo, subtitulo, voltar, acoes, naoLidas, children }) {
   };
 
   return (
-    <DashboardLayout medico={medico} totalNotificacoes={contagem}>
+    <DashboardLayout medico={medico} notificacoes={lista}>
       {voltar && (
         <LinkDestino destino={voltar.destino} parametros={voltar.parametros} className={estilos.voltar}>
           ← {voltar.rotulo}

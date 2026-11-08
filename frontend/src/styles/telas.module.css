@@ -108,14 +108,14 @@
 }
 
 .invalido {
-  border-color: #d92544;
+  border-color: var(--tom-erro-fg, #d92544);
 }
 
 .erroCampo {
   margin: 0;
   font-size: 12.5px;
   font-weight: var(--fw-semibold);
-  color: #b3122f;
+  color: var(--tom-erro-fg, #b3122f);
 }
 
 .grade2 {
@@ -172,13 +172,13 @@
 }
 
 .botaoPerigo {
-  border: 1px solid #f3b7c2;
-  background: #fff5f7;
-  color: #b3122f;
+  border: 1px solid var(--tom-erro-borda, #f3b7c2);
+  background: var(--tom-erro-bg, #fff5f7);
+  color: var(--tom-erro-fg, #b3122f);
 }
 
 .botaoPerigo:hover {
-  background: #ffe5ea;
+  background: var(--tom-erro-borda, #ffe5ea);
 }
 
 .botao:disabled,
@@ -283,13 +283,13 @@ a.itemPrincipal:hover {
 }
 
 .sucesso {
-  background: #e7f8ef;
-  color: #0b6b3a;
+  background: var(--tom-sucesso-bg, #e7f8ef);
+  color: var(--tom-sucesso-fg, #0b6b3a);
 }
 
 .erro {
-  background: #ffe5ea;
-  color: #8c0f26;
+  background: var(--tom-erro-bg, #ffe5ea);
+  color: var(--tom-erro-fg, #8c0f26);
 }
 
 .info {
