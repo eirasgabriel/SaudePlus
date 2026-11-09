@@ -1,108 +1,122 @@
 /* ==========================================================
-   Como funciona — referência 1536 × 1024
+   Como funciona
    ========================================================== */
+@value vitrine: "../../../components/Vitrine/Vitrine.module.css";
 
-.hero {
-  --hero-height: 512px;
-  --hero-content-top: 131px;
-  --art-shift-lg: -20px;
-}
+/* ---------- Hero ---------- */
+.hero { --art-shift-lg: -20px; }
 
-.title {
-  margin-top: 16px;
-  font-size: 52px;
-  line-height: 1.1;
-}
-
-.lead {
-  margin-top: 14px;
-  max-width: 480px;
-  font-size: 19px;
-  line-height: 25px;
-}
-
-.actions {
-  margin-top: 24px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-}
-.primaryCta { min-width: 318px; height: 52px; font-size: 20px; }
-.secondaryCta { min-width: 256px; }
-
-/* Posições sobre a arte (px da referência) */
-.cardSchedule { left: 717px; top: 191px; width: 202px; height: 66px; padding-left: 16px; gap: 14px; font-size: 13px; }
-.cardSafe     { left: 1160px; top: 313px; width: 216px; height: 68px; padding-left: 22px; gap: 16px; font-size: 15px; }
-.handwriting  { left: 1142px; top: 165px; }
-
-/* ---------- Etapas ---------- */
+/* ---------- Etapas: cartão branco sobre o hero ---------- */
 .steps {
+  position: relative;
   z-index: 3;
   margin-top: calc(-1 * var(--hero-overlap));
-  padding: var(--section-padding);
+  padding: var(--space-8) var(--space-6);
+  border: 1px solid transparent;
+  background: var(--realce-fundo);
+  box-shadow: var(--realce-sombra);
+  border-radius: 20px;
 }
 
 .stepList {
-  margin: 24px 0 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
   padding: 0;
   list-style: none;
-  display: grid;
-  grid-template-columns: 1fr 42px 1fr 42px 1fr 42px 1fr 42px 1fr;
-  align-items: stretch;
 }
 
-.arrow {
-  align-self: center;
+/* Linha que liga os números, do primeiro ao último. */
+.stepList::before {
+  content: "";
+  position: absolute;
+  top: 22px;
+  left: 10%;
+  right: 10%;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #7DB7FF, var(--color-primary), #7DB7FF);
+}
+
+.step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 var(--space-5);
+  text-align: center;
+}
+
+/* Traços verticais entre as etapas, abaixo dos números. */
+.step + .step::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 72px;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border);
+}
+
+.number {
+  position: relative;
   display: grid;
   place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 3px solid #fff;
+  box-shadow: 0 6px 14px -6px rgba(0, 112, 232, 0.8);
+  font-size: 20px;
+  font-weight: var(--fw-bold);
+  color: #fff;
+}
+
+.stepIcon.stepIcon {
+  margin-top: var(--space-6);
+  border-radius: 14px;
+  background: var(--color-primary-light);
   color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px rgba(0, 112, 232, 0.12);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease), transform var(--duration) var(--ease);
+}
+
+.step:hover .stepIcon.stepIcon { background: var(--color-primary); color: #fff; transform: translateY(-3px); }
+
+.stepIcon.stepIcon svg { width: 56%; height: 56%; }
+
+.stepTitle {
+  margin: var(--space-4) 0 0;
+  font-size: 20px;
+  font-weight: var(--fw-bold);
+  line-height: 1.25;
+  color: var(--color-navy-950);
+  text-wrap: balance;
+}
+
+.stepText {
+  margin-top: var(--space-3);
+  font-size: var(--fs-small);
+  line-height: 1.55;
+  color: var(--color-text-muted);
 }
 
 /* ---------- Por que escolher ---------- */
-.reasons {
-  margin-top: var(--section-gap);
-  padding: var(--section-padding);
+.reasons { composes: secao from vitrine; }
+
+/* ---------- Faixa de chamada ---------- */
+.band { margin-top: var(--section-gap); }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 1024px) {
+  .stepList { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--space-8); }
+  .stepList::before { display: none; }
+  .step + .step::before { display: none; }
 }
 
-.reasonGrid {
-  margin-top: 24px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--card-gap);
-}
-.reasonCard { min-height: 128px; gap: 16px; }
-
-/* ---------- Faixa ---------- */
-.band {
-  margin-top: var(--section-gap);
-  margin-bottom: 40px;
-  padding-inline: var(--section-padding);
-}
-.band h2 { font-size: 30px; }
-.bandButton {
-  height: 48px;
-  min-width: 320px;
-  border-radius: var(--radius-pill);
-  font-size: 18px;
-}
-
-/* ==========================================================
-   Responsivo
-   ========================================================== */
-@media (max-width: 1280px) {
-  .stepList {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-  .arrow { display: none; }
-  .reasonGrid { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 768px) {
-  .stepList,
-  .reasonGrid { grid-template-columns: 1fr; }
-  .band h2 { font-size: 24px; }
-  .bandButton { min-width: 0; }
-  .primaryCta,
-  .secondaryCta { width: 100%; min-width: 0; }
+@media (max-width: 560px) {
+  .stepList { grid-template-columns: 1fr; }
+  .bandButton { width: 100%; }
 }

@@ -4,7 +4,7 @@ import CabecalhoPagina from "../../../components/CabecalhoPagina";
 import Cartao from "../../../components/Cartao";
 import { Botao } from "../../../components/Controles";
 import ItemLista, { Lista } from "../../../components/ItemLista";
-import AvisoDeOrigem from "../../medico/components/AvisoDeOrigem/AvisoDeOrigem.jsx";
+import PortaoDaApi from "../../../components/PortaoDaApi/PortaoDaApi.jsx";
 import { useDadosDaApi } from "../../paciente/useDadosDaApi.js";
 import * as api from "../admin.api.js";
 import AvisoDoAdmin from "../components/AvisoDoAdmin.jsx";
@@ -17,7 +17,8 @@ const carregar = ({ sinal }) => api.listarNotificacoes({ sinal });
  */
 export default function NotificacoesDoAdmin({ aoMudar }) {
   const [hoje] = useState(() => new Date());
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregar);
+  const estado = useDadosDaApi(carregar);
+  const { dados, recarregar } = estado;
   const [falha, setFalha] = useState(null);
   const naoLidas = dados?.filter((n) => !n.lida).length ?? 0;
 
@@ -40,8 +41,9 @@ export default function NotificacoesDoAdmin({ aoMudar }) {
         icone="sino"
         data={hoje}
       />
-      <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
       {falha && <AvisoDoAdmin tom="erro">{falha}</AvisoDoAdmin>}
+      <PortaoDaApi estados={estado} carregando="Carregando as notificações…">
+        {() => (
       <Cartao
         titulo="Suas notificações"
         icone="sino"
@@ -66,9 +68,11 @@ export default function NotificacoesDoAdmin({ aoMudar }) {
             ))}
           </Lista>
         ) : (
-          <p>{origem === "carregando" ? "Carregando…" : "Nenhuma notificação."}</p>
+          <p>Nenhuma notificação.</p>
         )}
       </Cartao>
+        )}
+      </PortaoDaApi>
     </>
   );
 }

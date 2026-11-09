@@ -4,33 +4,28 @@
   align-items: flex-start;
   flex-shrink: 0;
   gap: 4px;
+  width: 216px;
+  border-radius: var(--radius-button);
 }
 
 .nome {
-  font-size: 27px;
+  font-size: 24px;
   line-height: 1;
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.035em;
-  color: var(--color-navy-950);
+  font-weight: var(--fw-heavy);
+  letter-spacing: -0.03em;
+  color: #fff;
 }
-
-.nome span {
-  color: var(--color-primary-bright);
-}
+.nome span { color: var(--color-accent); }
 
 .slogan {
   font-size: 11px;
   line-height: 1;
-  color: var(--color-text-soft);
+  color: var(--shell-text-muted);
   white-space: nowrap;
 }
 
 @media (max-width: 1100px) {
-  .nome {
-    font-size: 23px;
-  }
-
-  .slogan {
-    display: none;
-  }
+  .marca { width: auto; }
+  .nome { font-size: 22px; }
+  .slogan { display: none; }
 }

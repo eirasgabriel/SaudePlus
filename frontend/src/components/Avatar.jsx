@@ -13,7 +13,7 @@ function iniciais(nome = "") {
 }
 
 /** Cor estável derivada do nome, para quando não houver cor definida. */
-const paleta = ["#0066FF", "#3B82F6", "#14B8A6", "#6366F1", "#F59E0B", "#EC4899", "#A855F7"];
+const paleta = ["#0070E8", "#004A99", "#06378F", "#0A58CE", "#005EC3", "#042B78", "#1A6FD0"];
 
 function corDoNome(nome = "") {
   let soma = 0;

@@ -50,9 +50,9 @@ export const porEspecialidade = {
   fatias: [
     { id: "geral", rotulo: "Clínica Geral", percentual: 34, cor: "var(--azul)" },
     { id: "pediatria", rotulo: "Pediatria", percentual: 18, cor: "var(--azul-suave)" },
-    { id: "ginecologia", rotulo: "Ginecologia", percentual: 14, cor: "var(--verde-claro)" },
-    { id: "ortopedia", rotulo: "Ortopedia", percentual: 10, cor: "var(--roxo)" },
-    { id: "outras", rotulo: "Outras", percentual: 24, cor: "#c4b5fd" },
+    { id: "ginecologia", rotulo: "Ginecologia", percentual: 14, cor: "var(--color-accent)" },
+    { id: "ortopedia", rotulo: "Ortopedia", percentual: 10, cor: "var(--color-navy-900)" },
+    { id: "outras", rotulo: "Outras", percentual: 24, cor: "var(--color-border-hover)" },
   ],
 };
 

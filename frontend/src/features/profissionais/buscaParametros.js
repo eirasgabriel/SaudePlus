@@ -1,8 +1,7 @@
 /* Regras puras da busca de profissionais: URL → consulta → parâmetros da API,
-   resposta da API → cartão, e o filtro local usado quando a API não responde.
+   resposta da API → cartão. Não há filtro local: a busca vem só da API.
    Sem React, para poderem ser testadas direto (scripts/busca.test.mjs). */
 
-import { PROFESSIONALS } from "./data/professionals.js";
 import { SPECIALTIES } from "./data/specialties.js";
 import { CITIES, CARE_TYPES, SPECIALTY_NAMES } from "./data/buscar.js";
 
@@ -91,24 +90,3 @@ export function paraCartao(p) {
   };
 }
 
-/** Mesma filtragem que a tela fazia antes da API existir. */
-export function filtrarMocks({ applied, filters, sort }) {
-  const term = normalize(applied.term.trim());
-  const list = PROFESSIONALS.filter((p) => {
-    if (term && !normalize(`${p.name} ${p.specialty}`).includes(term)) return false;
-    if (applied.city && p.city !== applied.city) return false;
-    if (applied.specialty && p.specialty !== applied.specialty) return false;
-    if (applied.type && !p.types.includes(applied.type)) return false;
-    if (filters.types.length && !filters.types.some((t) => p.types.includes(t))) return false;
-    if (filters.specialties.length && !filters.specialties.includes(p.specialty)) return false;
-    if (filters.insurances.length && !filters.insurances.some((i) => p.insurances.includes(i))) return false;
-    return true;
-  });
-  const sorters = {
-    relevancia: () => 0,
-    avaliacao: (a, b) => b.rating - a.rating || b.reviews - a.reviews,
-    avaliacoes: (a, b) => b.reviews - a.reviews,
-    nome: (a, b) => a.name.localeCompare(b.name, "pt-BR"),
-  };
-  return [...list].sort(sorters[sort]);
-}

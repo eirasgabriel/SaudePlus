@@ -57,8 +57,8 @@ export const statusAgendamento = {
 /** Legenda do calendário. */
 export const tiposCalendario = [
   { id: "consultas", rotulo: "Consultas", cor: "var(--azul)" },
-  { id: "exames", rotulo: "Exames", cor: "var(--verde-claro)" },
-  { id: "retornos", rotulo: "Retornos", cor: "var(--roxo)" },
+  { id: "exames", rotulo: "Exames", cor: "var(--color-accent)" },
+  { id: "retornos", rotulo: "Retornos", cor: "var(--color-navy-900)" },
   { id: "cancelados", rotulo: "Cancelados", cor: "var(--vermelho)" },
 ];
 

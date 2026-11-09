@@ -13,7 +13,7 @@
   margin: 0;
   font-size: var(--fs-section-title);
   font-weight: var(--fw-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--tracking-tight);
   color: var(--color-navy-950);
 }
 
@@ -31,13 +31,12 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
 }
 
 .cartaoTitulo {
   margin: 0;
   font-size: 17px;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
   color: var(--color-navy-950);
 }
 
@@ -100,22 +99,27 @@
   resize: vertical;
 }
 
+.input:hover,
+.select:hover,
+.area:hover { border-color: var(--color-border-hover); }
+
 .input:focus,
 .select:focus,
 .area:focus {
   border-color: var(--color-primary);
-  outline: 2px solid var(--color-primary-light);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 112, 232, 0.16);
 }
 
 .invalido {
-  border-color: #d92544;
+  border-color: var(--state-danger);
 }
 
 .erroCampo {
   margin: 0;
   font-size: 12.5px;
   font-weight: var(--fw-semibold);
-  color: #b3122f;
+  color: var(--state-danger);
 }
 
 .grade2 {
@@ -141,7 +145,7 @@
   gap: 6px;
   min-height: 40px;
   padding: 8px 16px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-button);
   font: inherit;
   font-size: var(--fs-small);
   font-weight: var(--fw-semibold);
@@ -172,13 +176,13 @@
 }
 
 .botaoPerigo {
-  border: 1px solid #f3b7c2;
-  background: #fff5f7;
-  color: #b3122f;
+  border: 1px solid #F3C7C5;
+  background: var(--color-surface);
+  color: var(--state-danger);
 }
 
 .botaoPerigo:hover {
-  background: #ffe5ea;
+  background: var(--state-danger-bg);
 }
 
 .botao:disabled,
@@ -236,8 +240,9 @@ a.itemPrincipal:hover {
 }
 
 .naoLida {
-  box-shadow: inset 3px 0 0 var(--color-primary);
+  background: var(--color-surface-muted);
   padding-left: var(--space-3);
+  padding-right: var(--space-3);
 }
 
 /* Pares rótulo/valor dos detalhes. */
@@ -283,13 +288,13 @@ a.itemPrincipal:hover {
 }
 
 .sucesso {
-  background: #e7f8ef;
-  color: #0b6b3a;
+  background: var(--state-success-bg);
+  color: var(--state-success);
 }
 
 .erro {
-  background: #ffe5ea;
-  color: #8c0f26;
+  background: var(--state-danger-bg);
+  color: var(--state-danger);
 }
 
 .info {
@@ -321,15 +326,33 @@ a.itemPrincipal:hover {
 
 /* Página avulsa da área do paciente (sem o layout do painel). */
 .paginaAvulsa {
+  position: relative;
   min-height: 100vh;
-  padding: 2rem 1rem;
-  background: #f8fafc;
+  padding: 0 var(--page-gutter) var(--space-12);
+  background: var(--color-background);
 }
+
+/* Faixa da casca marinho no topo, fechada pela curva shed. */
+.paginaAvulsa::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 72px;
+  background: var(--shell);
+  border-bottom-right-radius: var(--radius-shed);
+}
+
+.paginaAvulsaConteudo > .voltar:first-child {
+  min-height: 72px;
+  color: #fff;
+}
+.paginaAvulsaConteudo > .voltar:first-child:focus-visible { outline-color: var(--color-accent); }
 
 .paginaAvulsaConteudo {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  max-width: 900px;
+  position: relative;
+  max-width: 960px;
   margin: 0 auto;
 }

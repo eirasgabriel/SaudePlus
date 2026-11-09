@@ -1,15 +1,14 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { listarEspecialidades, buscarProfissionais } from "../profissionais/profissionais.api.js";
 import { buscarHorariosLivres } from "./paciente.api.js";
-import { mockSpecialties } from "../../services/dadosficticios.js";
 
 /**
  * Opções do modal de agendamento vindas da API: especialidades, os médicos
  * da especialidade escolhida e os horários livres do médico na data.
  *
- * Sem API (`origem: "mocks"`), cai nas opções fixas de `mockSpecialties`,
- * como o modal fazia antes — útil para mexer só no front.
+ * Sem API (`origem: "erro"`), não há opções: o modal mostra a falha com
+ * "Tentar de novo" (`tentarDeNovo`). Não existem opções de demonstração.
  *
  * Cada resposta é guardada com a "chave" do pedido que a gerou; ao trocar a
  * especialidade ou a data, a lista antiga deixa de valer na hora, sem
@@ -20,11 +19,13 @@ export function useOpcoesDeAgendamento({ aberto, especialidadeId, profissionalId
   const [medicos, setMedicos] = useState({ chave: null, lista: [] });
   const [horarios, setHorarios] = useState({ chave: null, lista: [] });
 
-  const emMocks = catalogo.origem === "mocks";
-  const especialidades = emMocks ? mockSpecialties : catalogo.especialidades;
+  const especialidades = catalogo.especialidades;
   const especialidade = especialidades.find((item) => item.id === especialidadeId) ?? null;
-  const chaveMedicos = especialidade && !emMocks ? especialidade.slug : null;
-  const chaveHorarios = profissionalId && data && !emMocks ? `${profissionalId}|${data}|${versao}` : null;
+  const chaveMedicos = especialidade ? especialidade.slug : null;
+  const chaveHorarios = profissionalId && data ? `${profissionalId}|${data}|${versao}` : null;
+
+  // Depois de uma falha, volta a "carregando" e o efeito abaixo busca de novo.
+  const tentarDeNovo = useCallback(() => setCatalogo({ origem: "carregando", especialidades: [] }), []);
 
   useEffect(() => {
     if (!aberto || catalogo.origem !== "carregando") return undefined;
@@ -39,7 +40,7 @@ export function useOpcoesDeAgendamento({ aberto, especialidadeId, profissionalId
         }
       })
       .catch(() => {
-        if (!controle.signal.aborted) setCatalogo({ origem: "mocks", especialidades: [] });
+        if (!controle.signal.aborted) setCatalogo({ origem: "erro", especialidades: [] });
       });
     return () => controle.abort();
   }, [aberto, catalogo.origem]);
@@ -79,17 +80,9 @@ export function useOpcoesDeAgendamento({ aberto, especialidadeId, profissionalId
     return () => controle.abort();
   }, [chaveHorarios]);
 
-  if (emMocks) {
-    return {
-      origem: "mocks",
-      especialidades,
-      profissionais: especialidade?.professionals ?? [],
-      horarios: (especialidade?.slots ?? []).map((horario) => ({ horario })),
-      carregandoHorarios: false,
-    };
-  }
   return {
     origem: catalogo.origem,
+    tentarDeNovo,
     especialidades,
     profissionais: medicos.chave === chaveMedicos ? medicos.lista : [],
     horarios: horarios.chave === chaveHorarios ? horarios.lista : [],

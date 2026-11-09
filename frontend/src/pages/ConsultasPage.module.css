@@ -1,3 +1,4 @@
+@import "../styles/listaPaciente.css";
 /* 
    Página de consultas (placeholder)
    Os tokens ficam no wrapper .pagina para não colidir com
@@ -7,15 +8,15 @@
 .pagina {
   /* Paleta oficial */
   --primary: var(--color-primary);
-  --primary-100: #dceaff;
-  --navy: #0a2463;
-  --text: #1f2a44;
-  --muted: #667085;
-  --border: #e3ecf8;
+  --primary-100: var(--color-primary-light);
+  --navy: var(--color-navy-950);
+  --text: var(--color-text);
+  --muted: var(--color-text-muted);
+  --border: var(--color-border);
   --surface: #ffffff;
-  --radius-lg: 20px;
-  --shadow: 0 6px 24px rgba(16, 68, 160, 0.06);
-  --font: 'Nunito Sans', 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --radius-lg: var(--radius-card);
+  --shadow: none;
+  --font: var(--font-sans);
 
   /* Tom desta seção */
   --tom: var(--primary);
@@ -24,10 +25,12 @@
   width: 100%;
   min-height: 100vh;
   font-family: var(--font);
-  line-height: normal;
+  line-height: 1.5;
   text-align: left;
   color: var(--text);
-  background: linear-gradient(180deg, #f6faff 0%, #edf4ff 100%);
+  position: relative;
+  background: var(--color-background);
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -50,7 +53,7 @@
 :where(.pagina) a { color: inherit; text-decoration: none; }
 
 .pagina :focus-visible {
-  outline: 3px solid rgba(0, 112, 232, 0.45);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
   border-radius: 10px;
 }
@@ -58,7 +61,8 @@
 .conteudo {
   max-width: 820px;
   margin: 0 auto;
-  padding: 32px 24px 48px;
+  position: relative;
+  padding: 0 24px 48px;
 }
 
 /* Voltar  */
@@ -100,7 +104,7 @@
   flex-shrink: 0;
   width: 62px;
   height: 62px;
-  border-radius: 50%;
+  border-radius: var(--radius-button);
   background: var(--tom-fundo);
   color: var(--tom);
 }
@@ -117,7 +121,7 @@
 
 .titulo {
   font-size: 30px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.02em;
   color: var(--navy);
@@ -190,6 +194,19 @@
   .cartao { padding: 20px 18px 22px; }
 }
 
+/* Faixa da casca marinho no topo; o "Voltar" fica dentro dela. */
+.pagina::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 72px;
+  background: var(--shell);
+  border-bottom-right-radius: var(--radius-shed);
+}
+
+.conteudo > .voltar:first-child { min-height: 72px; color: #fff; }
+.conteudo > .voltar:first-child:focus-visible { outline-color: var(--color-accent); }
+
 @media (prefers-reduced-motion: reduce) {
   .pagina *,
   .pagina *::before,
@@ -220,7 +237,7 @@
   font: inherit;
   font-size: 14px;
   font-weight: 600;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   cursor: pointer;
 }
 
@@ -232,8 +249,8 @@
 
 .botaoPerigo {
   color: #fff;
-  background: #c62841;
-  border: 1px solid #c62841;
+  background: var(--state-danger);
+  border: 1px solid var(--state-danger);
 }
 
 .botaoAcao:focus-visible,
@@ -250,5 +267,5 @@
 .erroAcao {
   margin-top: 8px;
   font-size: 14px;
-  color: #b3261e;
+  color: var(--state-danger);
 }

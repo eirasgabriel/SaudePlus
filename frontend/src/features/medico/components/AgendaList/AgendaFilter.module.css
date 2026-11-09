@@ -1,40 +1,36 @@
+/* Filtro de status: segmentos retangulares com contagem tabular. */
 .grupo {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  /* order alto: cai numa linha própria abaixo do título e da ação do Panel. */
+  gap: 4px;
   order: 10;
   width: 100%;
-  margin-top: var(--space-3);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-2);
 }
 
 .opcao {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  min-height: 32px;
+  padding: 0 10px;
+  font-family: inherit;
   font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-semibold);
   color: var(--color-text-muted);
-  background: var(--color-surface-muted);
-  border: 1px solid transparent;
-  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: 4px;
   transition: background var(--duration) var(--ease), color var(--duration) var(--ease),
     border-color var(--duration) var(--ease);
 }
+.opcao:hover { border-color: var(--color-border-hover); color: var(--color-navy-950); }
 
-.opcao:hover {
-  border-color: var(--color-border-hover);
-  color: var(--color-navy-900);
-}
-
-.ativa {
-  color: var(--color-primary);
-  background: var(--color-primary-light);
-  border-color: var(--color-divider);
-  font-weight: var(--fw-semibold);
+.ativa,
+.ativa:hover {
+  color: #fff;
+  background: var(--color-navy-900);
+  border-color: var(--color-navy-900);
 }
 
 .quantidade {

@@ -1,19 +1,21 @@
-import HeroSection, { HeroTitle, HeroLead } from "../../../components/HeroSection/HeroSection.jsx";
-import Badge from "../../../components/Badge/Badge.jsx";
+import { Link } from "react-router-dom";
+import HeroSection, { HeroTitle, HeroLead, HeroAccent, HeroActions } from "../../../components/HeroSection/HeroSection.jsx";
 import Button from "../../../components/Button/Button.jsx";
-import FloatingInfoCard from "../../../components/FloatingInfoCard/FloatingInfoCard.jsx";
-import Handwriting from "../../../components/Handwriting/Handwriting.jsx";
-import SectionCard from "../../../components/SectionCard/SectionCard.jsx";
-import FeatureCard from "../../../components/FeatureCard/FeatureCard.jsx";
-import StatCard from "../../../components/StatCard/StatCard.jsx";
-import { CheckIcon, CalendarIcon } from "../../../components/icons/Icons.jsx";
+import Container from "../../../components/Container/Container.jsx";
+import { FaixaDestaques } from "../../../components/Vitrine/Vitrine.jsx";
+import { SectionLink } from "../../../components/SectionTitle/SectionTitle.jsx";
+import IconCircle from "../../../components/IconCircle/IconCircle.jsx";
+import ChatFlutuante from "../../../components/ChatFlutuante/ChatFlutuante.jsx";
+import { CalendarLineIcon, PlayCircleLineIcon } from "../../../components/icons/Icons.jsx";
 
-import { heroContent, benefits, trustContent, stats } from "../data/home.js";
-import heroArt from "../../../assets/images/hero-home.jpg";
+import { heroContent, benefits, featuredSpecialties } from "../data/home.js";
+import { BENEFICIOS_PLATAFORMA } from "../../institucional/data/sobreNos.js";
+import heroArt from "../../../assets/images/hero-home-rente.jpg";
 import heroMobile from "../../../assets/images/hero-home-mobile.jpg";
-import doctorImg from "../../../assets/images/medico-home.jpg";
 
 import styles from "./Home.module.css";
+
+const buscaPor = (nome) => `/buscar?especialidade=${encodeURIComponent(nome)}`;
 
 export default function Home() {
   return (
@@ -22,64 +24,64 @@ export default function Home() {
         className={styles.hero}
         labelledBy="home-hero-title"
         artSrc={heroArt}
-        artCropBottom={100}
+        artCropBottom={235}
         artAlt="Mulher sorrindo enquanto agenda uma consulta pelo smartphone"
         mobileSrc={heroMobile}
-        mobileAlt="Mulher sorrindo usando o smartphone, com os avisos Consulta agendada com sucesso e Mais saúde para o seu dia a dia"
-        overlay={
-          <>
-            <FloatingInfoCard
-              className={styles.cardScheduled}
-              icon={CheckIcon}
-              highlight="Consulta agendada"
-              lines={["com sucesso!"]}
-            />
-            <FloatingInfoCard
-              className={styles.cardHealth}
-              icon={CalendarIcon}
-              iconSize={40}
-              iconVariant="plain"
-              highlight="Mais saúde"
-              lines={["para o seu dia a dia"]}
-            />
-            <Handwriting className={styles.handwriting} />
-          </>
-        }
+        mobileAlt="Mulher sorrindo usando o smartphone"
+        rente
+        cruz={{ x: 960, y: 70, tamanho: 280 }}
       >
-        <Badge>{heroContent.badge}</Badge>
-        <HeroTitle id="home-hero-title" lines={heroContent.titleLines} accent={heroContent.titleAccent} />
-        <HeroLead lines={heroContent.leadLines} />
-        <Button variant="hero" to={heroContent.cta.to} withArrow className={styles.heroCta}>
-          {heroContent.cta.label}
-        </Button>
+        <HeroTitle
+          id="home-hero-title"
+          lines={["Sua saúde em boas mãos", <>com o <HeroAccent>SaúdePlus</HeroAccent></>]}
+        />
+        <HeroLead lines={[heroContent.lead]} />
+        <HeroActions>
+          <Button variant="hero" to={heroContent.agendar.to} icon={CalendarLineIcon} withArrow>
+            {heroContent.agendar.label}
+          </Button>
+          <Button variant="ghost" to={heroContent.conhecer.to} icon={PlayCircleLineIcon} className={styles.ghost}>
+            {heroContent.conhecer.label}
+          </Button>
+        </HeroActions>
       </HeroSection>
 
-      {/* Bloco de benefícios sobreposto ao hero */}
-      <SectionCard className={styles.benefits} aria-label="Benefícios">
-        {benefits.map((item) => (
-          <FeatureCard key={item.title} {...item} />
-        ))}
-      </SectionCard>
+      <FaixaDestaques itens={benefits} rotulo="Por que agendar pelo SaúdePlus" />
 
-      {/* Sua saúde em boas mãos */}
-      <SectionCard soft className={styles.trust} aria-labelledby="trust-title">
-        <div className={styles.trustMedia}>
-          <img src={doctorImg} width="244" height="171" alt="Médico sorridente de jaleco e estetoscópio" loading="lazy" />
-        </div>
+      <FaixaDestaques itens={BENEFICIOS_PLATAFORMA} titulo="Benefícios da" destaque="plataforma" sobreposta={false} />
 
-        <div>
-          <h2 id="trust-title" className={styles.trustTitle}>
-            {trustContent.title} <span>{trustContent.titleAccent}</span>
+      {/* Atalhos por especialidade: o caminho mais curto até a busca filtrada */}
+      <Container as="section" className={styles.specialties} aria-labelledby="specialties-title">
+        <header className={styles.cardHeader}>
+          <h2 id="specialties-title" className={styles.cardTitle}>
+            Explore nossas <span>especialidades</span>
           </h2>
-          <p className={styles.trustText}>{trustContent.text}</p>
-        </div>
+          <SectionLink to="/especialidades">Ver todas as especialidades</SectionLink>
+        </header>
 
-        <div className={styles.trustStats}>
-          {stats.map((stat) => (
-            <StatCard key={stat.value} className={styles.stat} {...stat} />
+        <nav className={styles.chips} aria-label="Buscar por especialidade">
+          <Link to="/especialidades" className={`${styles.chip} ${styles.chipAtivo}`}>Todas</Link>
+          {featuredSpecialties.map((s) => (
+            <Link key={s.slug} to={buscaPor(s.name)} className={styles.chip}>{s.name}</Link>
           ))}
-        </div>
-      </SectionCard>
+        </nav>
+
+        <ul className={styles.specialtyGrid}>
+          {featuredSpecialties.map((s) => (
+            <li key={s.slug}>
+              <Link to={buscaPor(s.name)} className={styles.specialty}>
+                <IconCircle icon={s.icon} size={58} iconSize={s.iconSize} className={styles.specialtyIcon} />
+                <span>
+                  <span className={styles.specialtyName}>{s.name}</span>
+                  <span className={styles.specialtyText}>{s.description}</span>
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Container>
+
+      <ChatFlutuante />
     </>
   );
 }

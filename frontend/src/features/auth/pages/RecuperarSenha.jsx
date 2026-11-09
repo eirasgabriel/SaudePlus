@@ -48,7 +48,7 @@ export default function RecuperarSenha() {
 
   if (enviado) {
     return (
-      <CartaoAuth voltarPara="/login" atalho={{ texto: 'Fazer login', para: '/login' }}>
+      <CartaoAuth voltarPara="/login">
         <EstadoResultado
           tipo="info"
           titulo="Verifique seu e-mail"
@@ -79,7 +79,7 @@ export default function RecuperarSenha() {
   }
 
   return (
-    <CartaoAuth voltarPara="/login" atalho={{ texto: 'Fazer login', para: '/login' }}>
+    <CartaoAuth voltarPara="/login">
       <form className="sp-form" onSubmit={enviar} noValidate>
         <h1 className="sp-form__titulo">Recuperar senha</h1>
         <p className="sp-form__subtitulo">

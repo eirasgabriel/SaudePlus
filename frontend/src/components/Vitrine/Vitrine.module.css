@@ -1,0 +1,270 @@
+/* ==========================================================
+   Peças das páginas públicas
+   Cartões brancos com traço azul-claro e sombra curta e azulada; ícones em
+   ladrilho azul-claro; títulos de seção centrais com traços laterais.
+   ========================================================== */
+
+/* ---------- Cruz neon ---------- */
+.cruz { display: block; overflow: visible; }
+
+.cruzBrilho {
+  stroke: #3FD2FF;
+  stroke-width: 10;
+  stroke-linejoin: round;
+  opacity: 0.35;
+  filter: blur(8px);
+}
+
+.cruzTraco {
+  stroke: #7FE6FF;
+  stroke-width: 4;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(63, 210, 255, 0.9)) drop-shadow(0 0 18px rgba(63, 210, 255, 0.55));
+}
+
+/* ---------- Título central ---------- */
+.tituloCentral {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  margin: 0;
+  font-size: clamp(26px, 2.5vw, 34px);
+  font-weight: var(--fw-bold);
+  line-height: 1.2;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-navy-950);
+  text-align: center;
+}
+
+.tituloCentral::before,
+.tituloCentral::after {
+  content: "";
+  flex: 1 1 0;
+  max-width: 220px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-hover));
+}
+
+.tituloCentral::after { background: linear-gradient(90deg, var(--color-border-hover), transparent); }
+
+.destaque { color: var(--color-primary); }
+
+/* ---------- Cartão com ícone ---------- */
+.cartao {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  height: 100%;
+  padding: var(--space-5);
+  border: 1px solid transparent;
+  background: var(--realce-fundo);
+  box-shadow: var(--realce-sombra);
+  border-radius: 14px;
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+
+.cartao:hover { transform: translateY(-3px); box-shadow: var(--realce-sombra-hover); }
+
+/* No hover, o ladrilho do ícone fica azul cheio. */
+.cartao:hover .ladrilho.ladrilho,
+a.faixaAcao:hover .ladrilho.ladrilho,
+button.faixaAcao:hover .ladrilho.ladrilho {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* Classe dobrada: vence o estilo base do IconCircle sem depender da ordem
+   de carregamento dos módulos CSS. */
+.ladrilho.ladrilho {
+  border-radius: 12px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px rgba(0, 112, 232, 0.12);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+.ladrilho.ladrilho svg { width: 56%; height: 56%; }
+
+.cartaoTitulo {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: var(--fw-bold);
+  line-height: 1.25;
+  color: var(--color-navy-950);
+}
+
+.cartaoTexto {
+  margin-top: 6px;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Grade de cartões ---------- */
+.grade {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---------- Faixa de destaques ---------- */
+.faixa {
+  position: relative;
+  z-index: 3;
+  margin-top: calc(-1 * var(--hero-overlap));
+  border: 1px solid transparent;
+  background: var(--realce-fundo);
+  box-shadow: var(--realce-sombra);
+  border-radius: 16px;
+}
+
+.faixaNoFluxo { margin-top: var(--section-gap); }
+
+/* Título dentro da faixa, acima dos itens. */
+.faixaCabecalho.faixaCabecalho {
+  padding: var(--space-6) var(--space-6) 0;
+  font-size: clamp(24px, 2.2vw, 30px);
+}
+
+.faixaLista {
+  display: grid;
+  grid-template-columns: repeat(var(--colunas, 4), minmax(0, 1fr));
+  margin: 0;
+  padding: var(--space-5) 0;
+  list-style: none;
+}
+
+.faixaItem { display: flex; min-width: 0; }
+.faixaItem + .faixaItem { border-left: 1px solid var(--color-border); }
+
+.faixaAcao {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-2) var(--space-6);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+}
+
+a.faixaAcao,
+button.faixaAcao { cursor: pointer; border-radius: 10px; }
+
+a.faixaAcao:hover .faixaTitulo,
+button.faixaAcao:hover .faixaTitulo { color: var(--color-primary); }
+
+.faixaCorpo { display: flex; flex-direction: column; min-width: 0; }
+
+.faixaTitulo {
+  font-size: 18px;
+  font-weight: var(--fw-bold);
+  line-height: 1.25;
+  color: var(--color-navy-950);
+  transition: color var(--duration) var(--ease);
+}
+
+.faixaTexto {
+  margin-top: 4px;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.faixaSeta {
+  display: inline-block;
+  margin-left: 6px;
+  vertical-align: -4px;
+  color: var(--color-primary);
+  transition: transform var(--duration) var(--ease);
+}
+
+a.faixaAcao:hover .faixaSeta,
+button.faixaAcao:hover .faixaSeta { transform: translateX(3px); }
+
+/* ---------- Estruturas reaproveitadas pelas páginas (via `composes`) ---------- */
+.secao { margin-top: var(--section-gap); }
+
+/* Painel branco grande que agrupa uma seção. */
+.painel {
+  padding: var(--space-8);
+  border: 1px solid transparent;
+  background: var(--realce-fundo);
+  box-shadow: var(--realce-sombra);
+  border-radius: 20px;
+}
+
+.painelCabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.painelTitulo {
+  margin: 0;
+  font-size: clamp(26px, 2.4vw, 34px);
+  font-weight: var(--fw-bold);
+  line-height: 1.15;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-navy-950);
+}
+
+.painelTitulo > span { color: var(--color-primary); }
+
+/* Pílula de especialidade (filtro ou atalho). */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 18px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-navy-900);
+  white-space: nowrap;
+  text-decoration: none;
+  transition: border-color var(--duration) var(--ease), color var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+
+.chip:hover { border-color: var(--color-primary); color: var(--color-primary-dark); }
+
+.chipAtivo,
+.chipAtivo:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 1180px) {
+  .grade { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .faixaLista { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: var(--space-4); }
+  .faixaItem:nth-child(odd) { border-left: 0; }
+}
+
+@media (max-width: 640px) {
+  .grade { grid-template-columns: 1fr; }
+
+  .faixaLista { grid-template-columns: 1fr; padding: var(--space-2) 0; row-gap: 0; }
+  .faixaItem + .faixaItem { border-left: 0; border-top: 1px solid var(--color-border); }
+  .faixaAcao { padding: var(--space-4) var(--space-5); }
+
+  .tituloCentral::before,
+  .tituloCentral::after { display: none; }
+}
+
+@media (max-width: 768px) {
+  .painel { padding: var(--space-5); border-radius: 16px; }
+  .painelCabecalho { flex-direction: column; align-items: flex-start; gap: var(--space-2); }
+}

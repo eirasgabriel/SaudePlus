@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-08T00:00:00Z",
+  "title": "Design System: SaúdePlus",
+  "extensions": {
+    "colorMeta": {
+      "navy-900": { "role": "primary", "displayName": "Marinho Estrutura", "canonical": "#041A58", "tonalRamp": ["#020F45", "#041A58", "#042B78", "#06378F", "#0A58CE", "#9FBCE4", "#D9E6F6", "#F0F7FD"] },
+      "primary": { "role": "primary", "displayName": "Azul Cartilha", "canonical": "#0070E8", "tonalRamp": ["#00336B", "#004A99", "#005EC3", "#0070E8", "#1A7EEA", "#9FBCE4", "#EAF4FF", "#F3F8FD"] },
+      "accent-cyan": { "role": "secondary", "displayName": "Ciano Sinal", "canonical": "#44C6F4", "tonalRamp": ["#0B5F80", "#1488B3", "#2BAFE0", "#44C6F4", "#73D5F7", "#A3E3FA", "#D1F1FC", "#ECF9FE"] },
+      "page-ground": { "role": "neutral", "displayName": "Céu de Página", "canonical": "#F0F7FD" },
+      "hairline": { "role": "neutral", "displayName": "Traço", "canonical": "#D9E6F6" },
+      "shell-text-muted": { "role": "neutral", "displayName": "Névoa da Casca", "canonical": "#B8C7EB" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Títulos do hero público." },
+      "headline": { "displayName": "Headline", "purpose": "Títulos de página e seção." },
+      "title": { "displayName": "Title", "purpose": "Cartões, nomes, especialidades." },
+      "body": { "displayName": "Body", "purpose": "Texto corrido, até 75ch." },
+      "label": { "displayName": "Label", "purpose": "Rótulos, selos de status, cabeçalhos de tabela." }
+    },
+    "shadows": [
+      { "name": "flutuante", "value": "0 18px 40px -12px rgba(2, 15, 69, 0.28)", "purpose": "Só o que flutua: régua de busca, avisos do hero, modal, painéis do cabeçalho." }
+    ],
+    "motion": [
+      { "name": "ease", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Transições de estado (hover, inversão de ladrilho)." },
+      { "name": "duration", "value": "160ms", "purpose": "Duração padrão de estado." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "768px" },
+      { "name": "painel-compacto", "value": "1100px" },
+      { "name": "desktop", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação principal sobre fundo claro.",
+      "html": "<button class=\"ds-btn-primary\">Agendar consulta</button>",
+      "css": ".ds-btn-primary { min-height: 44px; padding: 0 20px; border: 1px solid #0070E8; border-radius: 8px; background: #0070E8; color: #fff; font: 600 15px 'Atkinson Hyperlegible Next', system-ui, sans-serif; cursor: pointer; transition: background 160ms; } .ds-btn-primary:hover { background: #005EC3; border-color: #005EC3; } .ds-btn-primary:focus-visible { outline: 2px solid #0070E8; outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Ação secundária.",
+      "html": "<button class=\"ds-btn-outline\">Ver perfil</button>",
+      "css": ".ds-btn-outline { min-height: 44px; padding: 0 20px; border: 1px solid #C3D6EF; border-radius: 8px; background: #fff; color: #004A99; font: 600 15px 'Atkinson Hyperlegible Next', system-ui, sans-serif; cursor: pointer; transition: border-color 160ms, background 160ms; } .ds-btn-outline:hover { border-color: #0070E8; background: #EAF4FF; } .ds-btn-outline:focus-visible { outline: 2px solid #0070E8; outline-offset: 2px; }"
+    },
+    {
+      "name": "Status com glifo",
+      "kind": "chip",
+      "refersTo": "status-tag",
+      "description": "Selo de status com o disco de progresso — assinatura do sistema.",
+      "html": "<span class=\"ds-status ds-s-ok\" style=\"--fill:100%\">Realizada</span> <span class=\"ds-status ds-s-info\" style=\"--fill:50%\">Confirmada</span> <span class=\"ds-status ds-s-x\">Cancelada</span>",
+      "css": ".ds-status { --fill: 0%; display: inline-flex; align-items: center; gap: 7px; min-height: 26px; padding: 0 10px 0 8px; border-radius: 4px; font: 600 12px 'Atkinson Hyperlegible Next', system-ui, sans-serif; } .ds-status::before { content: ''; width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid currentColor; background: conic-gradient(currentColor var(--fill), transparent 0); } .ds-s-ok { color: #0F6B4F; background: #DDF4EA; } .ds-s-info { color: #004A99; background: #fff; box-shadow: inset 0 0 0 1px #C3D6EF; } .ds-s-x { color: #A3201F; background: #FCE6E5; } .ds-s-x::before { background: linear-gradient(135deg, transparent 43%, currentColor 43%, currentColor 57%, transparent 57%); }"
+    },
+    {
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo com rótulo visível e foco azul.",
+      "html": "<label class=\"ds-field\"><span>E-mail</span><input placeholder=\"seu@email.com\"></label>",
+      "css": ".ds-field { display: grid; gap: 6px; font: 600 14px 'Atkinson Hyperlegible Next', system-ui, sans-serif; color: #1F2F63; } .ds-field input { height: 50px; padding: 0 14px; border: 1px solid #C3D6EF; border-radius: 8px; font: 400 16px inherit; color: #020F45; } .ds-field input::placeholder { color: #6B7FA6; } .ds-field input:focus { outline: none; border-color: #0070E8; box-shadow: 0 0 0 3px rgba(0,112,232,.16); }"
+    },
+    {
+      "name": "Navegação da casca",
+      "kind": "nav",
+      "description": "Menu lateral marinho com item ativo.",
+      "html": "<nav class=\"ds-nav\"><a>Início</a><a class=\"is-active\">Agenda</a><a>Pacientes</a></nav>",
+      "css": ".ds-nav { display: grid; gap: 2px; width: 220px; padding: 8px; background: #041A58; font: 500 14px 'Atkinson Hyperlegible Next', system-ui, sans-serif; } .ds-nav a { min-height: 44px; display: flex; align-items: center; padding: 0 12px; border-radius: 8px; color: #B8C7EB; cursor: pointer; } .ds-nav a:hover { background: rgba(255,255,255,.07); color: #fff; } .ds-nav a.is-active { background: rgba(68,198,244,.14); color: #fff; font-weight: 600; }"
+    },
+    {
+      "name": "Parede de ladrilhos",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Itens equivalentes com junta de 1px; hover inverte para marinho.",
+      "html": "<div class=\"ds-wall\"><a>Cardiologia<small>Saúde do coração</small></a><a>Pediatria<small>Cuidado para os pequenos</small></a></div>",
+      "css": ".ds-wall { display: grid; grid-template-columns: repeat(2, 180px); gap: 1px; background: #D9E6F6; border: 1px solid #D9E6F6; border-radius: 12px; overflow: hidden; font: 700 16px 'Atkinson Hyperlegible Next', system-ui, sans-serif; } .ds-wall a { display: grid; gap: 4px; min-height: 120px; align-content: end; padding: 20px; background: #fff; color: #020F45; cursor: pointer; transition: background 160ms, color 160ms; } .ds-wall small { font-weight: 400; font-size: 14px; color: #4A5E86; } .ds-wall a:hover { background: #041A58; color: #fff; } .ds-wall a:hover small { color: #B8C7EB; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Modulado",
+    "overview": "SaúdePlus é desenhado como um edifício modular dos hospitais da Rede Sarah: uma estrutura azul-marinho que carrega todas as áreas e superfícies brancas de trabalho penduradas nela. Depth vem de traço, não de sombra; uma única curva grande marca onde a casca encontra o conteúdo. A assinatura funcional é o glifo de progresso do status de atendimento.",
+    "keyCharacteristics": [
+      "Casca azul-marinho em L (topo + lateral) nos painéis; faixa marinho no topo do site e das telas avulsas.",
+      "Superfícies brancas com traço fino; sombra só em elementos flutuantes.",
+      "Curva \"shed\" única por encontro casca/conteúdo.",
+      "Glifo de progresso em todo selo de status de atendimento.",
+      "Atkinson Hyperlegible Next em toda a interface; algarismos tabulares em horários, datas e valores."
+    ],
+    "rules": [
+      { "name": "The Estrutura Rule", "body": "Marinho é estrutura, não decoração: aparece na casca e em no máximo uma peça de chamada por tela.", "section": "colors" },
+      { "name": "The Cor-é-Estado Rule", "body": "Verde, âmbar e vermelho só aparecem em selos de estado, avisos e variações de indicador — nunca em ícones decorativos ou séries de gráfico.", "section": "colors" },
+      { "name": "The Ciano-na-Casca Rule", "body": "Ciano só existe sobre marinho.", "section": "colors" },
+      { "name": "The Tabular Rule", "body": "Horários, datas, contagens e valores sempre em algarismos tabulares.", "section": "typography" },
+      { "name": "The Traço-não-Sombra Rule", "body": "Cartões e painéis em repouso não têm sombra; hover muda a cor do traço ou inverte a peça para marinho.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar o marinho (#041A58) para toda estrutura de navegação e para uma única peça de chamada por tela.",
+      "Do colocar o glifo de progresso em todo status de consulta/agendamento, sempre com texto.",
+      "Do separar itens equivalentes com junta de 1px (parede de ladrilhos) em vez de cartões soltos com sombra.",
+      "Do manter rótulos de campo visíveis e o anel de foco: azul sobre claro, ciano sobre marinho."
+    ],
+    "donts": [
+      "Don't usar gradientes decorativos, ondas ou vidro em cartões e faixas.",
+      "Don't usar verde, roxo, rosa ou âmbar como cor de ícone ou de série de gráfico; séries usam a família azul.",
+      "Don't colocar rótulo/kicker acima de títulos; frases de apoio vão abaixo do texto.",
+      "Don't repetir a mesma navegação no topo e na lateral.",
+      "Don't usar pílulas arredondadas em botões; o raio de 8px é a forma dos controles."
+    ]
+  }
+}

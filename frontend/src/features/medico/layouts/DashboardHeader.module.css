@@ -1,77 +1,70 @@
+/* Cabeçalho do painel do médico: faixa da casca marinho. */
 .cabecalho {
   position: sticky;
   top: 0;
   z-index: 20;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  box-shadow: var(--shadow-header);
+  background: var(--shell);
+  color: var(--shell-text);
 }
+
+.cabecalho :focus-visible { outline-color: var(--color-accent); }
 
 .barra {
   display: flex;
   align-items: center;
   gap: var(--space-6);
-  min-height: 78px;
-  padding: var(--space-3) var(--space-6);
+  min-height: 72px;
+  padding: 0 var(--space-6) 0 var(--space-5);
 }
 
-/* ---------- navegação ---------- */
+/* ---------- navegação ----------
+   A barra lateral já lista os mesmos destinos; o menu do topo fica fora da
+   tela para o painel ter uma só navegação (igual ao admin). */
 .menu {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0 auto;
+  display: none !important;
+  align-items: stretch;
+  align-self: stretch;
+  gap: 2px;
 }
 
-/* Estes itens são <button> enquanto não há rota — daí o reset de
-   background e borda. Viram <NavLink> sem mudar nada neste arquivo. */
+/* <button> enquanto não há rota — daí o reset de fundo e borda. */
 .link {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 0 14px;
   background: transparent;
   border: 0;
-  font-size: var(--fs-nav);
+  font-family: inherit;
+  font-size: var(--fs-small);
   font-weight: var(--fw-medium);
-  color: var(--color-text-muted);
-  border-radius: var(--radius-button);
+  color: var(--shell-text-muted);
   transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
   white-space: nowrap;
 }
+.link:hover { color: #fff; background: var(--shell-hover); }
 
-.link:hover {
-  color: var(--color-primary);
-  background: var(--color-surface-muted);
-}
-
-.ativo {
-  color: var(--color-primary);
-  font-weight: var(--fw-semibold);
-}
-
-/* sublinhado do item ativo */
+.ativo { color: #fff; font-weight: var(--fw-semibold); }
 .ativo::after {
   content: "";
   position: absolute;
   right: 14px;
-  bottom: 2px;
+  bottom: 0;
   left: 14px;
-  height: 2.5px;
-  border-radius: var(--radius-pill);
-  background: var(--color-primary);
+  height: 3px;
+  background: var(--shell-marker);
 }
+.ativo .linkIcone { color: var(--color-accent); }
 
-.linkIcone {
-  color: currentColor;
-}
+.linkIcone { color: currentColor; width: 18px; height: 18px; }
 
 /* ---------- ações ---------- */
 .acoes {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
+  margin-left: auto;
   flex-shrink: 0;
 }
 
@@ -81,17 +74,14 @@
   place-items: center;
   width: 42px;
   height: 42px;
-  color: var(--color-text-muted);
+  color: var(--shell-text-muted);
   background: transparent;
   border: 0;
   border-radius: var(--radius-button);
   transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
 }
-
-.botaoIcone:hover {
-  color: var(--color-primary);
-  background: var(--color-surface-muted);
-}
+.botaoIcone:hover { color: #fff; background: var(--shell-hover); }
+.botaoIcone[aria-expanded="true"] { color: #fff; background: var(--shell-active); }
 
 .contador {
   position: absolute;
@@ -104,57 +94,47 @@
   padding: 0 5px;
   font-size: 11px;
   font-weight: var(--fw-bold);
-  color: #FFFFFF;
-  background: #E03B3B;
-  border: 2px solid var(--color-surface);
+  color: #fff;
+  background: #E5484D;
+  border: 2px solid var(--shell);
   border-radius: var(--radius-pill);
 }
 
 .divisor {
   width: 1px;
-  height: 30px;
+  height: 28px;
   margin: 0 var(--space-2);
-  background: var(--color-border-strong);
+  background: var(--shell-line);
 }
 
-/* Âncora do menu suspenso da conta. */
-.perfilArea {
-  position: relative;
-}
+.perfilArea { position: relative; }
 
 .perfil {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 10px 6px 6px;
+  padding: 4px 8px 4px 4px;
   background: transparent;
   border: 0;
   border-radius: var(--radius-button);
+  color: inherit;
   transition: background var(--duration) var(--ease);
 }
-
-.perfil:hover {
-  background: var(--color-surface-muted);
-}
+.perfil:hover { background: var(--shell-hover); }
 
 .avatar {
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   overflow: hidden;
-  font-size: var(--fs-small);
-  font-weight: var(--fw-semibold);
-  color: var(--color-primary);
-  background: var(--color-primary-light);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: var(--shell);
+  background: var(--color-accent);
   border-radius: 50%;
 }
-
-.avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 .perfilTexto {
   display: flex;
@@ -165,107 +145,79 @@
 
 .perfilNome {
   font-size: var(--fs-small);
-  font-weight: var(--fw-semibold);
-  color: var(--color-navy-950);
+  font-weight: var(--fw-bold);
+  color: #fff;
   white-space: nowrap;
 }
 
 .perfilPapel {
-  font-size: var(--fs-xs);
-  color: var(--color-text-soft);
+  font-size: 12px;
+  color: var(--shell-text-muted);
 }
 
 .perfilSeta {
-  color: var(--color-text-subtle);
+  color: var(--shell-text-muted);
   transition: transform var(--duration) var(--ease);
 }
-
-.perfilSetaAberta {
-  transform: rotate(180deg);
-}
+.perfilSetaAberta { transform: rotate(180deg); }
 
 /* ---------- painel de busca ---------- */
 .busca {
   display: flex;
-  gap: var(--space-3);
-  padding: 0 var(--space-6) var(--space-4);
+  gap: var(--space-2);
+  padding: 0 var(--space-6) var(--space-4) 256px;
 }
 
 .busca input {
   flex: 1;
   min-width: 0;
-  padding: 12px 16px;
+  max-width: 640px;
+  min-height: 44px;
+  padding: 0 14px;
   font: inherit;
   font-size: var(--fs-small);
   color: var(--color-text);
-  background: var(--color-surface-muted);
-  border: 1px solid var(--color-border-strong);
+  background: #fff;
+  border: 1px solid #fff;
   border-radius: var(--radius-button);
 }
-
-.busca input::placeholder {
-  color: var(--color-text-subtle);
-}
+.busca input::placeholder { color: var(--color-text-subtle); }
+.busca input:focus { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
 .buscaEnviar {
-  padding: 12px 22px;
+  min-height: 44px;
+  padding: 0 22px;
   font-size: var(--fs-small);
-  font-weight: var(--fw-semibold);
-  color: #FFFFFF;
+  font-weight: var(--fw-bold);
+  color: #fff;
   background: var(--color-primary);
   border: 0;
   border-radius: var(--radius-button);
   transition: background var(--duration) var(--ease);
 }
-
-.buscaEnviar:hover {
-  background: var(--color-primary-hover);
-}
+.buscaEnviar:hover { background: var(--color-primary-hover); }
 
 /* ---------- responsivo ---------- */
 @media (max-width: 1280px) {
-  .barra {
-    gap: var(--space-4);
-  }
-
-  .link {
-    gap: 6px;
-    padding: 10px 9px;
-    font-size: var(--fs-small);
-  }
-
-  .ativo::after {
-    right: 9px;
-    left: 9px;
-  }
+  .barra { gap: var(--space-4); }
+  .link { gap: 6px; padding: 0 10px; }
+  .ativo::after { right: 10px; left: 10px; }
 }
 
 @media (max-width: 1100px) {
-  /* Com pouca largura o menu vira uma faixa rolável abaixo da marca,
-     em vez de espremer os rótulos até ficarem ilegíveis. */
+  /* Com pouca largura o menu vira uma faixa rolável abaixo da marca. */
   .barra {
     flex-wrap: wrap;
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-3) var(--page-gutter) 0;
+    min-height: 0;
   }
-
   .menu {
     order: 3;
     width: 100%;
-    margin: 0;
-    padding-bottom: 4px;
+    min-height: 48px;
     overflow-x: auto;
-    scrollbar-width: thin;
+    scrollbar-width: none;
   }
-
-  .acoes {
-    margin-left: auto;
-  }
-
-  .perfilTexto {
-    display: none;
-  }
-
-  .busca {
-    padding: 0 var(--space-4) var(--space-3);
-  }
+  .perfilTexto { display: none; }
+  .busca { padding: 0 var(--page-gutter) var(--space-3); }
 }

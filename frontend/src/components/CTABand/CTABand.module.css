@@ -1,82 +1,151 @@
+/* Faixa de chamada no fim das páginas públicas. */
 .band {
   position: relative;
-  min-height: 120px;
-  padding: 24px var(--section-padding);
+  isolation: isolate;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 24px;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-10);
+  border-radius: 20px;
   overflow: hidden;
-  border-radius: 16px;
-  color: #fff;
-  background:
-    radial-gradient(120% 180% at 100% 0%, rgba(40, 120, 240, 0.55) 0%, transparent 45%),
-    linear-gradient(100deg, #0A3FA6 0%, #063390 45%, #0A49B8 100%);
-  box-shadow: var(--shadow-card);
 }
 
+/* ---------- Azul: degradê, ondas e cruz neon ---------- */
+.blue {
+  color: #fff;
+  background: linear-gradient(100deg, #0047B8 0%, #0052CC 45%, #0A63E0 100%);
+  box-shadow: 0 20px 40px -24px rgba(2, 40, 120, 0.6);
+}
+
+.blue :focus-visible { outline-color: var(--color-accent); }
+
+.waves {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+}
+
+.waves path:first-child { fill: rgba(255, 255, 255, 0.07); }
+.waves path:last-child { fill: rgba(255, 255, 255, 0.06); }
+
+.cross {
+  position: absolute;
+  right: 3%;
+  top: 50%;
+  z-index: -1;
+  width: 150px;
+  height: 150px;
+  transform: translateY(-50%);
+}
+
+.blue .icon.icon {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  border-radius: 14px;
+}
+
+.blue .icon.icon svg { width: 55%; height: 55%; }
+
+.blue .icon.iconDark {
+  background: rgba(2, 20, 90, 0.45);
+  border-color: rgba(120, 210, 255, 0.45);
+  color: var(--color-accent);
+}
+
+.blue .heading { padding-left: 0; }
+
+.blue .icon + .heading {
+  padding-left: var(--space-8);
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Com texto lateral, o traço fica só entre o título e esse texto. */
+.blue .icon + .heading:has(+ .aside) { padding-left: 0; border-left: 0; }
+
+.blue .accent { color: var(--color-accent); }
+.blue .subtitle { color: #E4EEFF; }
+
+/* Espaço para a cruz não ficar sob o botão. */
+.blue .action { margin-right: clamp(0px, 12vw, 170px); }
+
+/* ---------- Clara: cartão branco ---------- */
+.light {
+  border: 1px solid transparent;
+  background: var(--realce-fundo);
+  box-shadow: var(--realce-sombra);
+  color: var(--color-navy-950);
+}
+
+.light .icon.icon {
+  border-radius: 14px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.light .icon.icon svg { width: 58%; height: 58%; }
+
+.light .icon + .heading {
+  padding-left: var(--space-8);
+  border-left: 1px solid var(--color-border-strong);
+}
+
+.light .accent { color: var(--color-primary); }
+.light .subtitle { color: var(--color-text-muted); }
+
+/* ---------- Texto e ação ---------- */
 .icon { flex-shrink: 0; }
 
-.heading { flex: 1 1 280px; min-width: 0; }
+.heading { flex: 1 1 auto; min-width: 0; }
+.blue .heading:has(+ .aside) { flex: 0 1 auto; }
 
-.title {
-  font-size: 24px;
-  line-height: 1.1;
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.03em;
-}
-.accent { color: var(--color-accent); }
 .accentBlock { display: block; }
-
-.subtitle {
-  margin-top: 6px;
-  font-size: 17px;
-  line-height: 1.3;
-  color: rgba(255, 255, 255, 0.92);
-}
 
 .aside {
   flex: 1 1 260px;
-  font-size: 15px;
-  line-height: 1.45;
-  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  padding-left: var(--space-8);
+  font-size: var(--fs-body);
+  line-height: 1.5;
 }
 
-.withDivider {
-  position: relative;
-  padding-left: 28px;
+.blue .aside { color: #E4EEFF; border-left: 1px solid rgba(255, 255, 255, 0.35); }
+.light .aside { color: var(--color-text-muted); border-left: 1px solid var(--color-border-strong); }
+
+.title {
+  margin: 0;
+  font-size: clamp(24px, 2.6vw, 36px);
+  line-height: 1.12;
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  text-wrap: balance;
 }
-.withDivider::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 1px;
-  height: 46px;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.45);
+
+.subtitle {
+  margin-top: 8px;
+  font-size: var(--fs-body);
+  line-height: 1.45;
 }
 
 .action { margin-left: auto; flex-shrink: 0; }
 
-/* Variante stacked: botão antes do texto lateral */
-.stacked .action { margin-left: auto; }
-.stacked .aside { flex: 0 1 160px; }
-.stacked .withDivider { padding-left: 34px; }
-.stacked .withDivider::before { height: 50px; }
-
-@media (max-width: 1024px) {
-  .band { flex-wrap: wrap; padding: 24px; }
-  .withDivider { padding-left: 0; flex-basis: 100%; }
-  .withDivider::before { display: none; }
-  .action { margin-left: 0; }
-  .stacked .withDivider { padding-left: 0; }
-  .stacked .aside { flex-basis: 100%; }
+/* ---------- Responsivo ---------- */
+@media (max-width: 900px) {
+  .band { flex-wrap: wrap; padding: var(--space-8); }
+  .blue .action { margin-right: 0; }
+  .action { margin-left: 0; flex-basis: 100%; }
+  .aside { flex-basis: 100%; }
+  .blue .aside,
+  .light .aside { padding-left: 0; border-left: 0; }
+  .cross { width: 110px; height: 110px; top: auto; bottom: -20px; transform: none; opacity: 0.6; }
 }
 
 @media (max-width: 560px) {
-  .band { flex-direction: column; align-items: flex-start; }
-  .heading, .aside, .stacked .aside { flex-basis: auto; }
+  .band { flex-direction: column; align-items: flex-start; padding: var(--space-6); }
+  .blue .icon + .heading,
+  .light .icon + .heading { padding-left: 0; border-left: 0; }
   .action,
   .action > * { width: 100%; }
 }

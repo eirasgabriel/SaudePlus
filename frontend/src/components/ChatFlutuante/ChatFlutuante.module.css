@@ -1,0 +1,80 @@
+/* Botão de chat flutuante: ladrilho num azul mais claro que o do hero, com
+   sombras azuis suaves. No hover/foco, o rótulo "Chat online" desliza para
+   a esquerda. */
+.botao {
+  position: fixed;
+  right: max(24px, env(safe-area-inset-right));
+  bottom: max(24px, env(safe-area-inset-bottom));
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  flex-direction: row-reverse;
+  justify-content: center;
+  gap: 0;
+  height: 54px;
+  min-width: 54px;
+  padding: 0 14px;
+  border-radius: 17px;
+  color: #fff;
+  /* Azul mais claro que o degradê do rodapé, para o botão não sumir
+     quando passa sobre ele. */
+  background: linear-gradient(145deg, #2E8BF0 0%, #1574E6 50%, #0A5AD6 100%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  /* Profundidade sem faixa: brilho no topo e sombra interna na base (o
+     botão parece abaulado) e sombras azuis em camadas, da rente à difusa. */
+  box-shadow:
+    inset 0 2px 1px rgba(255, 255, 255, 0.35),
+    inset 0 -4px 8px rgba(1, 45, 126, 0.35),
+    0 2px 4px rgba(1, 45, 126, 0.30),
+    0 8px 16px -4px rgba(1, 45, 126, 0.40),
+    0 20px 36px -10px rgba(1, 45, 126, 0.50),
+    0 40px 70px -24px rgba(10, 90, 214, 0.45);
+  text-decoration: none;
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+
+.botao:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    inset 0 2px 1px rgba(255, 255, 255, 0.4),
+    inset 0 -4px 8px rgba(1, 45, 126, 0.35),
+    0 3px 6px rgba(1, 45, 126, 0.30),
+    0 12px 22px -4px rgba(1, 45, 126, 0.42),
+    0 28px 46px -10px rgba(1, 45, 126, 0.52),
+    0 52px 86px -24px rgba(10, 90, 214, 0.50);
+}
+.botao:active {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 3px 8px rgba(1, 45, 126, 0.45),
+    0 1px 2px rgba(1, 45, 126, 0.35),
+    0 6px 12px -6px rgba(1, 45, 126, 0.45);
+}
+.botao:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3px; }
+
+.icone { flex: none; }
+
+/* Rótulo recolhido; abre no hover e no foco do teclado. */
+.rotulo {
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  opacity: 0;
+  transition: max-width var(--duration-slow) var(--ease), opacity var(--duration) var(--ease), margin var(--duration-slow) var(--ease);
+}
+.botao:hover .rotulo,
+.botao:focus-visible .rotulo {
+  max-width: 120px;
+  margin-right: 10px; /* espaço até o ícone só com o rótulo aberto */
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .botao { height: 48px; min-width: 48px; padding: 0 12px; border-radius: 15px; }
+}
+
+@media (hover: none) {
+  .rotulo { display: none; }
+}

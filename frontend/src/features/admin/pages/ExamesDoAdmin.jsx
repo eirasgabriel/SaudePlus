@@ -9,7 +9,7 @@ import dlg from "../../../components/ModalAgendamento.module.css";
 import Etiqueta from "../../../components/Etiqueta";
 import { AcoesLinha, CelulaDupla, Tabela } from "../../../components/Tabela";
 import { ROTULO_STATUS_EXAME, dataBr, dataHoraBr } from "../../../utils/formatos.js";
-import AvisoDeOrigem from "../../medico/components/AvisoDeOrigem/AvisoDeOrigem.jsx";
+import PortaoDaApi from "../../../components/PortaoDaApi/PortaoDaApi.jsx";
 import { useDadosDaApi } from "../../paciente/useDadosDaApi.js";
 import * as api from "../admin.api.js";
 import AvisoDoAdmin from "../components/AvisoDoAdmin.jsx";
@@ -39,7 +39,8 @@ export default function ExamesDoAdmin() {
     },
     [status],
   );
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregar);
+  const estado = useDadosDaApi(carregar);
+  const { dados, recarregar } = estado;
   const [retorno, setRetorno] = useState(null);
   const [agendando, setAgendando] = useState(null);
   const [enviandoResultado, setEnviandoResultado] = useState(null);
@@ -80,9 +81,10 @@ export default function ExamesDoAdmin() {
   return (
     <>
       <CabecalhoPagina titulo="Exames" subtitulo="Fila de exames pedidos pelos médicos da rede." icone="frasco" data={hoje} />
-      <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
       {retorno && <AvisoDoAdmin tom={retorno.tom}>{retorno.texto}</AvisoDoAdmin>}
 
+      <PortaoDaApi estados={estado} carregando="Carregando os exames…">
+        {() => (
       <Cartao
         titulo="Pedidos"
         icone="frasco"
@@ -90,8 +92,8 @@ export default function ExamesDoAdmin() {
         semPadding
       >
         <div style={{ padding: "0 12px 12px" }}>
-          <Tabela colunas={COLUNAS} vazio={origem === "carregando" ? "Carregando…" : "Nenhum exame nessa situação."}>
-            {(dados?.fila ?? []).map((e) => (
+          <Tabela colunas={COLUNAS} vazio="Nenhum exame nessa situação.">
+            {dados.fila.map((e) => (
               <tr key={e.id}>
                 <td><CelulaDupla principal={e.nome} secundario={e.categoria} /></td>
                 <td>{e.paciente}</td>
@@ -105,6 +107,8 @@ export default function ExamesDoAdmin() {
           </Tabela>
         </div>
       </Cartao>
+        )}
+      </PortaoDaApi>
 
       <DialogoAgendarColeta
         exame={agendando}

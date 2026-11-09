@@ -142,7 +142,7 @@ export default function AdminRelatoriosPage({
       <div className={comum.grade3}>
         <Cartao titulo="Relatórios disponíveis" icone="grafico">
           {erroAoGerar && (
-            <p role="alert" style={{ margin: "0 0 8px", fontSize: 13, color: "#b3261e" }}>
+            <p role="alert" style={{ margin: "0 0 8px", fontSize: 13, color: "var(--state-danger)" }}>
               {erroAoGerar}
             </p>
           )}

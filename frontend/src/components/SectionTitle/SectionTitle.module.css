@@ -1,22 +1,32 @@
 .title {
   font-size: var(--fs-section-title);
-  line-height: 1.2;
+  line-height: 1.15;
   font-weight: var(--fw-bold);
-  letter-spacing: -0.03em;
+  letter-spacing: var(--tracking-tight);
   color: var(--color-navy-950);
+  text-wrap: balance;
 }
 
-.accent { color: var(--color-primary); }
+.accent { color: var(--color-primary-dark); }
 
 .link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: var(--fw-medium);
-  color: var(--color-primary);
+  gap: 6px;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: var(--fs-nav);
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary-dark);
   white-space: nowrap;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--duration) var(--ease);
 }
-.link svg { transition: transform var(--duration) var(--ease); }
-.link:hover svg { transform: translateX(4px); }
-.link { border: 0; padding: 0; background: transparent; font-family: inherit; }
+.link svg { width: 18px; height: 18px; transition: transform var(--duration) var(--ease); }
+.link:hover { text-decoration-color: currentColor; }
+.link:hover svg { transform: translateX(3px); }

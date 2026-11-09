@@ -3,11 +3,11 @@ import { useCallback, useEffect, useState } from "react";
 const INICIAL = { origem: "carregando", dados: null, erro: null };
 
 /**
- * Carrega dados da API para uma tela do paciente.
+ * Carrega dados da API para uma tela.
  *
- * Como no painel do médico, a falha não derruba a tela: devolve
- * `origem: "mocks"` e quem chama renderiza com os dados locais.
- * Estados de `origem`: "carregando" | "api" | "mocks".
+ * O sistema não usa dados de demonstração: se a API falhar, devolve
+ * `origem: "erro"` com o erro, e a tela mostra a falha com "Tentar de novo"
+ * (ver components/PortaoDaApi). Estados de `origem`: "carregando" | "api" | "erro".
  *
  * `carregar` recebe `{ sinal }` e devolve uma promessa; precisa ser estável
  * (declarada fora do componente ou com useCallback).
@@ -23,7 +23,7 @@ export function useDadosDaApi(carregar) {
           if (!sinal?.aborted) setEstado({ origem: "api", dados, erro: null });
         })
         .catch((erro) => {
-          if (!sinal?.aborted) setEstado({ origem: "mocks", dados: null, erro });
+          if (!sinal?.aborted) setEstado({ origem: "erro", dados: null, erro });
         }),
     [carregar],
   );
@@ -38,5 +38,12 @@ export function useDadosDaApi(carregar) {
      a tela continua mostrando os dados atuais até os novos chegarem. */
   const recarregar = useCallback(() => buscar(), [buscar]);
 
-  return { ...estado, recarregar };
+  /* "Tentar de novo" depois de uma falha: volta a "carregando" para a pessoa
+     ver que a nova tentativa está em andamento. */
+  const tentarDeNovo = useCallback(() => {
+    setEstado(INICIAL);
+    return buscar();
+  }, [buscar]);
+
+  return { ...estado, recarregar, tentarDeNovo };
 }

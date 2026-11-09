@@ -1,22 +1,26 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { buscarProfissionais, listarCidades, listarConvenios } from "./profissionais.api.js";
-import { filtrarMocks, montarParametros, paraCartao } from "./buscaParametros.js";
+import { montarParametros, paraCartao } from "./buscaParametros.js";
 import { paraDestaque } from "./perfil.js";
 import { CITIES, INSURANCES } from "./data/buscar.js";
-import { PROFESSIONALS } from "./data/professionals.js";
 
-/* A busca vem da API. Se ela não responder, a tela continua funcionando com
-   os mocks locais (origem "mocks"), como no painel do médico. */
+/* A busca vem só da API. Se ela não responder, a tela mostra o erro com
+   "Tentar de novo" (origem "erro"): não há profissionais de demonstração. */
 
 const TAMANHO_DA_PAGINA = 50;
 
 /**
  * Resultados da busca para `{ applied, filters, sort }`.
- * `origem`: "carregando" | "api" | "mocks".
+ * `origem`: "carregando" | "api" | "erro". `tentarDeNovo` refaz a busca.
  */
 export function useBuscaProfissionais(consulta) {
   const [estado, setEstado] = useState({ origem: "carregando", chave: null, resultados: [], total: 0, erro: null });
+  const [tentativa, setTentativa] = useState(0);
+  const tentarDeNovo = useCallback(() => {
+    setEstado((atual) => ({ ...atual, origem: "carregando", chave: null }));
+    setTentativa((n) => n + 1);
+  }, []);
 
   // Objeto novo a cada render não pode disparar nova busca: a chave é o conteúdo.
   const chave = JSON.stringify(consulta);
@@ -40,17 +44,16 @@ export function useBuscaProfissionais(consulta) {
       })
       .catch((erro) => {
         if (controle.signal.aborted) return;
-        const resultados = filtrarMocks(JSON.parse(chave));
-        setEstado({ origem: "mocks", chave, resultados, total: resultados.length, erro });
+        setEstado({ origem: "erro", chave, resultados: [], total: 0, erro });
       });
     return () => controle.abort();
-  }, [chave, parametros]);
+  }, [chave, parametros, tentativa]);
 
   // Combinação impossível de filtros: nada a buscar, lista vazia.
   if (parametros === null) {
-    return { origem: estado.origem === "carregando" ? "api" : estado.origem, resultados: [], total: 0, carregando: false };
+    return { origem: estado.origem === "carregando" ? "api" : estado.origem, resultados: [], total: 0, carregando: false, tentarDeNovo };
   }
-  return { ...estado, carregando: estado.chave !== chave };
+  return { ...estado, carregando: estado.chave !== chave, tentarDeNovo };
 }
 
 /** Cidades e convênios para os filtros; os valores locais valem até a API responder. */
@@ -76,11 +79,11 @@ export function useListasDaBusca() {
 
 /**
  * "Profissionais em destaque": os mais bem avaliados da API, com link para o
- * perfil. Até a API responder (ou se ela não responder), os de demonstração,
- * cujo "Ver perfil" é uma busca pelo nome.
+ * perfil. Até a API responder (ou se ela não responder), a lista fica vazia e
+ * a seção não aparece: não há profissionais de demonstração.
  */
 export function useDestaques(quantidade = 4) {
-  const [destaques, setDestaques] = useState(PROFESSIONALS);
+  const [destaques, setDestaques] = useState([]);
 
   useEffect(() => {
     const controle = new AbortController();
@@ -89,7 +92,7 @@ export function useDestaques(quantidade = 4) {
         if (!controle.signal.aborted && pagina.conteudo.length) setDestaques(pagina.conteudo.map(paraDestaque));
       })
       .catch(() => {
-        // Sem API, ficam os de demonstração.
+        // Sem API, a lista continua vazia e a seção fica oculta.
       });
     return () => controle.abort();
   }, [quantidade]);

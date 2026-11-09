@@ -3,7 +3,10 @@ import { ChevronDownIcon } from "../icons/Icons.jsx";
 import { cx } from "../../utils/cx.js";
 import styles from "./FAQAccordion.module.css";
 
-/** Lista de perguntas em accordion (um item aberto por vez). */
+/**
+ * Lista de perguntas em accordion (um item aberto por vez).
+ * Cada item pode trazer `icone`; sem ele, mostra o número da pergunta.
+ */
 export default function FAQAccordion({ items, openIndex: controlledIndex, onToggle, className }) {
   const [internalIndex, setInternalIndex] = useState(null);
   const baseId = useId();
@@ -32,7 +35,12 @@ export default function FAQAccordion({ items, openIndex: controlledIndex, onTogg
                 aria-controls={panelId}
                 onClick={() => toggle(index)}
               >
-                {item.question}
+                {item.icone ? (
+                  <item.icone size={26} className={styles.icon} />
+                ) : (
+                  <span className={styles.number} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                )}
+                <span className={styles.question}>{item.question}</span>
                 <ChevronDownIcon size={22} className={styles.chevron} />
               </button>
             </h3>

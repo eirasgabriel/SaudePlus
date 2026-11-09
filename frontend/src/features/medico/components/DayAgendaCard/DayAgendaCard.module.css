@@ -1,9 +1,9 @@
+/* Agenda do dia: a peça marinho da trilha direita, com a curva shed. */
 .cartao {
   padding: var(--space-5);
-  color: var(--color-text-on-dark);
-  background: linear-gradient(135deg, #1F7CF5 0%, #0A5BD6 55%, #0A4FC0 100%);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  color: var(--shell-text);
+  background: var(--shell);
+  border-radius: var(--radius-card) var(--radius-shed) var(--radius-card) var(--radius-card);
 }
 
 .cabecalho {
@@ -16,25 +16,24 @@
 .icone {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  color: var(--color-text-on-dark);
-  background: rgba(255, 255, 255, 0.22);
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  color: var(--color-accent);
+  background: var(--shell-raised);
+  border: 1px solid var(--shell-line);
+  border-radius: var(--radius-button);
 }
 
 .titulo {
   font-size: var(--fs-card-title);
-  font-weight: var(--fw-semibold);
-  letter-spacing: -0.01em;
+  font-weight: var(--fw-bold);
   white-space: nowrap;
 }
 
 .data {
-  margin-left: auto;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.85);
-  white-space: nowrap;
+  width: 100%;
+  font-size: var(--fs-xs);
+  color: var(--shell-text-muted);
 }
 
 .citacao {
@@ -42,33 +41,20 @@
   align-items: center;
   gap: var(--space-4);
   margin: var(--space-4) 0 0;
-  padding: var(--space-4);
-  background: rgba(255, 255, 255, 0.16);
-  border-radius: var(--radius-float);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--shell-line);
 }
 
 .frase {
   margin: 0;
   font-size: var(--fs-small);
   line-height: 1.5;
+  color: #E4EEFF;
 }
-
 .frase::before { content: "\201C"; }
 .frase::after { content: "\201D"; }
 
 .coracao {
   flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-@media (max-width: 768px) {
-  .cabecalho {
-    flex-wrap: wrap;
-  }
-
-  .data {
-    margin-left: 0;
-    width: 100%;
-    text-align: left;
-  }
+  color: var(--color-accent);
 }

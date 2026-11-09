@@ -269,12 +269,12 @@ const ROTULO_DA_FORMA = {
   convenio: "Convênio",
 };
 const COR_DA_FORMA = {
-  credito: "#5B9BFF",
-  debito: "#7FB2FF",
-  pix: "#14B8A6",
-  boleto: "#0066FF",
-  dinheiro: "#F59E0B",
-  convenio: "#A855F7",
+  credito: "var(--color-primary)",
+  debito: "var(--color-blue-600)",
+  pix: "var(--color-navy-900)",
+  boleto: "var(--color-accent)",
+  dinheiro: "var(--color-border-hover)",
+  convenio: "var(--color-navy-700)",
 };
 
 export function paraTransacao(t) {
@@ -330,7 +330,7 @@ export function paraFinanceiro(modelos, r) {
 
 /* ------------------------------------------------------------ relatórios */
 
-const CORES_DAS_FATIAS = ["var(--azul)", "var(--azul-suave)", "var(--verde-claro)", "var(--roxo)", "#c4b5fd"];
+const CORES_DAS_FATIAS = ["var(--color-primary)", "var(--color-navy-900)", "var(--color-accent)", "var(--color-border-hover)", "var(--color-navy-700)"];
 
 /** Até 4 fatias e o resto somado em "Outras", como no mock. */
 function fatias(itens) {

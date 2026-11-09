@@ -1,68 +1,111 @@
+/* Unidades e clínicas — página avulsa da área do paciente. */
 .pagina {
+  position: relative;
   min-height: 100vh;
-  background-color: #f8fafc;
-  padding: 2rem 1rem;
+  padding: 0 var(--page-gutter) var(--space-12);
+  background: var(--color-background);
+  font-family: var(--font-sans);
+}
+
+/* Faixa da casca marinho no topo; o "Voltar" fica dentro dela. */
+.pagina::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 72px;
+  background: var(--shell);
+  border-bottom-right-radius: var(--radius-shed);
 }
 
 .conteudo {
-  max-width: 900px;
+  position: relative;
+  max-width: 960px;
   margin: 0 auto;
 }
 
 .voltar {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  color: #2563eb;
+  gap: 8px;
+  min-height: 72px;
+  color: #fff;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
   text-decoration: none;
-  font-weight: 500;
-  margin-bottom: 1.5rem;
+}
+.voltar:hover { text-decoration: underline; }
+.voltar:focus-visible { outline-color: var(--color-accent); }
+
+.voltar svg,
+.icone svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .cabecalho {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: var(--space-4);
+  margin: var(--space-8) 0 var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-border-strong);
 }
 
 .icone {
-  background: #dbeafe;
-  color: #2563eb;
-  padding: 0.75rem;
-  border-radius: 12px;
-  display: flex;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-button);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
 }
+.icone svg { width: 24px; height: 24px; stroke-width: 1.9; }
 
 .titulo {
-  font-size: 1.5rem;
-  color: #0f172a;
   margin: 0;
+  font-size: 30px;
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-navy-950);
 }
 
 .subtitulo {
-  color: #64748b;
-  margin: 0.25rem 0 0 0;
+  margin: 6px 0 0;
+  max-width: 60ch;
+  color: var(--color-text-muted);
 }
 
 .gridCards {
   display: grid;
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
 }
 
 .card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  border: 1px solid #e2e8f0;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
 }
 
 .nomeClinica {
-  margin: 0 0 1rem 0;
-  color: #1e293b;
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--fs-card-title);
+  color: var(--color-navy-950);
 }
 
 .info {
-  margin: 0.5rem 0;
-  color: #475569;
+  margin: 8px 0 0;
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
 }
+.info strong { color: var(--color-text-strong); }

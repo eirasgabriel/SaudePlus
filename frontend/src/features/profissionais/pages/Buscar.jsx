@@ -9,6 +9,7 @@ import SearchPanel from "../components/SearchPanel/SearchPanel.jsx";
 import FilterSidebar from "../components/FilterSidebar/FilterSidebar.jsx";
 import ProfessionalCard from "../components/ProfessionalCard/ProfessionalCard.jsx";
 import Container from "../../../components/Container/Container.jsx";
+import { mensagemDaFalha } from "../../../components/PortaoDaApi/mensagemDaFalha.js";
 import { UsersIcon, ChevronDownIcon } from "../../../components/icons/Icons.jsx";
 
 import { useBuscaProfissionais, useListasDaBusca } from "../useBuscaProfissionais.js";
@@ -37,7 +38,7 @@ export default function Buscar({ onUnavailable }) {
   const [showAllSpecialties, setShowAllSpecialties] = useState(false);
   const [sort, setSort] = useState(SORT_OPTIONS[0].value);
   const { cidades, convenios } = useListasDaBusca();
-  const { origem, resultados: results, total, carregando } = useBuscaProfissionais({ applied, filters, sort });
+  const { origem, resultados: results, total, carregando, erro, tentarDeNovo } = useBuscaProfissionais({ applied, filters, sort });
 
   const clearAll = () => {
     const reset = { term: "", city: CITIES[0], specialty: "", type: "" };
@@ -51,7 +52,9 @@ export default function Buscar({ onUnavailable }) {
 
   const countTitle = origem === "carregando"
     ? "Buscando profissionais…"
-    : `${total} ${total === 1 ? "profissional" : "profissionais"}`;
+    : origem === "erro"
+      ? "Busca indisponível"
+      : `${total} ${total === 1 ? "profissional" : "profissionais"}`;
 
   return (
     <>
@@ -68,7 +71,6 @@ export default function Buscar({ onUnavailable }) {
         overlay={<Handwriting className={styles.handwriting} />}
       >
         <div className={styles.heroText}>
-          <Badge>Encontre os melhores profissionais</Badge>
           <HeroTitle id="buscar-hero-title" className={styles.title} lines={["Sua saúde nas"]} accent="melhores mãos" />
           <HeroLead
             className={styles.lead}
@@ -77,6 +79,7 @@ export default function Buscar({ onUnavailable }) {
               "e agende sua consulta de forma rápida, segura e sem complicação.",
             ]}
           />
+          <Badge>Encontre os melhores profissionais</Badge>
         </div>
 
         <ul className={styles.benefits}>
@@ -126,20 +129,14 @@ export default function Buscar({ onUnavailable }) {
         />
 
         <section className={styles.results} aria-labelledby="results-title">
-          {origem === "mocks" ? (
-            <p className={styles.demoNotice} role="status">
-              Servidor indisponível: mostrando profissionais de demonstração salvos no navegador.
-            </p>
-          ) : (
-            <p className={styles.demoNotice}>
-              Para agendar, entre na sua conta: as consultas são marcadas pela área do paciente.
-            </p>
-          )}
+          <p className={styles.demoNotice}>
+            Para agendar, entre na sua conta: as consultas são marcadas pela área do paciente.
+          </p>
           <header className={styles.resultsHeader}>
             <IconCircle icon={UsersIcon} tone="glass" size={48} iconSize={30} />
             <div className={styles.resultsHeading}>
               <h2 id="results-title" className={styles.resultsTitle} aria-live="polite">{countTitle}</h2>
-              <p className={styles.resultsSubtitle}>encontrados para você em {applied.city}</p>
+              {origem !== "erro" && <p className={styles.resultsSubtitle}>encontrados para você em {applied.city}</p>}
             </div>
 
             <label htmlFor="sort" className={styles.sortLabel}>Ordenar por:</label>
@@ -151,18 +148,21 @@ export default function Buscar({ onUnavailable }) {
             </div>
           </header>
 
-          {origem === "carregando" ? null : results.length > 0 ? (
+          {origem === "carregando" ? null : origem === "erro" ? (
+            <div className={styles.empty} role="alert">
+              <h3>Não foi possível buscar os profissionais</h3>
+              <p>{mensagemDaFalha(erro)}</p>
+              <button type="button" onClick={tentarDeNovo}>Tentar de novo</button>
+            </div>
+          ) : results.length > 0 ? (
             <div className={styles.list} aria-busy={carregando}>
               {results.map((p) => (
                 <ProfessionalCard
                   key={p.id}
                   {...p}
                   onUnavailable={onUnavailable}
-                  // Profissionais de demonstração não existem na API: sem perfil nem agendamento.
-                  {...(origem === "api" && {
-                    perfilHref: `/profissionais/${encodeURIComponent(p.id)}`,
-                    agendarHref: (horario) => linkDeAgendamento(p.id, { data: p.slotsDate, horario }),
-                  })}
+                  perfilHref={`/profissionais/${encodeURIComponent(p.id)}`}
+                  agendarHref={(horario) => linkDeAgendamento(p.id, { data: p.slotsDate, horario })}
                 />
               ))}
             </div>

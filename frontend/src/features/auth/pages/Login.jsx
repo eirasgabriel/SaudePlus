@@ -5,7 +5,7 @@ import { useAuth } from '../auth.context.js'
 import { rotaInicialDe } from '../auth.rotas.js'
 import CampoFormulario from '../components/CampoFormulario.jsx'
 import CartaoAuth from '../components/CartaoAuth.jsx'
-import { IconeAlerta, IconeCadeado, IconeEnvelope } from '../components/Icones.jsx'
+import { IconeAlerta, IconeApple, IconeCadeado, IconeEnvelope, IconeGoogle } from '../components/Icones.jsx'
 
 /**
  * Tela de login, usada pelos tres perfis.
@@ -57,7 +57,7 @@ export default function Login() {
   }
 
   return (
-    <CartaoAuth voltarPara="/" atalho={{ texto: 'Criar conta', para: '/cadastro' }}>
+    <CartaoAuth voltarPara="/">
       <form className="sp-form" onSubmit={enviar} noValidate>
         <h1 className="sp-form__titulo">Login</h1>
         <p className="sp-form__subtitulo">Acesse sua conta para continuar</p>
@@ -133,6 +133,7 @@ export default function Login() {
             className="sp-botao sp-botao--secundario"
             onClick={() => avisarEmBreve('O login com Google')}
           >
+            <IconeGoogle />
             Continuar com Google
           </button>
 
@@ -141,6 +142,7 @@ export default function Login() {
             className="sp-botao sp-botao--secundario"
             onClick={() => avisarEmBreve('O login com Apple')}
           >
+            <IconeApple />
             Continuar com Apple
           </button>
         </div>

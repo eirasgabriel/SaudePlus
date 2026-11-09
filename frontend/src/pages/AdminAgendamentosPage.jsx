@@ -195,7 +195,7 @@ export default function AdminAgendamentosPage({
                         </CelulaIcone>
                       </td>
                       <td>
-                        <Etiqueta variante={status.variante} comPonto>
+                        <Etiqueta variante={status.variante} status={a.status}>
                           {status.rotulo}
                         </Etiqueta>
                       </td>

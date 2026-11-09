@@ -4,32 +4,28 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
   overflow: hidden;
 }
 
-/* Linha 1: grupo do título à esquerda, ação à direita, separados por
-   `space-between`. Margem automática não serve aqui — num container com
-   flex-wrap ela absorve o espaço livre e joga a ação para a linha de baixo.
-   Um `aside` (o filtro da agenda) usa `order` alto e cai numa linha só dele. */
+/* Linha 1: título à esquerda, ação à direita (space-between). Um `aside`
+   (o filtro da agenda) usa `order` alto e cai numa linha só dele. */
 .header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-5) var(--space-5) var(--space-4);
+  margin: 0 var(--space-5);
+  padding: var(--space-5) 0 var(--space-3);
+  border-bottom: 1px solid var(--color-border);
 }
 
-/* flex-basis 0 de propósito: o flex-wrap decide a quebra pelo tamanho-base
-   dos itens, antes de encolher qualquer um. Com base automática um título
-   longo empurraria a ação para a linha de baixo; com base 0 o grupo só
-   ocupa o que sobra e é o título que corta com reticências. */
+/* flex-basis 0: título longo corta com reticências antes de empurrar a ação. */
 .tituloGrupo {
   display: flex;
   flex: 1 1 0;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
 }
 
@@ -37,10 +33,8 @@
   display: grid;
   flex-shrink: 0;
   place-items: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 10px;
-  background: var(--color-primary-light);
+  width: 22px;
+  height: 22px;
   color: var(--color-primary);
 }
 
@@ -49,12 +43,9 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  /* 17px em vez do token de 18px: o cabeçalho precisa caber título e ação
-     numa linha só na coluna estreita (“Exames pendentes” é o pior caso). */
   font-size: 17px;
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold);
   color: var(--color-navy-950);
-  letter-spacing: -0.01em;
 }
 
 .acao {
@@ -62,37 +53,22 @@
   align-items: center;
   gap: 6px;
   order: 5;
-  padding: 4px 2px;
+  min-height: 32px;
   white-space: nowrap;
   font-size: var(--fs-xs);
-  font-weight: var(--fw-medium);
-  color: var(--color-primary);
-  transition: color var(--duration) var(--ease);
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary-dark);
 }
+.acao:hover { text-decoration: underline; }
 
-.acao:hover {
-  color: var(--color-primary-hover);
-}
-
-.acaoIcone {
-  transition: transform var(--duration) var(--ease);
-}
-
-.acao:hover .acaoIcone {
-  transform: translateX(3px);
-}
+.acaoIcone { transition: transform var(--duration) var(--ease); }
+.acao:hover .acaoIcone { transform: translateX(3px); }
 
 .corpo {
-  padding: 0 var(--space-5) var(--space-5);
+  padding: var(--space-2) var(--space-5) var(--space-4);
 }
 
 @media (max-width: 768px) {
-  .header {
-    flex-wrap: wrap;
-    padding: var(--space-4) var(--space-4) var(--space-3);
-  }
-
-  .corpo {
-    padding: 0 var(--space-4) var(--space-4);
-  }
+  .header { margin: 0 var(--space-4); padding: var(--space-4) 0 var(--space-3); }
+  .corpo { padding: var(--space-2) var(--space-4) var(--space-4); }
 }

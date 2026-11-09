@@ -29,7 +29,7 @@
   width: 40px;
   height: 40px;
   flex: none;
-  border-radius: 11px;
+  border-radius: var(--radius-button);
   display: grid;
   place-items: center;
   background: var(--azul-claro);
@@ -97,10 +97,10 @@
 
 .roxo {
   background: var(--roxo-bg);
-  color: #7e22ce;
+  color: var(--state-progress);
 }
 
 .neutro {
-  background: #f1f5f9;
+  background: var(--state-neutral-bg);
   color: var(--texto-2);
 }

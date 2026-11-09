@@ -41,13 +41,13 @@ export const evolucaoFinanceira = {
     {
       id: "receita",
       rotulo: "Receita",
-      cor: "#0066FF",
+      cor: "var(--color-primary)",
       valores: [4300, 3900, 5100, 5000, 3950, 4900, 4850],
     },
     {
       id: "pagamento",
       rotulo: "Pagamento",
-      cor: "#7FB2FF",
+      cor: "var(--color-accent)",
       valores: [2600, 2250, 3400, 2700, 2200, 3100, 3350],
     },
   ],
@@ -57,11 +57,11 @@ export const formasPagamento = {
   total: "R$ 42.380,00",
   descricao: "Total recebido",
   fatias: [
-    { id: "credito", rotulo: "Cartão de Crédito", percentual: 45, cor: "#5B9BFF" },
-    { id: "pix", rotulo: "Pix", percentual: 30, cor: "#14B8A6" },
-    { id: "boleto", rotulo: "Boleto", percentual: 15, cor: "#0066FF" },
-    { id: "dinheiro", rotulo: "Dinheiro", percentual: 7, cor: "#F59E0B" },
-    { id: "outros", rotulo: "Outros", percentual: 3, cor: "#A855F7" },
+    { id: "credito", rotulo: "Cartão de Crédito", percentual: 45, cor: "var(--color-primary)" },
+    { id: "pix", rotulo: "Pix", percentual: 30, cor: "var(--color-navy-900)" },
+    { id: "boleto", rotulo: "Boleto", percentual: 15, cor: "var(--color-accent)" },
+    { id: "dinheiro", rotulo: "Dinheiro", percentual: 7, cor: "var(--color-border-hover)" },
+    { id: "outros", rotulo: "Outros", percentual: 3, cor: "var(--color-navy-700)" },
   ],
 };
 

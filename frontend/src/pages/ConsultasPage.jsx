@@ -105,7 +105,9 @@ function CartaoConsulta({ consulta, passada = false, aoCancelar, aoRemarcar }) {
       <div className={estilos.corpo}>
         <div className={estilos.linhaTopo}>
           <h3 className={estilos.especialidade}>{consulta.specialty}</h3>
-          <span className={`${estilos.status} ${estilos[infoStatus.tom]}`}>{infoStatus.rotulo}</span>
+          <span className={`${estilos.status} ${estilos[infoStatus.tom]}`} data-status={consulta.status}>
+            {infoStatus.rotulo}
+          </span>
         </div>
 
         <p className={estilos.meta}>

@@ -15,6 +15,7 @@ export default function Button({
   to,
   href,
   withArrow = false,
+  icon: Icon,
   className,
   children,
   ...props
@@ -22,6 +23,7 @@ export default function Button({
   const classes = cx(styles.btn, styles[variant], className);
   const content = (
     <>
+      {Icon && <Icon size={22} className={styles.icon} />}
       {children}
       {withArrow && <ArrowRightIcon className={styles.arrow} />}
     </>

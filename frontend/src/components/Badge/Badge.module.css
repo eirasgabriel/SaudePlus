@@ -1,12 +1,18 @@
+/* Linha de apoio do hero: fica abaixo do texto, nunca acima do título.
+   Um traço ciano curto a liga ao bloco de texto. */
 .badge {
   display: inline-flex;
   align-items: center;
-  height: 34px;
-  padding: 0 19px;
-  border-radius: var(--radius-pill);
-  background: rgba(10, 100, 225, 0.35);
-  border: 1px solid rgba(40, 140, 235, 0.75);
+  gap: 10px;
+  margin-top: var(--space-6);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
   color: #fff;
-  font-size: 15px;
-  font-weight: var(--fw-regular);
+}
+
+.badge::before {
+  content: "";
+  width: 24px;
+  height: 2px;
+  background: var(--color-accent);
 }

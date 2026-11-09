@@ -105,13 +105,19 @@ describe('busca', () => {
     assert.equal(agendar.getAttribute('href'), `/paciente/consultas?agendar=c1&data=${AMANHA}&horario=08%3A30`)
   })
 
-  test('sem API: profissionais de demonstração, sem links de perfil', async () => {
+  test('sem API: mostra o erro e tenta de novo, sem profissionais de demonstração', async () => {
     apiFalsa(null)
     await aplicacao('/buscar')
 
-    await esperar(() => cartoes().length === 4, { mensagem: 'cartões de demonstração' })
-    assert.ok(porTexto('Servidor indisponível', 'p'))
-    assert.equal(document.querySelector('a[href^="/profissionais/"]'), null)
+    await esperar(() => porTexto('Não foi possível buscar os profissionais', 'h3'), { mensagem: 'erro da busca' })
+    assert.equal(cartoes().length, 0)
+    assert.equal(porTexto('demonstração', 'p'), null)
+
+    // Com a API de volta, "Tentar de novo" traz os profissionais reais.
+    apiFalsa(rotasPublicas())
+    await clicar(porTexto('Tentar de novo', 'button'))
+    await esperar(() => cartoes().length === 1, { mensagem: 'cartões da API' })
+    assert.ok(document.querySelector('a[href="/profissionais/c1"]'))
   })
 
   test('filtros contraditórios não chamam a API da busca', async () => {
@@ -202,10 +208,12 @@ describe('profissionais em destaque', () => {
     assert.equal(destaques.parametros.get('tamanho'), '4')
   })
 
-  test('sem API, os de demonstração buscam pelo nome', async () => {
-    apiFalsa(null)
+  test('sem API, a seção de destaques não aparece (sem demonstração)', async () => {
+    const chamadas = apiFalsa(null)
     await aplicacao('/especialidades')
-    await esperar(() => links((href) => href === '/buscar?q=Dr.%20Roberto%20Almeida')[0])
+    await esperar(() => chamadas.some((c) => c.caminho === '/api/publico/profissionais'), { mensagem: 'pedido dos destaques' })
+    await new Promise((resolver) => setTimeout(resolver, 50))
+    assert.equal(porTexto('Profissionais em destaque', 'h2'), null)
     assert.equal(document.querySelector('a[href^="/profissionais/"]'), null)
   })
 })

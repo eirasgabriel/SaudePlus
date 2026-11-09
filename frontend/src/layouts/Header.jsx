@@ -46,7 +46,8 @@ export default function Header() {
   return (
     <header className={styles.header}>
       <div className={styles.bar}>
-        <Logo />
+        <Logo tone="light" />
+        <span className={styles.divisor} aria-hidden="true" />
 
         <nav className={styles.nav} aria-label="Principal">
           {NAV_ITEMS.map((item) => (
@@ -75,8 +76,8 @@ export default function Header() {
             <span className="sr-only">Pesquisar</span>
           </button>
 
-          <Button variant="outline" to="/login" onClick={() => setOpenPanel(null)} className={styles.loginButton}>Entrar</Button>
-          <Button variant="primary" to="/cadastro" onClick={() => setOpenPanel(null)} className={styles.signupButton}>Criar conta</Button>
+          <Button variant="ghost" to="/login" onClick={() => setOpenPanel(null)} className={styles.loginButton}>Entrar</Button>
+          <Button variant="light" to="/cadastro" onClick={() => setOpenPanel(null)} className={styles.signupButton}>Criar conta</Button>
 
           <button
             type="button"
