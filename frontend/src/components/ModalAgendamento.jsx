@@ -3,26 +3,61 @@ import { createPortal } from 'react-dom';
 import { useOpcoesDeAgendamento } from '../features/paciente/useOpcoesDeAgendamento';
 import estilos from './ModalAgendamento.module.css';
 
-/* 
-   UTILITÁRIOS
- */
-
 const classes = (...lista) => lista.filter(Boolean).join(' ');
 
-/** Data de hoje em AAAA-MM-DD, no fuso local (não em UTC). */
-function hojeISO() {
-  const agora = new Date();
-  const deslocamento = agora.getTimezoneOffset() * 60000;
-  return new Date(agora.getTime() - deslocamento).toISOString().slice(0, 10);
+const doisDigitos = (numero) => String(numero).padStart(2, '0');
+const montarISO = (ano, mes, dia) => `${ano}-${doisDigitos(mes)}-${doisDigitos(dia)}`;
+const isoDoDate = (date) => montarISO(date.getFullYear(), date.getMonth() + 1, date.getDate());
+
+const hojeISO = () => isoDoDate(new Date());
+
+function dataLocal(iso, horario = '00:00') {
+  const [ano, mes, dia] = iso.split('-').map(Number);
+  const [hora, minuto] = horario.split(':').map(Number);
+  return new Date(ano, mes - 1, dia, hora, minuto, 0, 0);
 }
 
-/** '2026-10-05' + '14:30' → 'segunda-feira, 5 de outubro de 2026 às 14:30' */
-function descreverDataHora(data, horario) {
-  if (!data || !horario) return '';
-  const [ano, mes, dia] = data.split('-').map(Number);
-  const [hora, minuto] = horario.split(':').map(Number);
-  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeStyle: 'short' })
-    .format(new Date(ano, mes - 1, dia, hora, minuto));
+function limiteISO(dias = 90) {
+  const limite = new Date();
+  limite.setDate(limite.getDate() + dias);
+  return isoDoDate(limite);
+}
+
+const formatoExtenso = new Intl.DateTimeFormat('pt-BR', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+const formatoSemanaCurto = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' });
+const formatoDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit' });
+const formatoMesCurto = new Intl.DateTimeFormat('pt-BR', { month: 'short' });
+
+const capitalizar = (texto) => texto.charAt(0).toUpperCase() + texto.slice(1);
+const semPonto = (texto) => texto.replace(/\./g, '');
+
+const descreverData = (iso) => capitalizar(formatoExtenso.format(dataLocal(iso)));
+
+function rotuloChip(iso) {
+  const data = dataLocal(iso);
+  const semana = capitalizar(semPonto(formatoSemanaCurto.format(data)));
+  return `${semana} ${formatoDia.format(data)} ${semPonto(formatoMesCurto.format(data))}`;
+}
+
+const DIAS_NO_PLURAL = ['domingos', 'segundas', 'terças', 'quartas', 'quintas', 'sextas', 'sábados'];
+
+function descreverDiasDeAtendimento(profissional) {
+  if (!profissional || !profissional.schedule) return '';
+
+  const nomes = Object.keys(profissional.schedule)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .map((dia) => DIAS_NO_PLURAL[dia])
+    .filter(Boolean);
+
+  if (nomes.length === 0) return '';
+  if (nomes.length === 1) return nomes[0];
+  return `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`;
 }
 
 const FORMULARIO_VAZIO = {
@@ -34,10 +69,6 @@ const FORMULARIO_VAZIO = {
 
 const SELETOR_FOCAVEIS =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
-/*
-   ÍCONES
-   */
 
 const propsSvg = {
   viewBox: '0 0 24 24',
@@ -69,38 +100,12 @@ const IconeSeta = ({ className }) => (
   </svg>
 );
 
-/* 
-   COMPONENTE
-   */
+const IconeCheck = ({ className }) => (
+  <svg {...propsSvg} className={className} strokeWidth="2.2">
+    <path d="M4.5 12.5l5 5 10-11" />
+  </svg>
+);
 
-/**
- * Modal de agendamento de consulta.
- *
- * <ModalAgendamento
- *   aberto={modalAberto}
- *   aoFechar={() => setModalAberto(false)}
- *   aoConfirmar={(dados) => api.agendar(dados)}
- * />
- *
- * As opções vêm da API (especialidades, médicos da especialidade e horários
- * livres do médico na data); sem API, caem nas opções fixas de demonstração.
- *
- * `aoConfirmar` recebe
- * { especialidade, profissional, data, horario, modalidade, especialidadeId, profissionalId }
- * e pode devolver uma promessa: o modal espera, e se ela falhar mostra a
- * mensagem e continua aberto (horário tomado por outra pessoa, por exemplo).
- *
- * `fixo` ({ especialidadeId, especialidade, profissionalId, profissional })
- * trava especialidade e médico — é o modo de remarcar uma consulta.
- *
- * `inicial` ({ especialidadeId, profissionalId, data?, horario? }) só
- * preenche o formulário ao abrir; tudo continua editável. É o que o
- * "Agendar consulta" do perfil e da busca usa. Um horário pré-escolhido que
- * não esteja entre os livres não é enviado.
- *
- * Renderizado em portal no <body>, então funciona a partir de qualquer
- * lugar da árvore sem depender do overflow ou do z-index da tela.
- */
 export default function ModalAgendamento({
   aberto,
   aoFechar,
@@ -137,7 +142,6 @@ export default function ModalAgendamento({
   const [erros, setErros] = useState({});
   const [enviando, setEnviando] = useState(false);
   const [erroGeral, setErroGeral] = useState(null);
-  // Sobe depois de um 409, para buscar de novo os horários livres.
   const [versaoHorarios, setVersaoHorarios] = useState(0);
 
   const refDialogo = useRef(null);
@@ -151,7 +155,6 @@ export default function ModalAgendamento({
     data: formulario.data,
     versao: versaoHorarios,
   });
-  // Sem a lista de especialidades da API, o modal mostra o erro (sem opções de demonstração).
   const semCatalogo = !fixo && opcoes.origem === 'erro';
 
   const especialidades = useMemo(
@@ -160,13 +163,12 @@ export default function ModalAgendamento({
   );
   const especialidadeEscolhida = especialidades.find((item) => item.id === formulario.especialidadeId) ?? null;
   const profissionais = fixo ? [{ id: fixo.profissionalId, name: fixo.profissional }] : opcoes.profissionais;
+  const profissional = profissionais.find((item) => item.id === formulario.profissionalId) ?? null;
   const horarios = opcoes.horarios;
-  // Os horários dependem do médico e da data.
   const podeVerHorarios = Boolean(formulario.profissionalId && formulario.data);
+  const datasSugeridas = opcoes.datasSugeridas ?? [];
+  const resumoPronto = Boolean(formulario.data && formulario.horario);
 
-  /* ---- Ao abrir: limpa o formulário ----
-     Feito durante o render (padrão "ajustar estado quando uma prop muda" da
-     documentação do React) em vez de setState dentro do efeito. */
   const [abertoAnterior, setAbertoAnterior] = useState(aberto);
   if (aberto !== abertoAnterior) {
     setAbertoAnterior(aberto);
@@ -178,7 +180,6 @@ export default function ModalAgendamento({
     }
   }
 
-  /* ---- Ao abrir: leva o foco para o 1º campo e trava a rolagem ---- */
   useEffect(() => {
     if (!aberto) return undefined;
 
@@ -186,7 +187,6 @@ export default function ModalAgendamento({
 
     const foco = window.setTimeout(() => refPrimeiroCampo.current?.focus(), 0);
 
-    // Trava a rolagem do fundo sem deslocar o layout
     const larguraBarra = window.innerWidth - document.documentElement.clientWidth;
     const overflowAnterior = document.body.style.overflow;
     const paddingAnterior = document.body.style.paddingRight;
@@ -197,12 +197,10 @@ export default function ModalAgendamento({
       window.clearTimeout(foco);
       document.body.style.overflow = overflowAnterior;
       document.body.style.paddingRight = paddingAnterior;
-      // Devolve o foco ao elemento que abriu o modal
       refFocoAnterior.current?.focus?.();
     };
   }, [aberto]);
 
-  /* ---- Esc fecha; Tab circula dentro do diálogo ---- */
   useEffect(() => {
     if (!aberto) return undefined;
 
@@ -236,14 +234,12 @@ export default function ModalAgendamento({
 
   if (!aberto) return null;
 
-  /* ---- Alterações do formulário ---- */
-  const alterarCampo = (campo, valor) => {
+  function alterarCampo(campo, valor) {
     setFormulario((anterior) => {
       const atualizado = { ...anterior, [campo]: valor };
-      // Trocar a especialidade invalida profissional e horário;
-      // trocar profissional ou data invalida o horário.
       if (campo === 'especialidadeId') {
         atualizado.profissionalId = '';
+        atualizado.data = '';
         atualizado.horario = '';
       }
       if (campo === 'profissionalId' || campo === 'data') {
@@ -251,11 +247,11 @@ export default function ModalAgendamento({
       }
       return atualizado;
     });
-    setErros((anterior) => ({ ...anterior, [campo]: undefined }));
+    setErros((anterior) => ({ ...anterior, [campo]: undefined, horario: undefined }));
     setErroGeral(null);
-  };
+  }
 
-  const validar = () => {
+  function validar() {
     const novosErros = {};
     if (!formulario.especialidadeId) novosErros.especialidadeId = 'Escolha uma especialidade.';
     if (!formulario.profissionalId) novosErros.profissionalId = 'Escolha um profissional.';
@@ -267,29 +263,30 @@ export default function ModalAgendamento({
       novosErros.horario = 'Esse horário não está livre. Escolha outro.';
     }
     return novosErros;
-  };
+  }
 
   const enviar = async (evento) => {
     evento.preventDefault();
     if (enviando) return;
 
     const novosErros = validar();
+
     if (Object.keys(novosErros).length > 0) {
       setErros(novosErros);
-      // Leva o foco para o primeiro campo com erro
+
       const ordem = ['especialidadeId', 'profissionalId', 'data', 'horario'];
-      const primeiro = ordem.find((campo) => novosErros[campo]);
       const mapa = {
         especialidadeId: ids.especialidade,
         profissionalId: ids.profissional,
         data: ids.data,
         horario: ids.horario,
       };
-      document.getElementById(mapa[primeiro])?.focus();
+      const primeiroComErro = ordem.find((campo) => novosErros[campo]);
+      document.getElementById(mapa[primeiroComErro])?.focus();
       return;
     }
 
-    const profissional = profissionais.find((item) => item.id === formulario.profissionalId);
+    const profissionalEncontrado = profissionais.find((item) => item.id === formulario.profissionalId);
     const horarioEscolhido = horarios.find((item) => item.horario === formulario.horario);
 
     setEnviando(true);
@@ -298,7 +295,7 @@ export default function ModalAgendamento({
         especialidadeId: formulario.especialidadeId,
         especialidade: especialidadeEscolhida?.name ?? '',
         profissionalId: formulario.profissionalId,
-        profissional: profissional?.name ?? '',
+        profissional: profissionalEncontrado?.name ?? '',
         data: formulario.data,
         horario: formulario.horario,
         modalidade: horarioEscolhido?.modalidade,
@@ -307,7 +304,6 @@ export default function ModalAgendamento({
     } catch (erro) {
       setErroGeral(erro?.message ?? 'Não foi possível concluir o agendamento.');
       if (erro?.status === 409) {
-        // Alguém reservou antes: mostra os horários que sobraram.
         setFormulario((anterior) => ({ ...anterior, horario: '' }));
         setVersaoHorarios((versao) => versao + 1);
       }
@@ -316,13 +312,10 @@ export default function ModalAgendamento({
     }
   };
 
-  const resumo = descreverDataHora(formulario.data, formulario.horario);
-
   return createPortal(
     <div
       className={estilos.fundo}
       onMouseDown={(evento) => {
-        // Só fecha se o clique começou no fundo, não ao arrastar de dentro
         if (evento.target === evento.currentTarget) aoFechar?.();
       }}
     >
@@ -334,7 +327,6 @@ export default function ModalAgendamento({
         aria-describedby={ids.descricao}
         ref={refDialogo}
       >
-        {/* ---- Cabeçalho ---- */}
         <header className={estilos.cabecalho}>
           <span className={estilos.iconeCabecalho} aria-hidden="true">
             <IconeCalendario />
@@ -343,17 +335,11 @@ export default function ModalAgendamento({
             <h2 id={ids.titulo} className={estilos.titulo}>{titulo}</h2>
             <p id={ids.descricao} className={estilos.descricao}>{descricao}</p>
           </div>
-          <button
-            type="button"
-            className={estilos.botaoFechar}
-            onClick={aoFechar}
-            aria-label="Fechar"
-          >
+          <button type="button" className={estilos.botaoFechar} onClick={aoFechar} aria-label="Fechar">
             <IconeFechar />
           </button>
         </header>
 
-        {/* Formulário  */}
         <form className={estilos.formulario} onSubmit={enviar} noValidate>
           {semCatalogo && (
             <div className={estilos.aviso} role="alert">
@@ -364,6 +350,7 @@ export default function ModalAgendamento({
               .
             </div>
           )}
+
           {/* Especialidade */}
           <div className={estilos.campo}>
             <label className={estilos.rotulo} htmlFor={ids.especialidade}>Especialidade</label>
@@ -387,7 +374,6 @@ export default function ModalAgendamento({
             )}
           </div>
 
-          {/* Profissional */}
           <div className={estilos.campo}>
             <label className={estilos.rotulo} htmlFor={ids.profissional}>Médico / profissional</label>
             <select
@@ -406,28 +392,55 @@ export default function ModalAgendamento({
                 <option key={item.id} value={item.id}>{item.name}</option>
               ))}
             </select>
+            {profissional && descreverDiasDeAtendimento(profissional) && (
+              <p className={estilos.ajuda}>
+                Atende {descreverDiasDeAtendimento(profissional)}, na unidade {profissional.clinic}.
+              </p>
+            )}
             {erros.profissionalId && (
               <p id={`${ids.profissional}-erro`} className={estilos.erro}>{erros.profissionalId}</p>
             )}
           </div>
 
-          {/* Data */}
           <div className={estilos.campo}>
             <label className={estilos.rotulo} htmlFor={ids.data}>Data</label>
+
+            {datasSugeridas.length > 0 && (
+              <div className={estilos.datas}>
+                {datasSugeridas.map((iso) => {
+                  const selecionada = formulario.data === iso;
+                  return (
+                    <button
+                      key={iso}
+                      type="button"
+                      className={classes(estilos.data, selecionada && estilos.dataAtiva)}
+                      onClick={() => alterarCampo('data', iso)}
+                      aria-pressed={selecionada}
+                    >
+                      {rotuloChip(iso)}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <input
               id={ids.data}
               type="date"
               min={hojeISO()}
+              max={limiteISO()}
               className={classes(estilos.input, erros.data && estilos.campoInvalido)}
               value={formulario.data}
               onChange={(evento) => alterarCampo('data', evento.target.value)}
+              disabled={!profissional}
               aria-invalid={erros.data ? 'true' : undefined}
               aria-describedby={erros.data ? `${ids.data}-erro` : undefined}
             />
+
+            {!profissional && <p className={estilos.ajuda}>Escolha o profissional para ver as datas livres.</p>}
             {erros.data && <p id={`${ids.data}-erro`} className={estilos.erro}>{erros.data}</p>}
           </div>
 
-          {/* Horário */}
           <fieldset
             className={estilos.campo}
             aria-invalid={erros.horario ? 'true' : undefined}
@@ -469,10 +482,13 @@ export default function ModalAgendamento({
             {erros.horario && <p id={`${ids.horario}-erro`} className={estilos.erro}>{erros.horario}</p>}
           </fieldset>
 
-          {/* Resumo da escolha */}
-          {resumo && (
+          {resumoPronto && (
             <p className={estilos.resumo}>
-              Consulta para <strong>{resumo}</strong>.
+              <IconeCheck className={estilos.resumoIcone} />
+              <span>
+                Consulta para <strong>{descreverData(formulario.data)}</strong> às{' '}
+                <strong>{formulario.horario}</strong>.
+              </span>
             </p>
           )}
 
@@ -482,7 +498,7 @@ export default function ModalAgendamento({
 
           {/* Ações */}
           <div className={estilos.acoes}>
-            <button type="button" className={estilos.botaoSecundario} onClick={aoFechar}>
+            <button type="button" className={estilos.botaoSecundario} onClick={aoFechar} disabled={enviando}>
               Cancelar
             </button>
             <button type="submit" className={estilos.botaoPrimario} disabled={enviando} aria-busy={enviando}>

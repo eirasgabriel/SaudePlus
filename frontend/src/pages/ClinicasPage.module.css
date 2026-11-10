@@ -21,8 +21,19 @@
   position: relative;
   max-width: 960px;
   margin: 0 auto;
+  padding: 32px 24px 48px;
 }
 
+.somenteLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Voltar */
 .voltar {
   display: inline-flex;
   align-items: center;
@@ -47,6 +58,22 @@
   stroke-linejoin: round;
 }
 
+.voltar svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+
+.voltar:hover svg {
+  transform: translateX(-3px);
+}
+
+/* Cabeçalho */
 .cabecalho {
   display: flex;
   align-items: center;

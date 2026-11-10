@@ -3,22 +3,23 @@ import { Link } from 'react-router-dom';
 import { mockAppointments } from '../services/dadosficticios';
 import estilos from './ConsultasPage.module.css';
 
-/* 
-   FORMATADORES E APOIO
-   */
-
 const paraData = (valor) => (valor instanceof Date ? valor : new Date(valor));
 const capitalizar = (texto) => texto.charAt(0).toUpperCase() + texto.slice(1);
+const classes = (...lista) => lista.filter(Boolean).join(' ');
 
 const formatoDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit' });
 const formatoMes = new Intl.DateTimeFormat('pt-BR', { month: 'short' });
-const formatoAno = new Intl.DateTimeFormat('pt-BR', { year: 'numeric' });
 const formatoHora = new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' });
-const formatoCompleto = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'full', timeStyle: 'short' });
+const formatoExtenso = new Intl.DateTimeFormat('pt-BR', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
 
 const mesAbreviado = (valor) => capitalizar(formatoMes.format(paraData(valor)).replace('.', ''));
+const dataPorExtenso = (valor) => capitalizar(formatoExtenso.format(paraData(valor)));
 
-/** Mesmos status de ListaAgendamentos */
 const STATUS = {
   pendente: { rotulo: 'Pendente', tom: 'alerta' },
   confirmada: { rotulo: 'Confirmada', tom: 'sucesso' },
@@ -28,6 +29,11 @@ const STATUS = {
   cancelada: { rotulo: 'Cancelada', tom: 'perigo' },
   faltou: { rotulo: 'Não compareceu', tom: 'perigo' },
 };
+
+function statusExibido(consulta, passada) {
+  const chave = passada && consulta.status === 'confirmada' ? 'realizada' : consulta.status;
+  return STATUS[chave] ?? { rotulo: consulta.status, tom: 'neutro' };
+}
 
 const propsSvg = {
   viewBox: '0 0 24 24',
@@ -40,10 +46,10 @@ const propsSvg = {
   focusable: 'false',
 };
 
-const IconePino = ({ className }) => (
+const IconeCalendario = ({ className }) => (
   <svg {...propsSvg} className={className}>
-    <path d="M19.5 10c0 5.5-7.5 11.5-7.5 11.5S4.5 15.5 4.5 10a7.5 7.5 0 0 1 15 0" />
-    <circle cx="12" cy="10" r="2.6" />
+    <rect x="3" y="4.5" width="18" height="17" rx="2.5" />
+    <path d="M8 2.5v4M16 2.5v4M3 9.5h18" />
   </svg>
 );
 
@@ -51,6 +57,13 @@ const IconeRelogio = ({ className }) => (
   <svg {...propsSvg} className={className}>
     <circle cx="12" cy="12" r="9.5" />
     <path d="M12 6.5V12l3.5 2" />
+  </svg>
+);
+
+const IconePino = ({ className }) => (
+  <svg {...propsSvg} className={className}>
+    <path d="M19.5 10c0 5.5-7.5 11.5-7.5 11.5S4.5 15.5 4.5 10a7.5 7.5 0 0 1 15 0" />
+    <circle cx="12" cy="10" r="2.6" />
   </svg>
 );
 
@@ -94,39 +107,47 @@ function CartaoConsulta({ consulta, passada = false, aoCancelar, aoRemarcar }) {
   };
 
   return (
-    <li className={`${estilos.cartaoItem} ${passada ? estilos.cartaoPassado : ''}`}>
-      <time className={estilos.data} dateTime={consulta.dateTime}>
-        <span className={estilos.dia} aria-hidden="true">{formatoDia.format(quando)}</span>
-        <span className={estilos.mes} aria-hidden="true">{mesAbreviado(quando)}</span>
-        <span className={estilos.ano} aria-hidden="true">{formatoAno.format(quando)}</span>
-        <span className={estilos.somenteLeitor}>{formatoCompleto.format(quando)}</span>
-      </time>
+    <li className={classes(estilos.cartao, passada && estilos.cartaoPassado)}>
+      <div className={estilos.topo}>
+        <span className={estilos.selo} aria-hidden="true">
+          <span className={estilos.seloDia}>{formatoDia.format(quando)}</span>
+          <span className={estilos.seloMes}>{mesAbreviado(quando)}</span>
+        </span>
 
-      <div className={estilos.corpo}>
-        <div className={estilos.linhaTopo}>
+        <div className={estilos.identificacao}>
           <h3 className={estilos.especialidade}>{consulta.specialty}</h3>
           <span className={`${estilos.status} ${estilos[infoStatus.tom]}`} data-status={consulta.status}>
             {infoStatus.rotulo}
           </span>
         </div>
 
-        <p className={estilos.meta}>
-          <IconeUsuario className={estilos.metaIcone} />
-          <span>{consulta.professional}</span>
-        </p>
+        <span className={classes(estilos.status, estilos[info.tom])}>
+          <span className={estilos.statusPonto} aria-hidden="true" />
+          {info.rotulo}
+        </span>
+      </div>
 
-        <div className={estilos.detalhes}>
-          <p className={estilos.meta}>
-            <IconePino className={estilos.metaIcone} />
-            <span>
-              <strong className={estilos.clinica}>{consulta.clinic}</strong>
-              <span className={estilos.endereco}>{consulta.address}</span>
-            </span>
-          </p>
-          <p className={estilos.meta}>
-            <IconeRelogio className={estilos.metaIcone} />
-            <span>{formatoHora.format(quando)}</span>
-          </p>
+      <div className={estilos.detalhes}>
+        <div className={estilos.linha}>
+          <IconeCalendario className={estilos.linhaIcone} />
+          <time className={estilos.linhaValor} dateTime={consulta.dateTime}>
+            {dataPorExtenso(quando)}
+          </time>
+        </div>
+
+        <div className={estilos.linha}>
+          <IconeRelogio className={estilos.linhaIcone} />
+          <span className={estilos.linhaValor}>
+            <span className={estilos.horario}>{formatoHora.format(quando)}</span>
+          </span>
+        </div>
+
+        <div className={classes(estilos.linha, estilos.linhaLocal)}>
+          <IconePino className={estilos.linhaIcone} />
+          <span className={estilos.linhaValor}>
+            <span className={estilos.local}>{consulta.clinic}</span>
+            <span className={estilos.endereco}>{consulta.address}</span>
+          </span>
         </div>
 
         {temAcoes && (
@@ -178,7 +199,7 @@ export default function ConsultasPage({ consultas = mockAppointments, aviso = nu
 
   const { proximas, anteriores } = useMemo(() => {
     const ordenadas = [...consultas].sort(
-      (a, b) => paraData(a.dateTime) - paraData(b.dateTime),
+      (a, b) => paraData(a.dateTime) - paraData(b.dateTime)
     );
 
     return {
@@ -239,7 +260,7 @@ export default function ConsultasPage({ consultas = mockAppointments, aviso = nu
           )}
         </section>
 
-        {/* Anteriores  */}
+        {/* Seção Anteriores */}
         {anteriores.length > 0 && (
           <section className={estilos.secao} aria-labelledby="consultas-anteriores">
             <div className={estilos.secaoCabecalho}>
