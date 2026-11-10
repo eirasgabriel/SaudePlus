@@ -508,3 +508,10 @@
     transition: none !important;
   }
 }
+
+/* Falha ao baixar o resultado (abaixo do botão). */
+.erroResultado {
+  margin: var(--space-2, 8px) 0 0;
+  font-size: var(--fs-small, 14px);
+  color: var(--state-danger, #b3122f);
+}

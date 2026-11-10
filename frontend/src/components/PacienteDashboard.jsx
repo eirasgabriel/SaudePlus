@@ -6,7 +6,6 @@ import ListaAgendamentos from './ListaAgendamentos';
 import ModalAgendamento from './ModalAgendamento';
 import {
   mockAppointments,
-  mockNotificationCount,
   mockPatient,
 } from '../services/dadosficticios';
 import estilos from './PacienteDashboard.module.css';
@@ -277,7 +276,6 @@ export default function PacienteDashboard({
   onConfirmar: aoConfirmarAgendamento,
   aoAbrirPerfil,
   aoPesquisar,
-  aoAbrirNotificacoes,
 }) {
   const navegar = useNavigate();
   const prefixoId = `pd-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
@@ -304,11 +302,13 @@ export default function PacienteDashboard({
   const [buscaAberta, setBuscaAberta] = useState(false);
   const [termoBusca, setTermoBusca] = useState('');
   const [painelNotificacoes, setPainelNotificacoes] = useState(false);
-  const [lidas, setLidas] = useState(() => notificacoes.filter((n) => n.lida).map((n) => n.id));
+  // Lidas nesta visita ("Marcar todas como lidas"); as já lidas vêm marcadas da API.
+  const [lidas, setLidas] = useState([]);
+  const estaLida = (n) => n.lida || lidas.includes(n.id);
 
   const { sair } = useAuth();
 
-  const naoLidas = notificacoes.filter((n) => !lidas.includes(n.id)).length;
+  const naoLidas = notificacoes.filter((n) => !estaLida(n)).length;
   const totalNotificacoes = naoLidas;
   const rotuloContador = totalNotificacoes > 9 ? '9+' : totalNotificacoes;
 
@@ -460,7 +460,7 @@ export default function PacienteDashboard({
                   {notificacoes.length > 0 ? (
                     <ul className={estilos.listaNotificacoes}>
                       {notificacoes.map((item) => {
-                        const naoLida = !lidas.includes(item.id);
+                        const naoLida = !estaLida(item);
                         const conteudo = (
                           <>
                             <span className={estilos.notIcone} aria-hidden="true">
@@ -590,7 +590,7 @@ export default function PacienteDashboard({
             <section className={estilos.boasVindas} aria-labelledby={ids.boasVindas}>
               <div className={estilos.boasVindasConteudo}>
                 <h1 id={ids.boasVindas} className={estilos.boasVindasTitulo}>Olá, {nomePaciente}!</h1>
-                <p className={estilos.boasVindasSubtitulo}>Seja bem-vinda ao seu painel de cuidados.</p>
+                <p className={estilos.boasVindasSubtitulo}>Boas-vindas ao seu painel de cuidados.</p>
                 <div className={estilos.aviso}>
                   <Icone nome="coracao" className={estilos.iconeAviso} />
                   <p>

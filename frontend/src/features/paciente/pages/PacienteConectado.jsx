@@ -10,11 +10,12 @@ import ModalAgendamento from "../../../components/ModalAgendamento";
 import PortaoDaApi from "../../../components/PortaoDaApi/PortaoDaApi.jsx";
 import AvisoDeSucesso from "../components/AvisoDeSucesso.jsx";
 import { useDadosDaApi } from "../useDadosDaApi.js";
-import { paraAtendimento, paraConsulta, paraExame, paraPaciente, paraUnidade } from "../adaptadores.js";
+import { paraAtendimento, paraConsulta, paraExame, paraNotificacao, paraPaciente, paraUnidade } from "../adaptadores.js";
 import {
   avaliarConsulta,
   baixarResultadoDoExame,
   buscarHistorico,
+  buscarNotificacoes,
   buscarPainel,
   cancelarConsulta,
   listarConsultas,
@@ -41,6 +42,7 @@ function descrever(data, horario) {
 }
 
 const carregarPainel = ({ sinal }) => buscarPainel({ sinal });
+const carregarNotificacoes = ({ sinal }) => buscarNotificacoes({ sinal });
 const carregarConsultas = ({ sinal }) => listarConsultas({ sinal });
 const carregarExames = ({ sinal }) => listarExames({ sinal });
 const carregarHistorico = ({ sinal }) => buscarHistorico({ sinal });
@@ -50,6 +52,8 @@ export function PainelDoPaciente() {
   const navegar = useNavigate();
   const painel = useDadosDaApi(carregarPainel);
   const { dados, recarregar } = painel;
+  // O sino lista as notificações; se elas falharem, o painel abre com o sino vazio.
+  const notificacoes = useDadosDaApi(carregarNotificacoes);
 
   const confirmar = async (escolha) => {
     await reservarConsulta({
@@ -72,10 +76,10 @@ export function PainelDoPaciente() {
       {() => (
         <PacienteDashboard
           paciente={paraPaciente(dados.paciente)}
-          agendamentos={dados.proximasConsultas.map(paraConsulta)}
+          consultas={dados.proximasConsultas.map(paraConsulta)}
           unidade={paraUnidade(dados.unidade)}
-          totalNotificacoes={dados.notificacoesNaoLidas}
-          aoConfirmarAgendamento={confirmar}
+          notificacoes={(notificacoes.dados ?? []).map(paraNotificacao)}
+          onConfirmar={confirmar}
         />
       )}
     </PortaoDaApi>

@@ -86,8 +86,9 @@ const IconeUsuario = ({ className }) => (
  * (`podeAlterar`, calculado pela API: status e antecedência mínima).
  */
 function CartaoConsulta({ consulta, passada = false, aoCancelar, aoRemarcar }) {
-  const infoStatus = STATUS[consulta.status] ?? { rotulo: consulta.status, tom: 'neutro' };
   const quando = paraData(consulta.dateTime);
+  // Consulta confirmada que já passou aparece como "Realizada".
+  const info = statusExibido(consulta, passada);
   const [confirmando, setConfirmando] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState(null);
@@ -116,9 +117,10 @@ function CartaoConsulta({ consulta, passada = false, aoCancelar, aoRemarcar }) {
 
         <div className={estilos.identificacao}>
           <h3 className={estilos.especialidade}>{consulta.specialty}</h3>
-          <span className={`${estilos.status} ${estilos[infoStatus.tom]}`} data-status={consulta.status}>
-            {infoStatus.rotulo}
-          </span>
+          <p className={estilos.profissional}>
+            <IconeUsuario className={estilos.profissionalIcone} />
+            <span>{consulta.professional}</span>
+          </p>
         </div>
 
         <span className={classes(estilos.status, estilos[info.tom])}>

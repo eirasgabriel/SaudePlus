@@ -111,22 +111,20 @@ function BotaoResultado({ exame, aoBaixar }) {
 
   return (
     <>
-      <button type="button" className={estilos.acaoResultado} onClick={baixar} disabled={baixando}>
-        <IconeBaixar className={estilos.acaoIcone} />
+      <button type="button" className={estilos.botaoResultado} onClick={baixar} disabled={baixando}>
+        <IconeBaixar className={estilos.botaoIcone} />
         {baixando ? 'Baixando…' : 'Baixar resultado'}
         <span className={estilos.somenteLeitor}> de {exame.name}</span>
       </button>
-      {erro && <p className={estilos.acaoIndisponivel} role="alert">{erro}</p>}
+      {erro && <p className={estilos.erroResultado} role="alert">{erro}</p>}
     </>
   );
 }
 
 function CartaoExame({ exame, aoBaixarResultado }) {
-  const infoStatus = STATUS[exame.status] ?? { rotulo: exame.status, tom: 'neutro' };
   const quando = paraData(exame.dateTime);
   const statusChave = exame.status?.toLowerCase();
   const info = STATUS[statusChave] ?? { rotulo: exame.status, tom: 'neutro' };
-  const liberado = Boolean(exame.resultUrl);
 
   return (
     <li className={estilos.cartao}>
@@ -145,11 +143,48 @@ function CartaoExame({ exame, aoBaixarResultado }) {
           </p>
         </div>
 
+        <span className={classes(estilos.status, estilos[info.tom])}>
+          <span className={estilos.statusPonto} aria-hidden="true" />
+          {info.rotulo}
+        </span>
+      </div>
+
+      {/* Detalhes: uma informação por linha */}
+      <div className={estilos.detalhes}>
+        <div className={estilos.linha}>
+          <IconeCalendario className={estilos.linhaIcone} />
+          <time className={estilos.linhaValor} dateTime={exame.dateTime}>
+            {dataPorExtenso(quando)}
+          </time>
+        </div>
+
+        <div className={estilos.linha}>
+          <IconeRelogio className={estilos.linhaIcone} />
+          <span className={estilos.linhaValor}>
+            <span className={estilos.horario}>{formatoHora.format(quando)}</span>
+          </span>
+        </div>
+
+        <div className={classes(estilos.linha, estilos.linhaLarga)}>
+          <IconePino className={estilos.linhaIcone} />
+          <span className={estilos.linhaValor}>
+            <span className={estilos.local}>{exame.clinic}</span>
+          </span>
+        </div>
+
+        <div className={classes(estilos.linha, estilos.linhaLarga)}>
+          <IconeUsuario className={estilos.linhaIcone} />
+          <span className={estilos.linhaValor}>{exame.professional}</span>
+        </div>
+      </div>
+
+      {/* Ação: baixar o resultado (arquivo protegido, pela API) ou aguardar */}
+      <div className={estilos.rodape}>
         {exame.resultadoDisponivel && aoBaixarResultado ? (
           <BotaoResultado exame={exame} aoBaixar={aoBaixarResultado} />
         ) : exame.resultUrl ? (
-          <a className={estilos.acaoResultado} href={exame.resultUrl}>
-            <IconeBaixar className={estilos.acaoIcone} />
+          <a className={estilos.botaoResultado} href={exame.resultUrl} target="_blank" rel="noopener noreferrer" download>
+            <IconeBaixar className={estilos.botaoIcone} />
             Baixar resultado
             <span className={estilos.somenteLeitor}> de {exame.name}</span>
           </a>

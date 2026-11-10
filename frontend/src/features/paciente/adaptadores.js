@@ -69,3 +69,27 @@ export function paraAtendimento(atendimento) {
     avaliacao: atendimento.avaliacao,
   };
 }
+
+/* Ícone e destino de cada tipo de notificação no sino do painel. */
+const DO_TIPO_DE_NOTIFICACAO = {
+  resultado: { icone: "frasco", para: "/paciente/exames" },
+  agendamento: { icone: "calendario", para: "/paciente/consultas" },
+  retorno: { icone: "calendario", para: "/paciente/consultas" },
+  cancelamento: { icone: "calendario", para: "/paciente/consultas" },
+  sistema: { icone: "sino", para: "/paciente/notificacoes" },
+};
+
+/** Notificação da API (`GET /api/paciente/notificacoes`) no formato do sino do painel. */
+export function paraNotificacao(notificacao) {
+  const tipo = String(notificacao.tipo ?? "").toLowerCase();
+  const { icone, para } = DO_TIPO_DE_NOTIFICACAO[tipo] ?? DO_TIPO_DE_NOTIFICACAO.sistema;
+  return {
+    id: notificacao.id,
+    icone,
+    titulo: notificacao.titulo,
+    texto: notificacao.detalhe ?? "",
+    quando: notificacao.quando ?? "",
+    lida: Boolean(notificacao.lida),
+    para,
+  };
+}

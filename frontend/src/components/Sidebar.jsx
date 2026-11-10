@@ -9,7 +9,7 @@ const classes = (...lista) => lista.filter(Boolean).join(' ');
  * `para` é a rota do react-router-dom. Um item sem `para` ainda não tem tela e
  * vira âncora inerte; quando a rota existir, basta preencher o campo.
  */
-export const MENU_PACIENTE = [
+const MENU_PACIENTE = [
   { rotulo: 'Visão geral', icone: 'inicio', para: '/paciente' },
   { rotulo: 'Minhas informações', icone: 'usuario', para: '/paciente/perfil' },
 ];

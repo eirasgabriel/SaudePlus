@@ -26,6 +26,22 @@
   --tom: var(--primary);
   --tom-fundo: var(--primary-100);
 
+  /* Selos de status (tokens --state-* do tema) */
+  --sucesso: var(--state-success);
+  --sucesso-bg: var(--state-success-bg);
+  --sucesso-borda: color-mix(in srgb, var(--state-success) 22%, transparent);
+  --concluido: var(--state-neutral);
+  --concluido-bg: var(--state-neutral-bg);
+  --concluido-borda: color-mix(in srgb, var(--state-neutral) 20%, transparent);
+  --alerta: var(--state-pending);
+  --alerta-bg: var(--state-pending-bg);
+  --alerta-borda: color-mix(in srgb, var(--state-pending) 22%, transparent);
+  --perigo: var(--state-danger);
+  --perigo-bg: var(--state-danger-bg);
+  --perigo-borda: color-mix(in srgb, var(--state-danger) 20%, transparent);
+  --pill: 999px;
+  --radius: var(--radius-card);
+
   width: 100%;
   min-height: 100vh;
   font-family: var(--font);
