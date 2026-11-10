@@ -20,8 +20,6 @@ const formatoExtenso = new Intl.DateTimeFormat('pt-BR', {
 const mesAbreviado = (valor) => capitalizar(formatoMes.format(paraData(valor)).replace('.', ''));
 const dataPorExtenso = (valor) => capitalizar(formatoExtenso.format(paraData(valor)));
 
-// O tipo vem da API em `type`. Cada tom reaproveita a cor da seção
-// correspondente do app: consulta em azul, exame em verde e procedimento no roxo.
 const TIPOS = {
   consulta: { rotulo: 'Consulta', tom: 'consulta' },
   exame: { rotulo: 'Exame', tom: 'exame' },
@@ -86,7 +84,6 @@ const IconeDesfecho = ({ className }) => (
   </svg>
 );
 
-/** Estrelas de 1 a 5. Já avaliado mostra a nota; senão, botões para avaliar. */
 function Avaliacao({ atendimento, aoAvaliar }) {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState(null);
@@ -144,93 +141,76 @@ function CartaoAtendimento({ atendimento, aoAvaliar }) {
 
   return (
     <li className={estilos.cartao}>
-      {/* Topo: selo de data, identificação e tipo */}
-      <div className={estilos.topo}>
-        <span className={estilos.selo} aria-hidden="true">
-          <span className={estilos.seloDia}>{formatoDia.format(quando)}</span>
-          <span className={estilos.seloMes}>{mesAbreviado(quando)}</span>
-        </span>
-
-        <div className={estilos.identificacao}>
-          <h3 className={estilos.especialidade}>{atendimento.specialty}</h3>
-          <p className={estilos.profissional}>
-            <IconeUsuario className={estilos.profissionalIcone} />
-            <span>{atendimento.professional}</span>
-          </p>
-        </div>
-
-        <span className={classes(estilos.tipo, estilos[tipo.tom])}>
-          <span className={estilos.tipoPonto} aria-hidden="true" />
-          {tipo.rotulo}
-        </span>
-      </div>
-
-      {/* Detalhes */}
-      <div className={estilos.detalhes}>
-        <div className={estilos.linha}>
-          <IconeCalendario className={estilos.linhaIcone} />
-          <time className={estilos.linhaValor} dateTime={atendimento.dateTime}>
-            {dataPorExtenso(quando)}
-          </time>
-        </div>
-
-        <div className={estilos.linha}>
-          <IconeRelogio className={estilos.linhaIcone} />
-          <span className={estilos.linhaValor}>
-            <span className={estilos.horario}>{formatoHora.format(quando)}</span>
+      <article>
+        <div className={estilos.topo}>
+          <span className={estilos.selo} aria-hidden="true">
+            <span className={estilos.seloDia}>{formatoDia.format(quando)}</span>
+            <span className={estilos.seloMes}>{mesAbreviado(quando)}</span>
           </span>
-        </div>
 
-        <div className={classes(estilos.linha, estilos.linhaLarga)}>
-          <IconePino className={estilos.linhaIcone} />
-          <span className={estilos.linhaValor}>
-            <span className={estilos.local}>{atendimento.clinic}</span>
-            {atendimento.address && (
-              <span className={estilos.endereco}>{atendimento.address}</span>
-            )}
-          </span>
-        </div>
-
-        {atendimento.summary && (
-          <div className={classes(estilos.linha, estilos.linhaLarga)}>
-            <IconeNota className={estilos.linhaIcone} />
-            <p className={estilos.linhaValor}>{atendimento.summary}</p>
+          <div className={estilos.identificacao}>
+            <h3 className={estilos.especialidade}>{atendimento.specialty}</h3>
+            <p className={estilos.profissional}>
+              <IconeUsuario className={estilos.profissionalIcone} />
+              <span>{atendimento.professional}</span>
+            </p>
           </div>
-        )}
-      </div>
 
-      {/* Rodapé: desfecho do atendimento */}
-      {atendimento.outcome && (
-        <div className={estilos.rodape}>
-          <p className={estilos.desfecho}>
-            <IconeDesfecho className={estilos.desfechoIcone} />
-            <span>{atendimento.outcome}</span>
-          </p>
-<<<<<<< HEAD
+          <span className={classes(estilos.tipo, estilos[tipo.tom])}>
+            <span className={estilos.tipoPonto} aria-hidden="true" />
+            {tipo.rotulo}
+          </span>
+        </div>
+
+        <div className={estilos.detalhes}>
+          <div className={estilos.linha}>
+            <IconeCalendario className={estilos.linhaIcone} />
+            <time className={estilos.linhaValor} dateTime={atendimento.dateTime}>
+              {dataPorExtenso(quando)}
+            </time>
+          </div>
+
+          <div className={estilos.linha}>
+            <IconeRelogio className={estilos.linhaIcone} />
+            <span className={estilos.linhaValor}>
+              <span className={estilos.horario}>{formatoHora.format(quando)}</span>
+            </span>
+          </div>
+
+          <div className={classes(estilos.linha, estilos.linhaLarga)}>
+            <IconePino className={estilos.linhaIcone} />
+            <span className={estilos.linhaValor}>
+              <span className={estilos.local}>{atendimento.clinic}</span>
+              {atendimento.address && (
+                <span className={estilos.endereco}>{atendimento.address}</span>
+              )}
+            </span>
+          </div>
+
+          {atendimento.summary && (
+            <div className={classes(estilos.linha, estilos.linhaLarga)}>
+              <IconeNota className={estilos.linhaIcone} />
+              <p className={estilos.linhaValor}>{atendimento.summary}</p>
+            </div>
+          )}
+        </div>
+
+        {atendimento.outcome && (
+          <div className={estilos.rodape}>
+            <p className={estilos.desfecho}>
+              <IconeDesfecho className={estilos.desfechoIcone} />
+              <span>{atendimento.outcome}</span>
+            </p>
+          </div>
         )}
 
         <Avaliacao atendimento={atendimento} aoAvaliar={aoAvaliar} />
       </article>
-=======
-        </div>
-      )}
->>>>>>> feature/dashboard-paciente
     </li>
   );
 }
 
-<<<<<<< HEAD
-/* 
-   PÁGINA
-   Rota: /historico
-    */
-
-/** `aviso` aparece acima da lista; `aoAvaliar(atendimento, nota)` liga as estrelas. */
 export default function HistoricoPage({ historico = mockHistory, aviso = null, aoAvaliar }) {
-=======
-export default function HistoricoPage({ historico = mockHistory }) {
->>>>>>> feature/dashboard-paciente
-  /* Agrupa por ano, do atendimento mais recente para o mais antigo */
   const porAno = useMemo(() => {
     const ordenado = [...historico].sort(
       (a, b) => paraData(b.dateTime) - paraData(a.dateTime)
@@ -270,13 +250,9 @@ export default function HistoricoPage({ historico = mockHistory }) {
           </div>
         </header>
 
-<<<<<<< HEAD
         {aviso}
 
-        {total > 0 ? (
-=======
-        {porAno.length > 0 ? (
->>>>>>> feature/dashboard-paciente
+        {historico.length > 0 ? (
           porAno.map(([ano, atendimentos]) => (
             <section key={ano} className={estilos.secao} aria-labelledby={`ano-${ano}`}>
               <div className={estilos.secaoCabecalho}>

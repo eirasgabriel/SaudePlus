@@ -20,11 +20,7 @@ const formatoExtenso = new Intl.DateTimeFormat('pt-BR', {
 const mesAbreviado = (valor) => capitalizar(formatoMes.format(paraData(valor)).replace('.', ''));
 const dataPorExtenso = (valor) => capitalizar(formatoExtenso.format(paraData(valor)));
 
-<<<<<<< HEAD
 /** status de mockExams e da API (ver features/paciente/adaptadores.js) */
-=======
-// Mapeamento de status da API para rotulo e estilo
->>>>>>> feature/dashboard-paciente
 const STATUS = {
   liberado: { rotulo: 'Liberado', tom: 'sucesso' },
   'em análise': { rotulo: 'Em análise', tom: 'alerta' },
@@ -93,7 +89,6 @@ const IconeAmpulheta = ({ className }) => (
   </svg>
 );
 
-<<<<<<< HEAD
 /**
  * Baixa o resultado protegido; enquanto baixa, desabilita o botão, e se falhar
  * mostra a mensagem da API no lugar.
@@ -128,9 +123,6 @@ function BotaoResultado({ exame, aoBaixar }) {
 
 function CartaoExame({ exame, aoBaixarResultado }) {
   const infoStatus = STATUS[exame.status] ?? { rotulo: exame.status, tom: 'neutro' };
-=======
-function CartaoExame({ exame }) {
->>>>>>> feature/dashboard-paciente
   const quando = paraData(exame.dateTime);
   const statusChave = exame.status?.toLowerCase();
   const info = STATUS[statusChave] ?? { rotulo: exame.status, tom: 'neutro' };
@@ -153,60 +145,11 @@ function CartaoExame({ exame }) {
           </p>
         </div>
 
-<<<<<<< HEAD
         {exame.resultadoDisponivel && aoBaixarResultado ? (
           <BotaoResultado exame={exame} aoBaixar={aoBaixarResultado} />
         ) : exame.resultUrl ? (
           <a className={estilos.acaoResultado} href={exame.resultUrl}>
             <IconeBaixar className={estilos.acaoIcone} />
-=======
-        <span className={classes(estilos.status, estilos[info.tom])}>
-          <span className={estilos.statusPonto} aria-hidden="true" />
-          {info.rotulo}
-        </span>
-      </div>
-
-      {/* Detalhes: uma informação por linha */}
-      <div className={estilos.detalhes}>
-        <div className={estilos.linha}>
-          <IconeCalendario className={estilos.linhaIcone} />
-          <time className={estilos.linhaValor} dateTime={exame.dateTime}>
-            {dataPorExtenso(quando)}
-          </time>
-        </div>
-
-        <div className={estilos.linha}>
-          <IconeRelogio className={estilos.linhaIcone} />
-          <span className={estilos.linhaValor}>
-            <span className={estilos.horario}>{formatoHora.format(quando)}</span>
-          </span>
-        </div>
-
-        <div className={classes(estilos.linha, estilos.linhaLarga)}>
-          <IconePino className={estilos.linhaIcone} />
-          <span className={estilos.linhaValor}>
-            <span className={estilos.local}>{exame.clinic}</span>
-          </span>
-        </div>
-
-        <div className={classes(estilos.linha, estilos.linhaLarga)}>
-          <IconeUsuario className={estilos.linhaIcone} />
-          <span className={estilos.linhaValor}>{exame.professional}</span>
-        </div>
-      </div>
-
-      {/* Ação */}
-      <div className={estilos.rodape}>
-        {liberado ? (
-          <a
-            className={estilos.botaoResultado}
-            href={exame.resultUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            download
-          >
-            <IconeBaixar className={estilos.botaoIcone} />
->>>>>>> feature/dashboard-paciente
             Baixar resultado
             <span className={estilos.somenteLeitor}> de {exame.name}</span>
           </a>
@@ -225,7 +168,6 @@ function CartaoExame({ exame }) {
   );
 }
 
-<<<<<<< HEAD
 /* 
    PÁGINA
    Rota: /exames
@@ -233,9 +175,6 @@ function CartaoExame({ exame }) {
 
 /** `aoBaixarResultado(exame)` liga o botão de resultado dos exames liberados (arquivo protegido). */
 export default function ExamesPage({ exames = mockExams, aoBaixarResultado }) {
-=======
-export default function ExamesPage({ exames = mockExams }) {
->>>>>>> feature/dashboard-paciente
   const { liberados, emAndamento } = useMemo(() => {
     const ordenados = [...exames].sort(
       (a, b) => paraData(b.dateTime) - paraData(a.dateTime)

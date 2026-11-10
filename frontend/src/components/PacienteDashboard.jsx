@@ -1,12 +1,7 @@
-<<<<<<< HEAD
 import { useId, useRef, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import MenuPerfil from './MenuPerfil/MenuPerfil.jsx';
 import { useAuth } from '../features/auth/auth.context.js';
-=======
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
->>>>>>> feature/dashboard-paciente
 import ListaAgendamentos from './ListaAgendamentos';
 import ModalAgendamento from './ModalAgendamento';
 import {
@@ -15,9 +10,6 @@ import {
   mockPatient,
 } from '../services/dadosficticios';
 import estilos from './PacienteDashboard.module.css';
-
-// `para` é a rota do react-router-dom. Itens sem `para` ainda não têm rota e
-// viram âncora inerte; quando a rota existir, basta preencher o campo.
 
 const MENU_TOPO = [
   { rotulo: 'Início', icone: 'inicio', para: '/paciente' },
@@ -29,15 +21,11 @@ const MENU_TOPO = [
 
 const MENU_LATERAL = [
   { rotulo: 'Visão geral', icone: 'inicio', para: '/paciente' },
-<<<<<<< HEAD
   { rotulo: 'Minhas consultas', icone: 'calendario', para: '/paciente/consultas' },
   { rotulo: 'Meus exames', icone: 'frasco', para: '/paciente/exames' },
   { rotulo: 'Meu histórico', icone: 'arquivo', para: '/paciente/historico' },
   { rotulo: 'Minhas informações', icone: 'usuario', para: '/paciente/perfil' },
   { rotulo: 'Notificações', icone: 'sino', para: '/paciente/notificacoes' },
-=======
-  { rotulo: 'Minhas informações', icone: 'usuario', para: '/paciente/perfil' },
->>>>>>> feature/dashboard-paciente
 ];
 
 const CARDS_ATALHO = [
@@ -76,19 +64,12 @@ const CARDS_ATALHO = [
 ];
 
 const ACESSO_RAPIDO = [
-<<<<<<< HEAD
   { rotulo: 'Consultar resultados de exames', icone: 'frasco', para: '/paciente/exames' },
   { rotulo: 'Ver minhas consultas', icone: 'calendario', para: '/paciente/consultas' },
   { rotulo: 'Atualizar meus dados', icone: 'usuario', para: '/paciente/perfil' },
-  // Sem chat: leva aos contatos (telefone e endereço) das unidades.
-=======
-  { rotulo: 'Atualizar meus dados', icone: 'usuario', para: '/paciente/perfil' },
->>>>>>> feature/dashboard-paciente
   { rotulo: 'Falar com a clínica', icone: 'conversa', para: '/paciente/clinicas' },
 ];
 
-// Notificações de exemplo. Na integração troque pela prop `notificacoes`, que
-// espera a mesma forma: id, icone, titulo, texto, quando e lida.
 const NOTIFICACOES_EXEMPLO = [
   {
     id: 'not-1',
@@ -119,8 +100,6 @@ const NOTIFICACOES_EXEMPLO = [
   },
 ];
 
-// Comparar sem acento e sem caixa faz "clinico" encontrar "Clínico Geral", que é
-// como a paciente costuma digitar.
 function normalizar(texto) {
   return String(texto ?? '')
     .normalize('NFD')
@@ -131,7 +110,6 @@ function normalizar(texto) {
 
 const contem = (alvo, termo) => normalizar(alvo).includes(termo);
 
-/** Junta classes CSS ignorando valores falsy. */
 const classes = (...lista) => lista.filter(Boolean).join(' ');
 
 const ICONES = {
@@ -250,10 +228,6 @@ function Icone({ nome, preenchido = false, className }) {
   );
 }
 
-/**
- * Link de texto azul com seta.
- * `para` navega pelo router (<Link to>); `href` sai para um endereço externo.
- */
 function LinkSeta({ para, href = '#', pequeno = false, className, children, ...resto }) {
   const classe = classes(estilos.linkSeta, pequeno && estilos.linkSetaPequeno, className);
   const conteudo = (
@@ -269,13 +243,6 @@ function LinkSeta({ para, href = '#', pequeno = false, className, children, ...r
   return <a href={href} className={classe} {...resto}>{conteudo}</a>;
 }
 
-/**
- * Item de menu (topo e lateral).
- *
- * Usa <NavLink>, que marca sozinho o item da rota atual com
- * aria-current="page" — o mesmo seletor que o CSS já usava para o
- * estado ativo. Por isso o PacienteDashboard.module.css não mudou.
- */
 function LinkNavegacao({ item, className, classeIcone }) {
   const conteudo = (ativo) => (
     <>
@@ -288,50 +255,31 @@ function LinkNavegacao({ item, className, classeIcone }) {
     </>
   );
 
-  // Sem rota ainda: âncora inerte, com o mesmo visual
   if (!item.para) {
     return <a href="#" className={className}>{conteudo(false)}</a>;
   }
 
   return (
-<<<<<<< HEAD
-    // `end` evita que "/paciente" fique ativa em todas as rotas
-=======
-    // `end` evita que a raiz do paciente fique ativa nas telas filhas
->>>>>>> feature/dashboard-paciente
     <NavLink to={item.para} end={item.para === '/paciente'} className={className}>
       {({ isActive }) => conteudo(isActive)}
     </NavLink>
   );
 }
 
-/**
- * Dashboard do Paciente — SaúdePlus
- *
- * A lista de consultas é controlada pelo App.jsx, que também recebe a consulta
- * nova pelo `onConfirmar`. Sem essa prop o modal abre e valida normalmente, mas
- * o agendamento não tem onde ser guardado.
- *
- * <PacienteDashboard consultas={consultas} onConfirmar={handleAdicionarConsulta} />
- *
- * Precisa estar dentro de um <BrowserRouter> (ver src/App.jsx), porque usa
- * Link e NavLink do react-router-dom.
- *
- * `aoAgendar` continua disponível para quem quiser abrir outro modal no lugar deste.
- */
 export default function PacienteDashboard({
   paciente = mockPatient,
   consultas = mockAppointments,
   notificacoes = NOTIFICACOES_EXEMPLO,
+  unidade,
   imagemBoasVindas,
-<<<<<<< HEAD
   rotaAgendamento = '/paciente/consultas',
-=======
->>>>>>> feature/dashboard-paciente
   aoAgendar,
-  onConfirmar,
+  onConfirmar: aoConfirmarAgendamento,
   aoAbrirPerfil,
+  aoPesquisar,
+  aoAbrirNotificacoes,
 }) {
+  const navegar = useNavigate();
   const prefixoId = `pd-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const ids = {
     boasVindas: `${prefixoId}-boas-vindas`,
@@ -339,6 +287,7 @@ export default function PacienteDashboard({
     seguranca: `${prefixoId}-seguranca`,
     agendar: `${prefixoId}-agendar`,
     acessoRapido: `${prefixoId}-acesso-rapido`,
+    unidade: `${prefixoId}-unidade`,
     gradienteFundo: `${prefixoId}-gradiente-fundo`,
     gradienteEscudo: `${prefixoId}-gradiente-escudo`,
     busca: `${prefixoId}-busca`,
@@ -346,25 +295,35 @@ export default function PacienteDashboard({
   };
 
   const { name: nomePaciente, role: perfilPaciente, avatarUrl: fotoPaciente } = paciente;
-<<<<<<< HEAD
 
-  /* Menu da conta, o mesmo componente das outras duas áreas. O botão do nome
-     já existia, mas chamava uma prop `aoAbrirPerfil` que ninguém passava —
-     ou seja, não abria nada. */
   const [contaAberta, setContaAberta] = useState(false);
   const botaoConta = useRef(null);
+  const refNotificacoes = useRef(null);
   const idMenuConta = `${prefixoId}-menu-conta`;
-  const rotuloContador = totalNotificacoes > 9 ? '9+' : totalNotificacoes;
-=======
->>>>>>> feature/dashboard-paciente
 
   const [buscaAberta, setBuscaAberta] = useState(false);
   const [termoBusca, setTermoBusca] = useState('');
   const [painelNotificacoes, setPainelNotificacoes] = useState(false);
   const [lidas, setLidas] = useState(() => notificacoes.filter((n) => n.lida).map((n) => n.id));
 
-<<<<<<< HEAD
   const { sair } = useAuth();
+
+  const naoLidas = notificacoes.filter((n) => !lidas.includes(n.id)).length;
+  const totalNotificacoes = naoLidas;
+  const rotuloContador = totalNotificacoes > 9 ? '9+' : totalNotificacoes;
+
+  function marcarTodasComoLidas() {
+    setLidas(notificacoes.map((n) => n.id));
+  }
+
+  function alternarNotificacoes() {
+    setPainelNotificacoes((aberto) => !aberto);
+  }
+
+  function fecharBusca() {
+    setBuscaAberta(false);
+    setTermoBusca('');
+  }
 
   const itensDaConta = [
     {
@@ -381,8 +340,6 @@ export default function PacienteDashboard({
       href: '/login',
       separado: true,
       destaque: true,
-      /* Encerrar a sessão antes de navegar: com o token ainda válido, o
-         RotaProtegida devolveria a pessoa para o painel. */
       onSelecionar: (evento) => {
         evento.preventDefault();
         sair();
@@ -391,101 +348,9 @@ export default function PacienteDashboard({
     },
   ];
 
-  /* Estado do modal de agendamento. Os dois gatilhos — o botão
-     "Agendar agora" e o link "Agendar consulta" do estado vazio da
-     lista — abrem o mesmo modal. */
-=======
-  const refBusca = useRef(null);
-  const refCampoBusca = useRef(null);
-  const refNotificacoes = useRef(null);
-
-  const termo = normalizar(termoBusca);
-  const filtrando = termo.length > 0;
-
-  // O painel do sino e a busca ocupam o mesmo canto do cabeçalho, então deixar
-  // os dois abertos ao mesmo tempo só atrapalharia.
-  function abrirBusca() {
-    setPainelNotificacoes(false);
-    setBuscaAberta(true);
-    window.setTimeout(() => refCampoBusca.current?.focus(), 0);
-  }
-
-  function fecharBusca() {
-    setBuscaAberta(false);
-    setTermoBusca('');
-  }
-
-  function alternarNotificacoes() {
-    setBuscaAberta(false);
-    setPainelNotificacoes((aberto) => !aberto);
-  }
-
-  // Clique fora e Esc fecham o que estiver aberto, como em qualquer menu suspenso.
-  useEffect(() => {
-    if (!buscaAberta && !painelNotificacoes) return undefined;
-
-    function aoClicarFora(evento) {
-      if (buscaAberta && !refBusca.current?.contains(evento.target)) fecharBusca();
-      if (painelNotificacoes && !refNotificacoes.current?.contains(evento.target)) {
-        setPainelNotificacoes(false);
-      }
-    }
-
-    function aoTeclar(evento) {
-      if (evento.key !== 'Escape') return;
-      if (painelNotificacoes) setPainelNotificacoes(false);
-      if (buscaAberta) fecharBusca();
-    }
-
-    document.addEventListener('mousedown', aoClicarFora);
-    document.addEventListener('keydown', aoTeclar);
-    return () => {
-      document.removeEventListener('mousedown', aoClicarFora);
-      document.removeEventListener('keydown', aoTeclar);
-    };
-  }, [buscaAberta, painelNotificacoes]);
-
-  const naoLidas = notificacoes.filter((item) => !lidas.includes(item.id)).length;
-  const rotuloContador = naoLidas > 9 ? '9+' : naoLidas;
-
-  function marcarTodasComoLidas() {
-    setLidas(notificacoes.map((item) => item.id));
-  }
-
-  // A busca varre os textos que a paciente vê no cartão, não os ids internos.
-  const cardsFiltrados = useMemo(() => {
-    if (!filtrando) return CARDS_ATALHO;
-    return CARDS_ATALHO.filter(
-      (card) => contem(card.titulo, termo) || contem(card.descricao, termo),
-    );
-  }, [filtrando, termo]);
-
-  const atalhosFiltrados = useMemo(() => {
-    if (!filtrando) return ACESSO_RAPIDO;
-    return ACESSO_RAPIDO.filter((item) => contem(item.rotulo, termo));
-  }, [filtrando, termo]);
-
-  const consultasFiltradas = useMemo(() => {
-    if (!filtrando) return consultas;
-    return consultas.filter(
-      (consulta) =>
-        contem(consulta.specialty, termo) ||
-        contem(consulta.professional, termo) ||
-        contem(consulta.clinic, termo) ||
-        contem(consulta.address, termo),
-    );
-  }, [consultas, filtrando, termo]);
-
-  const totalResultados =
-    cardsFiltrados.length + atalhosFiltrados.length + consultasFiltradas.length;
-
-  // O botão "Agendar agora" e o link "Agendar consulta" do estado vazio da lista
-  // abrem o mesmo modal.
->>>>>>> feature/dashboard-paciente
   const [modalAberto, setModalAberto] = useState(false);
 
   function abrirAgendamento() {
-    // `aoAgendar` permite que a tela pai assuma o fluxo com outro modal ou outra rota.
     if (aoAgendar) {
       aoAgendar();
       return;
@@ -495,22 +360,39 @@ export default function PacienteDashboard({
 
   const fecharAgendamento = () => setModalAberto(false);
 
-<<<<<<< HEAD
   const confirmarAgendamento = (dados) => {
-    // Devolve a promessa: o modal espera a resposta e mostra o erro, se houver.
     if (aoConfirmarAgendamento) {
       return aoConfirmarAgendamento(dados);
     }
-    // Sem integração ainda: leva o paciente para a lista de consultas
     navegar(rotaAgendamento, { state: { agendamento: dados } });
   };
-=======
-  // O modal espera esta função resolver antes de fechar, então um erro vindo da
-  // API mantém o formulário aberto com o que a paciente já preencheu.
-  async function confirmarAgendamento(novaConsulta) {
-    await onConfirmar?.(novaConsulta);
-  }
->>>>>>> feature/dashboard-paciente
+
+  const termoNormalizado = normalizar(termoBusca);
+  const filtrando = termoNormalizado.length > 0;
+
+  const consultasFiltradas = filtrando
+    ? consultas.filter(
+        (c) =>
+          contem(c.especialidade, termoNormalizado) ||
+          contem(c.medico, termoNormalizado) ||
+          contem(c.unidade, termoNormalizado)
+      )
+    : consultas;
+
+  const cardsFiltrados = filtrando
+    ? CARDS_ATALHO.filter(
+        (card) =>
+          contem(card.titulo, termoNormalizado) || contem(card.descricao, termoNormalizado)
+      )
+    : CARDS_ATALHO;
+
+  const atalhosFiltrados = filtrando
+    ? ACESSO_RAPIDO.filter((item) => contem(item.rotulo, termoNormalizado))
+    : ACESSO_RAPIDO;
+
+  const totalResultados = consultasFiltradas.length + cardsFiltrados.length + atalhosFiltrados.length;
+
+  const paraLinkTelefone = (telefone) => `tel:${(telefone || '').replace(/\D/g, '')}`;
 
   return (
     <div className={estilos.pagina}>
@@ -539,7 +421,6 @@ export default function PacienteDashboard({
           </nav>
 
           <div className={estilos.acoes}>
-<<<<<<< HEAD
             <button
               type="button"
               className={estilos.botaoIcone}
@@ -548,53 +429,6 @@ export default function PacienteDashboard({
             >
               <Icone nome="busca" />
             </button>
-
-            <button
-              type="button"
-              className={estilos.botaoIcone}
-              aria-label={totalNotificacoes > 0 ? `Notificações, ${totalNotificacoes} não lidas` : 'Notificações'}
-              onClick={aoAbrirNotificacoes ?? (() => navegar('/paciente/notificacoes'))}
-            >
-              <Icone nome="sino" />
-              {totalNotificacoes > 0 && (
-                <span className={estilos.contador} aria-hidden="true">{rotuloContador}</span>
-=======
-            <div className={estilos.busca} ref={refBusca}>
-              {buscaAberta ? (
-                <div className={estilos.campoBusca}>
-                  <Icone nome="busca" className={estilos.campoBuscaIcone} />
-                  <input
-                    id={ids.busca}
-                    ref={refCampoBusca}
-                    type="search"
-                    className={estilos.entradaBusca}
-                    placeholder="Buscar consultas, exames, clínicas…"
-                    value={termoBusca}
-                    onChange={(evento) => setTermoBusca(evento.target.value)}
-                    aria-label="Buscar no painel"
-                  />
-                  <button
-                    type="button"
-                    className={estilos.limparBusca}
-                    onClick={fecharBusca}
-                    aria-label="Fechar busca"
-                  >
-                    <Icone nome="fechar" />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  className={estilos.botaoIcone}
-                  aria-label="Pesquisar"
-                  aria-expanded={false}
-                  onClick={abrirBusca}
-                >
-                  <Icone nome="busca" />
-                </button>
->>>>>>> feature/dashboard-paciente
-              )}
-            </div>
 
             <div className={estilos.notificacoes} ref={refNotificacoes}>
               <button
@@ -766,7 +600,6 @@ export default function PacienteDashboard({
                 </div>
               </div>
 
-              {/* Sem `imagemBoasVindas`, exibe uma ilustração provisória */}
               <div className={estilos.boasVindasVisual} aria-hidden="true">
                 {imagemBoasVindas ? (
                   <img src={imagemBoasVindas} alt="" />
@@ -828,7 +661,7 @@ export default function PacienteDashboard({
 
             {/* Suas próximas consultas */}
             {(!filtrando || consultasFiltradas.length > 0) && (
-                <section className={estilos.painel} aria-labelledby={ids.consultas}>
+              <section className={estilos.painel} aria-labelledby={ids.consultas}>
                 <header className={estilos.painelCabecalho}>
                   <Icone nome="calendario" className={estilos.painelIcone} />
                   <h2 id={ids.consultas} className={estilos.painelTitulo}>Suas próximas consultas</h2>
@@ -897,21 +730,21 @@ export default function PacienteDashboard({
                       </>
                     );
 
-<<<<<<< HEAD
-                  return (
-                    <li key={item.rotulo}>
-                      {item.para ? (
-                        <Link to={item.para} className={estilos.acessoLink}>{conteudo}</Link>
-                      ) : (
-                        <a href="#" className={estilos.acessoLink}>{conteudo}</a>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
+                    return (
+                      <li key={item.rotulo}>
+                        {item.para ? (
+                          <Link to={item.para} className={estilos.acessoLink}>{conteudo}</Link>
+                        ) : (
+                          <a href="#" className={estilos.acessoLink}>{conteudo}</a>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
 
-            {/*  Informações da sua unidade  */}
+            {/* Informações da sua unidade */}
             <section className={estilos.painel} aria-labelledby={ids.unidade}>
               <header className={estilos.painelCabecalho}>
                 <Icone nome="predio" className={estilos.painelIcone} />
@@ -930,28 +763,28 @@ export default function PacienteDashboard({
                 </div>
 
                 {unidade ? (
-                <div className={estilos.unidadeInfo}>
-                  <span className={estilos.unidadeNome}>{unidade.name}</span>
-                  <address className={estilos.unidadeDetalhes}>
-                    <span className={estilos.meta}>
-                      <Icone nome="pino" className={estilos.metaIcone} />
-                      <span>{unidade.address}</span>
-                    </span>
-                    {unidade.phone && (
+                  <div className={estilos.unidadeInfo}>
+                    <span className={estilos.unidadeNome}>{unidade.name}</span>
+                    <address className={estilos.unidadeDetalhes}>
                       <span className={estilos.meta}>
-                        <Icone nome="telefone" className={estilos.metaIcone} />
-                        <a href={paraLinkTelefone(unidade.phone)}>{unidade.phone}</a>
+                        <Icone nome="pino" className={estilos.metaIcone} />
+                        <span>{unidade.address}</span>
                       </span>
-                    )}
-                    <span className={estilos.meta}>
-                      <Icone nome="relogio" className={estilos.metaIcone} />
-                      <span>{unidade.hours}</span>
-                    </span>
-                  </address>
-                  <LinkSeta href={unidade.mapUrl} pequeno className={estilos.unidadeLink}>
-                    Ver no mapa
-                  </LinkSeta>
-                </div>
+                      {unidade.phone && (
+                        <span className={estilos.meta}>
+                          <Icone nome="telefone" className={estilos.metaIcone} />
+                          <a href={paraLinkTelefone(unidade.phone)}>{unidade.phone}</a>
+                        </span>
+                      )}
+                      <span className={estilos.meta}>
+                        <Icone nome="relogio" className={estilos.metaIcone} />
+                        <span>{unidade.hours}</span>
+                      </span>
+                    </address>
+                    <LinkSeta href={unidade.mapUrl} pequeno className={estilos.unidadeLink}>
+                      Ver no mapa
+                    </LinkSeta>
+                  </div>
                 ) : (
                   <div className={estilos.unidadeInfo}>
                     <span className={estilos.unidadeNome}>Nenhuma consulta marcada</span>
@@ -960,21 +793,6 @@ export default function PacienteDashboard({
                 )}
               </div>
             </section>
-=======
-                    return (
-                      <li key={item.rotulo}>
-                        {item.para ? (
-                          <Link to={item.para} className={estilos.acessoLink}>{conteudo}</Link>
-                        ) : (
-                          <a href="#" className={estilos.acessoLink}>{conteudo}</a>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            )}
->>>>>>> feature/dashboard-paciente
           </aside>
         </div>
       </div>

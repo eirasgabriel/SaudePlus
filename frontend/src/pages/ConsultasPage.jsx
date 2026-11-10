@@ -21,11 +21,6 @@ const mesAbreviado = (valor) => capitalizar(formatoMes.format(paraData(valor)).r
 const dataPorExtenso = (valor) => capitalizar(formatoExtenso.format(paraData(valor)));
 
 const STATUS = {
-<<<<<<< HEAD
-=======
-  confirmada: { rotulo: 'Confirmada', tom: 'sucesso' },
-  realizada: { rotulo: 'Realizada', tom: 'concluido' },
->>>>>>> feature/dashboard-paciente
   pendente: { rotulo: 'Pendente', tom: 'alerta' },
   confirmada: { rotulo: 'Confirmada', tom: 'sucesso' },
   aguardando: { rotulo: 'Aguardando', tom: 'alerta' },
@@ -79,7 +74,6 @@ const IconeUsuario = ({ className }) => (
   </svg>
 );
 
-<<<<<<< HEAD
 /* 
    CARTÃO DE CONSULTA
    Campos vindos de mockAppointments: dateTime, clinic, address,
@@ -111,11 +105,6 @@ function CartaoConsulta({ consulta, passada = false, aoCancelar, aoRemarcar }) {
       setEnviando(false);
     }
   };
-=======
-function CartaoConsulta({ consulta, passada = false }) {
-  const quando = paraData(consulta.dateTime);
-  const info = statusExibido(consulta, passada);
->>>>>>> feature/dashboard-paciente
 
   return (
     <li className={classes(estilos.cartao, passada && estilos.cartaoPassado)}>
@@ -127,16 +116,9 @@ function CartaoConsulta({ consulta, passada = false }) {
 
         <div className={estilos.identificacao}>
           <h3 className={estilos.especialidade}>{consulta.specialty}</h3>
-<<<<<<< HEAD
           <span className={`${estilos.status} ${estilos[infoStatus.tom]}`} data-status={consulta.status}>
             {infoStatus.rotulo}
           </span>
-=======
-          <p className={estilos.profissional}>
-            <IconeUsuario className={estilos.profissionalIcone} />
-            <span>{consulta.professional}</span>
-          </p>
->>>>>>> feature/dashboard-paciente
         </div>
 
         <span className={classes(estilos.status, estilos[info.tom])}>
@@ -202,7 +184,6 @@ function CartaoConsulta({ consulta, passada = false }) {
   );
 }
 
-<<<<<<< HEAD
 /*
    PÁGINA
    Rota: /consultas
@@ -217,12 +198,6 @@ export default function ConsultasPage({ consultas = mockAppointments, aviso = nu
   const [agora] = useState(() => Date.now());
 
   const { proximas, anteriores } = useMemo(() => {
-=======
-export default function ConsultasPage({ consultas = mockAppointments }) {
-  const { proximas, anteriores } = useMemo(() => {
-    const agora = Date.now();
-
->>>>>>> feature/dashboard-paciente
     const ordenadas = [...consultas].sort(
       (a, b) => paraData(a.dateTime) - paraData(b.dateTime)
     );
@@ -261,13 +236,9 @@ export default function ConsultasPage({ consultas = mockAppointments }) {
           </div>
         </header>
 
-<<<<<<< HEAD
         {aviso}
 
         {/* ---- Próximas ---- */}
-=======
-        {/* Seção Próximas */}
->>>>>>> feature/dashboard-paciente
         <section className={estilos.secao} aria-labelledby="proximas-consultas">
           <div className={estilos.secaoCabecalho}>
             <h2 id="proximas-consultas" className={estilos.secaoTitulo}>Próximas</h2>

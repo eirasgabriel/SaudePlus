@@ -2,7 +2,6 @@
    PacienteDashboard, então os tokens precisam ser declarados aqui —
    não há .pagina acima dele para herdar. */
 .fundo {
-<<<<<<< HEAD
   /* Paleta oficial */
   --primary: var(--color-primary);
   --primary-700: var(--color-primary-hover);
@@ -24,30 +23,6 @@
   --radius: var(--radius-card);
   --radius-lg: var(--radius-card);
   --pill: var(--radius-button);
-=======
-  --primary: #0066ff;
-  --primary-700: #0052d6;
-  --primary-100: #dceaff;
-  --primary-50: #eef5ff;
-
-  --navy: #0a2463;
-  --text: #1f2a44;
-  --muted: #667085;
-  --border: #e3ecf8;
-  --surface: #ffffff;
-
-  --sucesso: #0c7a45;
-  --sucesso-bg: #e2f7eb;
-  --sucesso-borda: rgba(12, 122, 69, 0.22);
-
-  /* Tom escurecido para que o texto de erro passe em AA sobre fundo claro. */
-  --perigo: #c41d3a;
-  --perigo-bg: #ffe5ea;
-
-  --radius: 14px;
-  --radius-lg: 20px;
-  --pill: 999px;
->>>>>>> feature/dashboard-paciente
 
   --font: var(--font-sans);
 
@@ -207,13 +182,8 @@
   width: 100%;
   padding: 13px 15px;
   border: 1px solid var(--border);
-<<<<<<< HEAD
   border-radius: var(--radius-button);
   background: #fff;
-=======
-  border-radius: var(--radius);
-  background: #fafcff;
->>>>>>> feature/dashboard-paciente
   font-family: inherit;
   font-size: 15px;
   color: var(--text);
@@ -223,13 +193,8 @@
 /* A seta nativa do select muda muito entre navegadores, então desenhamos a nossa. */
 .select {
   appearance: none;
-<<<<<<< HEAD
   padding-right: 40px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234A5E86' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-=======
-  padding-right: 42px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230a2463' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
->>>>>>> feature/dashboard-paciente
   background-repeat: no-repeat;
   background-position: right 15px center;
   background-size: 18px;
@@ -237,13 +202,8 @@
 }
 
 .select:hover:not(:disabled),
-<<<<<<< HEAD
 .input:hover {
   border-color: var(--color-border-hover);
-=======
-.input:hover:not(:disabled) {
-  border-color: #c9ddf7;
->>>>>>> feature/dashboard-paciente
 }
 
 .select:focus,
@@ -262,13 +222,8 @@
 }
 
 .campoInvalido {
-<<<<<<< HEAD
   border-color: var(--danger);
   background: #fff;
-=======
-  border-color: var(--perigo);
-  background: #fffafb;
->>>>>>> feature/dashboard-paciente
 }
 
 .erro {
@@ -277,24 +232,15 @@
   color: var(--perigo);
 }
 
-<<<<<<< HEAD
 .aviso {
   padding: 14px 16px;
   border: 1px dashed var(--color-border-strong);
   border-radius: var(--radius-button);
-=======
-.erroEnvio {
-  padding: 12px 16px;
-  border: 1px solid rgba(196, 29, 58, 0.25);
-  border-radius: var(--radius);
-  background: var(--perigo-bg);
->>>>>>> feature/dashboard-paciente
   font-size: 13px;
   font-weight: 600;
   color: var(--perigo);
 }
 
-<<<<<<< HEAD
 /* "tente de novo" no aviso de falha da API: link em forma de botão. */
 .botaoTentar {
   padding: 0;
@@ -312,25 +258,13 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
   gap: 6px;
-=======
-/* Atalhos com as próximas datas livres do profissional. */
-.datas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
->>>>>>> feature/dashboard-paciente
 }
 
 .data {
   padding: 9px 14px;
   border: 1px solid var(--border);
-<<<<<<< HEAD
   border-radius: 4px;
   background: #fff;
-=======
-  border-radius: var(--pill);
-  background: #fafcff;
->>>>>>> feature/dashboard-paciente
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -425,21 +359,12 @@
   align-items: flex-start;
   gap: 11px;
   padding: 14px 16px;
-<<<<<<< HEAD
   border: 1px solid var(--color-border);
   border-radius: var(--radius-button);
   background: var(--primary-50);
   font-size: 13.5px;
   line-height: 1.5;
   color: var(--color-text-strong);
-=======
-  border: 1px solid var(--sucesso-borda);
-  border-radius: var(--radius);
-  background: var(--sucesso-bg);
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: var(--sucesso);
->>>>>>> feature/dashboard-paciente
 }
 
 .resumo strong {
@@ -472,11 +397,7 @@
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-<<<<<<< HEAD
   transition: background 0.15s ease, border-color 0.15s ease;
-=======
-  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
->>>>>>> feature/dashboard-paciente
 }
 
 .botaoPrimario {
@@ -499,15 +420,9 @@
   color: var(--navy);
 }
 
-<<<<<<< HEAD
 .botaoSecundario:hover {
   background: var(--primary-100);
   border-color: var(--color-border-hover);
-=======
-.botaoSecundario:hover:not(:disabled) {
-  background: var(--primary-50);
-  border-color: #c9ddf7;
->>>>>>> feature/dashboard-paciente
 }
 
 .botaoPrimario:disabled,

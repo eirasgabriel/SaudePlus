@@ -2,33 +2,6 @@ import { Link } from 'react-router-dom';
 import { mockClinics } from '../services/dadosficticios';
 import estilos from './ClinicasPage.module.css';
 
-<<<<<<< HEAD
-/** `unidades`: lista no formato de `mockUnit` ({ name, address, phone, hours, mapUrl }). */
-export default function ClinicasPage({ unidades = mockUnit, aviso = null }) {
-  const clinicas = Array.isArray(unidades) ? unidades : [unidades];
-=======
-/** '(22) 2655-1234' → 'tel:+552226551234' */
-const paraLinkTelefone = (telefone) => `tel:+55${telefone.replace(/\D/g, '')}`;
->>>>>>> feature/dashboard-paciente
-
-/**
- * Abre a localização da unidade no Google Maps, numa aba nova.
- *
- * O travessão que separa a unidade do bairro ("Clínica da Família – Centro")
- * atrapalha a busca do Maps, então ele vira vírgula antes de entrar na query.
- */
-const abrirMapa = (nomeClinica, endereco) => {
-  const busca = encodeURIComponent(`${nomeClinica}, ${endereco}`.replace(/\s*[\u2013\u2014-]\s*/g, ', '));
-  const url = `https://www.google.com/maps/search/?api=1&query=${busca}`;
-
-  // Criamos um elemento de link dinâmico para forçar a abertura em nova aba sem ser bloqueado
-  const link = document.createElement('a');
-  link.href = url;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-  link.click();
-};
-
 const propsSvg = {
   viewBox: '0 0 24 24',
   fill: 'none',
@@ -67,7 +40,6 @@ const IconeLinkExterno = ({ className }) => (
   </svg>
 );
 
-/** Miniatura de mapa, a mesma usada no painel */
 function MiniaturaMapa() {
   return (
     <div className={estilos.mapa} aria-hidden="true">
@@ -85,20 +57,27 @@ function MiniaturaMapa() {
   );
 }
 
-// Campos que o cartão consome de cada unidade: name, address, phone, hours,
-// specialties, mapUrl e isPatientUnit.
+const abrirMapa = (nomeClinica, endereco) => {
+  const busca = encodeURIComponent(`${nomeClinica}, ${endereco}`.replace(/\s*[\u2013\u2014-]\s*/g, ', '));
+  const url = `https://www.google.com/maps/search/?api=1&query=${busca}`;
+  const link = document.createElement('a');
+  link.href = url;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.click();
+};
+
+const paraLinkTelefone = (telefone) => `tel:${(telefone || '').replace(/\D/g, '')}`;
 
 function CartaoClinica({ clinica }) {
   return (
     <li className={estilos.cartaoItem}>
       <MiniaturaMapa />
-
       <div className={estilos.corpo}>
         <div className={estilos.linhaTopo}>
           <h3 className={estilos.nome}>{clinica.name}</h3>
           {clinica.isPatientUnit && <span className={estilos.selo}>Sua unidade</span>}
         </div>
-
         <address className={estilos.detalhes}>
           <p className={estilos.meta}>
             <IconePino className={estilos.metaIcone} />
@@ -113,7 +92,6 @@ function CartaoClinica({ clinica }) {
             <span>{clinica.hours}</span>
           </p>
         </address>
-
         {clinica.specialties?.length > 0 && (
           <ul className={estilos.especialidades} aria-label={`Especialidades em ${clinica.name}`}>
             {clinica.specialties.map((especialidade) => (
@@ -121,7 +99,6 @@ function CartaoClinica({ clinica }) {
             ))}
           </ul>
         )}
-
         <button
           type="button"
           className={estilos.acao}
@@ -138,7 +115,9 @@ function CartaoClinica({ clinica }) {
   );
 }
 
-export default function ClinicasPage({ clinicas = mockClinics }) {
+export default function ClinicasPage({ clinicas = mockClinics, aviso = null }) {
+  const listaClinicas = Array.isArray(clinicas) ? clinicas : [clinicas];
+
   return (
     <div className={estilos.pagina}>
       <div className={estilos.conteudo}>
@@ -165,33 +144,13 @@ export default function ClinicasPage({ clinicas = mockClinics }) {
           </div>
         </header>
 
-<<<<<<< HEAD
         {aviso}
 
         <section className={estilos.secao}>
-          <div className={estilos.gridCards}>
-            {clinicas.map((c, index) => (
-              <div key={index} className={estilos.card}>
-                <h3 className={estilos.nomeClinica}>{c.name || 'Unidade de Atendimento'}</h3>
-                <p className={estilos.info}> <strong>Endereço:</strong> {c.address}</p>
-                <p className={estilos.info}> <strong>Telefone:</strong> {c.phone}</p>
-                <p className={estilos.info}> <strong>Horário:</strong> {c.hours}</p>
-              </div>
-            ))}
-=======
-        <section className={estilos.secao} aria-labelledby="unidades-da-rede">
-          <div className={estilos.secaoCabecalho}>
-            <h2 id="unidades-da-rede" className={estilos.secaoTitulo}>Unidades da rede</h2>
-            <span className={estilos.contador}>
-              {clinicas.length === 1 ? '1 unidade' : `${clinicas.length} unidades`}
-            </span>
->>>>>>> feature/dashboard-paciente
-          </div>
-
-          {clinicas.length > 0 ? (
+          {listaClinicas.length > 0 ? (
             <ul className={estilos.lista}>
-              {clinicas.map((clinica) => (
-                <CartaoClinica key={clinica.id} clinica={clinica} />
+              {listaClinicas.map((clinica, index) => (
+                <CartaoClinica key={clinica.id || index} clinica={clinica} />
               ))}
             </ul>
           ) : (

@@ -12,7 +12,6 @@
 
 .pagina {
   /* Paleta oficial */
-<<<<<<< HEAD
   --primary: var(--color-primary);
   --purple: var(--color-primary-dark);
   --purple-bg: var(--color-primary-light);
@@ -24,15 +23,6 @@
   --radius-lg: var(--radius-card);
   --shadow: none;
   --font: var(--font-sans);
-=======
-  --primary: #0066ff;
-  --primary-100: #dceaff;
-  --navy: #0a2463;
-  --text: #1f2a44;
-  --muted: #667085;
-  --border: #e3ecf8;
-  --surface: #ffffff;
->>>>>>> feature/dashboard-paciente
 
   /* Tom desta seção */
   --tom: #7b4dff;

@@ -1,22 +1,12 @@
-<<<<<<< HEAD
 @import "../styles/listaPaciente.css";
 /* 
    Página de exames (placeholder)
-=======
-/*
-   Página de exames
-
-   Mesma estrutura de cartão da ConsultasPage, no tom verde.
-   Escala de espaçamento: 4 · 6 · 10 · 14 · 18 · 22 px
-
->>>>>>> feature/dashboard-paciente
    Os tokens ficam no wrapper .pagina para não colidir com
    variáveis globais do restante da aplicação.
   */
 
 .pagina {
   /* Paleta oficial */
-<<<<<<< HEAD
   --primary: var(--color-primary);
   --green: var(--color-primary-dark);
   --green-bg: var(--color-primary-light);
@@ -28,15 +18,6 @@
   --radius-lg: var(--radius-card);
   --shadow: none;
   --font: var(--font-sans);
-=======
-  --primary: #0066ff;
-  --primary-100: #dceaff;
-  --navy: #0a2463;
-  --text: #1f2a44;
-  --muted: #667085;
-  --border: #e3ecf8;
-  --surface: #ffffff;
->>>>>>> feature/dashboard-paciente
 
   /* Tom desta seção */
   --tom: #10a37f;

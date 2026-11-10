@@ -11,7 +11,6 @@
 
 .pagina {
   /* Paleta oficial */
-<<<<<<< HEAD
   --primary: var(--color-primary);
   --primary-100: var(--color-primary-light);
   --navy: var(--color-navy-950);
@@ -22,39 +21,6 @@
   --radius-lg: var(--radius-card);
   --shadow: none;
   --font: var(--font-sans);
-=======
-  --primary: #0066ff;
-  --primary-50: #eef5ff;
-  --primary-100: #dceaff;
-  --navy: #0a2463;
-  --text: #1f2a44;
-  --muted: #667085;
-  --border: #e3ecf8;
-  --surface: #ffffff;
-
-  /* Status — texto sempre com contraste AA sobre o próprio fundo */
-  --sucesso: #0c7a45;
-  --sucesso-bg: #e2f7eb;
-  --sucesso-borda: rgba(12, 122, 69, 0.22);
-
-  --concluido: #4a5b77;
-  --concluido-bg: #eef2f7;
-  --concluido-borda: rgba(74, 91, 119, 0.2);
-
-  --alerta: #8a5a0c;
-  --alerta-bg: #fff4dc;
-  --alerta-borda: rgba(138, 90, 12, 0.22);
-
-  --perigo: #c41d3a;
-  --perigo-bg: #ffe5ea;
-  --perigo-borda: rgba(196, 29, 58, 0.2);
-
-  --radius: 16px;
-  --radius-lg: 20px;
-  --pill: 999px;
-  --shadow: 0 6px 24px rgba(16, 68, 160, 0.06);
-  --font: 'Nunito Sans', 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
->>>>>>> feature/dashboard-paciente
 
   /* Tom desta seção */
   --tom: var(--primary);
