@@ -1,9 +1,13 @@
+/* Cabeçalho de página dos painéis: título grande e a linha-guia logo
+   abaixo, que diz onde a pessoa está e o que há na tela. */
 .topo {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--color-border-strong);
 }
 
 .tituloLinha {
@@ -12,51 +16,41 @@
   gap: 12px;
 }
 
-.icone {
-  color: var(--azul);
-}
+.icone { color: var(--azul); }
 
 .titulo {
   font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.8px;
-  color: var(--azul-escuro);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-navy-950);
   line-height: 1.1;
 }
 
 .subtitulo {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--texto-2);
-  margin-top: 5px;
+  margin-top: 6px;
 }
 
 .data {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 11px 16px;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
   background: var(--branco);
   border: 1px solid var(--borda);
-  border-radius: var(--raio-sm);
-  box-shadow: var(--sombra);
+  border-radius: var(--radius-button);
   font-size: 13px;
-  font-weight: 500;
-  color: var(--texto-2);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-strong);
   white-space: nowrap;
   flex: none;
+  font-variant-numeric: tabular-nums;
 }
-
-.data svg {
-  color: var(--azul);
-}
+.data svg { color: var(--azul); }
 
 @media (max-width: 760px) {
-  .topo {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .titulo {
-    font-size: 25px;
-  }
+  .topo { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .titulo { font-size: 26px; }
 }

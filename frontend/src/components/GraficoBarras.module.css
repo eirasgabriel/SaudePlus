@@ -34,7 +34,7 @@
 
 .grade span {
   height: 1px;
-  background: #f1f5fc;
+  background: var(--color-border);
 }
 
 .barras {
@@ -61,8 +61,8 @@
 .preenche {
   width: 100%;
   max-width: 44px;
-  border-radius: 6px 6px 3px 3px;
-  background: linear-gradient(180deg, var(--azul-suave) 0%, #b9d6ff 100%);
+  border-radius: 3px 3px 0 0;
+  background: var(--color-primary);
   transition: filter 0.2s ease, height 0.4s ease;
 }
 

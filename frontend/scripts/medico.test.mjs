@@ -173,9 +173,9 @@ describe("página", () => {
     const resumo = resumoDoDia(AGENDA, EXAMES_PENDENTES);
     assert.ok(html.includes(`de ${resumo.consultasHoje}`));
     assert.ok(html.includes(`a partir das ${resumo.primeiroHorarioPendente}`));
-    assert.ok(html.includes(`aria-label="Consultas hoje: ${resumo.consultasHoje}. Ver a agenda do dia"`));
-    assert.ok(html.includes(`aria-label="Pacientes atendidos: ${resumo.pacientesAtendidos}. Ver as consultas já realizadas"`));
-    assert.ok(html.includes(`aria-label="Exames pendentes: ${resumo.examesPendentes}. Ver os exames aguardando resultado"`));
+    assert.ok(html.includes(`aria-label="Consultas hoje: ${resumo.consultasHoje}. Abrir minha agenda"`));
+    assert.ok(html.includes(`aria-label="Pacientes atendidos: ${resumo.pacientesAtendidos}. Abrir meus pacientes"`));
+    assert.ok(html.includes(`aria-label="Exames pendentes: ${resumo.examesPendentes}. Abrir exames"`));
   });
 
   test("a agenda renderiza uma linha por consulta do dia", () => {
@@ -191,6 +191,11 @@ describe("página", () => {
     const naoLidas = NOTIFICACOES.filter((n) => !n.lida).length;
     assert.ok(html.includes(`aria-label="Notificações, ${naoLidas} não lidas"`));
     assert.ok(html.includes('aria-label="Menu da conta de '));
+  });
+
+  test("sem foto, a faixa de boas-vindas reserva o espaço com atalho para Minha conta", () => {
+    assert.ok(html.includes("Adicionar sua foto"));
+    assert.ok(!html.includes("hero-medico"));
   });
 
   test("as notificações ficam só no sino, sem painel na página", () => {

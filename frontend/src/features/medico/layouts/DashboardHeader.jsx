@@ -1,7 +1,8 @@
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { cx } from "../../../utils/cx.js";
+import { enderecoDaApi } from "../../../services/http.js";
 import { SearchIcon, ChevronDownIcon } from "../../../components/icons/Icons.jsx";
 import { BellIcon, MoonIcon, SunIcon } from "../components/icons/MedicoIcons.jsx";
 import MenuPerfil from "../../../components/MenuPerfil/MenuPerfil.jsx";
@@ -14,10 +15,11 @@ import { caminhoDe } from "../rotas.js";
 import styles from "./DashboardHeader.module.css";
 
 /**
- * Cabeçalho do painel do médico, enxuto: marca, busca centralizada,
+ * Cabeçalho do painel do médico, na casca marinho: marca, busca recolhível,
  * notificações e conta. A navegação entre telas fica só na barra lateral.
  *
- * - a busca procura pacientes pelo nome (/medico/busca?q=);
+ * - a lupa abre um campo branco que cresce para a esquerda; clicar fora ou
+ *   Esc recolhe. A busca procura pacientes pelo nome (/medico/busca?q=);
  * - o sino abre um menu com as notificações não lidas;
  * - o nome abre o menu da conta (Minha conta, Ajuda, Modo escuro, Sair).
  *
@@ -34,6 +36,9 @@ export default function DashboardHeader({
   const [perfilAberto, setPerfilAberto] = useState(false);
   const [notificacoesAberto, setNotificacoesAberto] = useState(false);
   const [termo, setTermo] = useState("");
+  const [buscaAberta, setBuscaAberta] = useState(false);
+  const areaBusca = useRef(null);
+  const campoBusca = useRef(null);
   /* Lidas nesta sessão: somem do menu e do contador na hora, sem esperar
      a tela recarregar a lista. */
   const [lidasAgora, setLidasAgora] = useState(() => new Set());
@@ -79,11 +84,39 @@ export default function DashboardHeader({
     ? [...itensDeNavegacao.slice(0, -1), itemDoTema, itensDeNavegacao.at(-1)]
     : itensDeNavegacao;
 
+  /* Aberta, a busca escuta cliques fora e o Esc para se recolher. */
+  useEffect(() => {
+    if (!buscaAberta) return undefined;
+    campoBusca.current?.focus();
+    const aoClicarFora = (evento) => {
+      if (!areaBusca.current?.contains(evento.target)) setBuscaAberta(false);
+    };
+    const aoTeclar = (evento) => {
+      if (evento.key === "Escape") setBuscaAberta(false);
+    };
+    document.addEventListener("mousedown", aoClicarFora);
+    document.addEventListener("keydown", aoTeclar);
+    return () => {
+      document.removeEventListener("mousedown", aoClicarFora);
+      document.removeEventListener("keydown", aoTeclar);
+    };
+  }, [buscaAberta]);
+
   const enviarBusca = (evento) => {
     evento.preventDefault();
+    // Primeiro clique na lupa só abre o campo.
+    if (!buscaAberta) {
+      setBuscaAberta(true);
+      return;
+    }
     const busca = termo.trim();
+    if (!busca) {
+      campoBusca.current?.focus();
+      return;
+    }
     // A busca procura pacientes do médico pelo nome (GET /api/medico/pacientes?q=).
-    navegar(busca ? `${caminhoDe("busca")}?q=${encodeURIComponent(busca)}` : caminhoDe("pacientes"));
+    setBuscaAberta(false);
+    navegar(`${caminhoDe("busca")}?q=${encodeURIComponent(busca)}`);
   };
 
   return (
@@ -91,27 +124,44 @@ export default function DashboardHeader({
       <div className={styles.barra}>
         <DashboardBrand />
 
-        <form className={styles.busca} role="search" onSubmit={enviarBusca}>
-          <label className="sr-only" htmlFor={idBusca}>
-            Buscar paciente pelo nome
-          </label>
-          <SearchIcon size={18} className={styles.buscaIcone} aria-hidden="true" />
-          <input
-            id={idBusca}
-            type="search"
-            value={termo}
-            onChange={(evento) => setTermo(evento.target.value)}
-            placeholder="Buscar paciente pelo nome"
-            autoComplete="off"
-          />
-        </form>
-
         <div className={styles.acoes}>
+          <form
+            ref={areaBusca}
+            className={cx(styles.busca, buscaAberta && styles.buscaAberta)}
+            role="search"
+            onSubmit={enviarBusca}
+          >
+            <label className="sr-only" htmlFor={idBusca}>
+              Buscar paciente pelo nome
+            </label>
+            <input
+              id={idBusca}
+              ref={campoBusca}
+              className={styles.buscaCampo}
+              type="search"
+              value={termo}
+              onChange={(evento) => setTermo(evento.target.value)}
+              placeholder="Buscar paciente pelo nome"
+              autoComplete="off"
+              tabIndex={buscaAberta ? 0 : -1}
+              aria-hidden={!buscaAberta}
+            />
+            <button
+              type="submit"
+              className={styles.botaoIcone}
+              aria-label={buscaAberta ? "Buscar" : "Abrir busca de pacientes"}
+              aria-expanded={buscaAberta}
+              aria-controls={idBusca}
+            >
+              <SearchIcon size={22} />
+            </button>
+          </form>
+
           <div className={styles.ancora}>
             <button
               type="button"
               ref={botaoSino}
-              className={cx(styles.botaoIcone, notificacoesAberto && styles.botaoIconeAtivo)}
+              className={styles.botaoIcone}
               aria-haspopup="true"
               aria-expanded={notificacoesAberto}
               aria-controls={idMenuNotificacoes}
@@ -160,7 +210,7 @@ export default function DashboardHeader({
               }}
             >
               <span className={styles.avatar} aria-hidden="true">
-                {medico.avatarUrl ? <img src={medico.avatarUrl} alt="" /> : iniciais(medico.nome)}
+                {medico.avatarUrl ? <img src={enderecoDaApi(medico.avatarUrl)} alt="" /> : iniciais(medico.nome)}
               </span>
               <span className={styles.perfilTexto} aria-hidden="true">
                 <span className={styles.perfilNome}>{medico.nome}</span>

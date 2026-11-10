@@ -90,11 +90,12 @@ function Coluna({ titulo, itens, aoClicarReservado }) {
  * @param aoClicarReservado  chamado no lugar da navegação quando o link
  *                           aponta para uma página que ainda não existe
  * @param ano                ano do aviso de direitos; padrão é o ano atual
+ * @param tom                "azul" para a variante do site público (visual do hero)
  * @param className          para ajustes pontuais de quem usa
  */
-export default function Footer({ aoClicarReservado, ano = new Date().getFullYear(), className }) {
+export default function Footer({ aoClicarReservado, ano = new Date().getFullYear(), tom, className }) {
   return (
-    <footer className={cx(styles.rodape, className)}>
+    <footer className={cx(styles.rodape, tom === "azul" && styles.azul, className)}>
       <div className={styles.conteudo}>
         <div className={styles.grade}>
           <div className={styles.marca}>

@@ -21,8 +21,8 @@ export const configuracoesGerais = {
   endereco: "Rua das Flores, 123 - Saquarema, RJ",
   idioma: "pt-BR",
   fusoHorario: "America/Sao_Paulo",
-  corPrincipal: "#0066FF",
-  corSecundaria: "#7DD3FC",
+  corPrincipal: "#0070E8",
+  corSecundaria: "#44C6F4",
   tema: "claro",
 };
 

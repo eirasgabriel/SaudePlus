@@ -14,6 +14,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID>, JpaSpec
 
     boolean existsByEmail(String email);
 
+    /** A rota pública da foto só serve chaves que são foto de perfil (não resultados de exame). */
+    boolean existsByFotoChave(String fotoChave);
+
     boolean existsByCpfAndIdNot(String cpf, UUID id);
 
     boolean existsByCpf(String cpf);

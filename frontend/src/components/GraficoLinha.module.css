@@ -41,7 +41,7 @@
 
 .grade span {
   height: 1px;
-  background: #f1f5fc;
+  background: var(--color-border);
 }
 
 .svg {

@@ -2,18 +2,18 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
-  height: 52px;
-  padding: 0 14px 0 18px;
-  background: #fff;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 14px 0 16px;
+  background: var(--color-surface);
   border: 1px solid var(--color-border-strong);
-  border-radius: 10px;
-  transition: border-color var(--duration) var(--ease);
+  border-radius: var(--radius-button);
+  transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease);
 }
-.field:hover,
-.field:focus-within { border-color: var(--color-primary); }
+.field:hover { border-color: var(--color-border-hover); }
+.field:focus-within { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(0, 112, 232, 0.16); }
 
-.icon { color: var(--color-primary); }
+.icon { color: var(--color-primary); flex: none; }
 
 .body {
   flex: 1;
@@ -23,9 +23,10 @@
 }
 
 .label {
-  font-size: 13px;
+  font-size: 12px;
   line-height: 16px;
-  color: var(--color-navy-950);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-soft);
 }
 
 .select {
@@ -36,15 +37,16 @@
   outline: 0;
   background: transparent;
   font: inherit;
-  font-size: 14px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
   line-height: 20px;
-  color: var(--color-text-muted);
+  color: var(--color-navy-950);
   cursor: pointer;
   appearance: none;
 }
 
 .chevron {
   flex-shrink: 0;
-  color: var(--color-primary);
+  color: var(--color-text-soft);
   pointer-events: none;
 }

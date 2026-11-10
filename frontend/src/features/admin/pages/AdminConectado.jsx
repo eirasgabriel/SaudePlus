@@ -9,7 +9,7 @@ import AdminAgendamentosPage from "../../../pages/AdminAgendamentosPage";
 import AdminConfiguracoesPage from "../../../pages/AdminConfiguracoesPage";
 import AdminFinanceiroPage from "../../../pages/AdminFinanceiroPage";
 import AdminRelatoriosPage from "../../../pages/AdminRelatoriosPage";
-import AvisoDeOrigem from "../../medico/components/AvisoDeOrigem/AvisoDeOrigem.jsx";
+import PortaoDaApi from "../../../components/PortaoDaApi/PortaoDaApi.jsx";
 import { useDadosDaApi } from "../../paciente/useDadosDaApi.js";
 import { useAuth } from "../../auth/auth.context.js";
 import AvisoDoAdmin from "../components/AvisoDoAdmin.jsx";
@@ -43,10 +43,12 @@ import { metricas as modelosAgendamentos } from "../../../services/dadosAdminAge
 import * as modelosDashboard from "../../../services/dadosAdminDashboard";
 import * as modelosFinanceiro from "../../../services/dadosAdminFinanceiro";
 import * as modelosRelatorios from "../../../services/dadosAdminRelatorios";
+import { enderecoDaApi } from "../../../services/http.js";
 
-/* Telas do admin ligadas à API. Cada uma busca os dados, converte para o
-   formato que a página já recebia dos mocks e, se a API falhar, deixa a
-   página nos mocks com a faixa de demonstração. Ações só existem com a API. */
+/* Telas do admin ligadas à API. Cada uma busca os dados e converte para o
+   formato que a página recebe. Não há dados de demonstração: enquanto a API
+   responde, a página mostra "Carregando…"; se ela falhar, o erro com "Tentar
+   de novo" (PortaoDaApi), dentro da casca do admin. */
 
 const ROTULO_DO_PAPEL = {
   ADMIN: "Administrador",
@@ -90,7 +92,7 @@ export function LayoutDoAdmin() {
       usuario={{
         nome: usuario?.nomeCompleto ?? "Administração",
         cargo: ROTULO_DO_PAPEL[usuario?.role] ?? "Equipe",
-        foto: usuario?.fotoUrl ?? null,
+        foto: enderecoDaApi(usuario?.fotoUrl),
         naoLidas: contagem.origem === "api" ? contagem.dados.total : 0,
       }}
     />
@@ -109,15 +111,17 @@ export function DashboardDoAdmin() {
   const { usuario } = useAuth();
   const [meses, definirMeses] = useState(9);
   const carregar = useCallback(({ sinal }) => api.buscarDashboard({ meses, sinal }), [meses]);
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregar);
-  const props = origem === "api" && dados ? paraDashboard(modelosDashboard, dados) : {};
+  const painel = useDadosDaApi(carregar);
   return (
-    <AdminDashboardPage
-      usuario={{ nome: usuario?.nomeCompleto ?? "Admin" }}
-      {...props}
-      aviso={<AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />}
-      aoMudarPeriodo={(periodo) => definirMeses(mesesDoPeriodo(periodo))}
-    />
+    <PortaoDaApi estados={painel} carregando="Carregando o painel…">
+      {() => (
+        <AdminDashboardPage
+          usuario={{ nome: usuario?.nomeCompleto ?? "Admin" }}
+          {...paraDashboard(modelosDashboard, painel.dados)}
+          aoMudarPeriodo={(periodo) => definirMeses(mesesDoPeriodo(periodo))}
+        />
+      )}
+    </PortaoDaApi>
   );
 }
 
@@ -135,12 +139,12 @@ const carregarUsuarios = async ({ sinal }) => {
 
 export function UsuariosDoAdmin() {
   const { usuario } = useAuth();
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregarUsuarios);
+  const estado = useDadosDaApi(carregarUsuarios);
+  const { dados, recarregar } = estado;
   const retorno = useRetorno();
-  const comApi = origem === "api" && dados;
   const edicao = useEdicaoDeUsuarios({
-    especialidades: comApi ? dados.especialidades : [],
-    unidades: comApi ? dados.unidades : [],
+    especialidades: dados?.especialidades ?? [],
+    unidades: dados?.unidades ?? [],
     podeCriarAdmin: usuario?.role === "ADMIN",
     aoConcluir: (texto) => {
       retorno.sucesso(texto);
@@ -162,27 +166,22 @@ export function UsuariosDoAdmin() {
   };
 
   return (
-    <>
-      <AdminUsuariosPage
-        {...(comApi
-          ? {
-              usuarios: dados.pagina.conteudo.map(paraUsuario),
-              metricas: metricasDeUsuarios(modelosUsuarios, dados.metricas),
-            }
-          : {})}
-        aviso={
-          <>
-            <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
-            {retorno.aviso}
-          </>
-        }
-        aoNovoUsuario={comApi ? edicao.novo : undefined}
-        aoAlternarBloqueio={comApi ? alternarBloqueio : undefined}
-        aoEditar={comApi ? (linha) => edicao.editar(daApi(linha)) : undefined}
-        aoExcluir={comApi ? (linha) => edicao.excluir(daApi(linha)) : undefined}
-      />
-      {comApi && edicao.elementos}
-    </>
+    <PortaoDaApi estados={estado} carregando="Carregando os usuários…">
+      {() => (
+        <>
+          <AdminUsuariosPage
+            usuarios={dados.pagina.conteudo.map(paraUsuario)}
+            metricas={metricasDeUsuarios(modelosUsuarios, dados.metricas)}
+            aviso={retorno.aviso}
+            aoNovoUsuario={edicao.novo}
+            aoAlternarBloqueio={alternarBloqueio}
+            aoEditar={(linha) => edicao.editar(daApi(linha))}
+            aoExcluir={(linha) => edicao.excluir(daApi(linha))}
+          />
+          {edicao.elementos}
+        </>
+      )}
+    </PortaoDaApi>
   );
 }
 
@@ -197,10 +196,9 @@ const carregarClinicas = async ({ sinal }) => {
 };
 
 export function ClinicasDoAdmin() {
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregarClinicas);
+  const estado = useDadosDaApi(carregarClinicas);
+  const { dados, recarregar } = estado;
   const retorno = useRetorno();
-  const comApi = origem === "api" && dados;
-  const clinicas = comApi ? dados.unidades.map(paraClinica) : null;
   const edicao = useEdicaoDeUnidades({
     aoConcluir: (texto) => {
       retorno.sucesso(texto);
@@ -209,28 +207,26 @@ export function ClinicasDoAdmin() {
   });
   const daApi = (linha) => dados.unidades.find((u) => u.id === linha.id);
   return (
-    <>
-      <AdminClinicasPage
-        {...(comApi
-          ? {
-              clinicas,
-              metricas: metricasDeClinicas(modelosClinicas, dados.metricas),
-              filtrosEspecialidade: opcoesDe(clinicas, "especialidade", "Todas", "todas"),
-              filtrosMunicipio: opcoesDe(clinicas, "municipio", "Todos"),
-              aoNovaClinica: edicao.nova,
-              aoEditar: (linha) => edicao.editar(daApi(linha)),
-              aoExcluir: (linha) => edicao.excluir(daApi(linha)),
-            }
-          : {})}
-        aviso={
+    <PortaoDaApi estados={estado} carregando="Carregando as clínicas…">
+      {() => {
+        const clinicas = dados.unidades.map(paraClinica);
+        return (
           <>
-            <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
-            {retorno.aviso}
+            <AdminClinicasPage
+              clinicas={clinicas}
+              metricas={metricasDeClinicas(modelosClinicas, dados.metricas)}
+              filtrosEspecialidade={opcoesDe(clinicas, "especialidade", "Todas", "todas")}
+              filtrosMunicipio={opcoesDe(clinicas, "municipio", "Todos")}
+              aoNovaClinica={edicao.nova}
+              aoEditar={(linha) => edicao.editar(daApi(linha))}
+              aoExcluir={(linha) => edicao.excluir(daApi(linha))}
+              aviso={retorno.aviso}
+            />
+            {edicao.elementos}
           </>
-        }
-      />
-      {comApi && edicao.elementos}
-    </>
+        );
+      }}
+    </PortaoDaApi>
   );
 }
 
@@ -257,8 +253,6 @@ export function AgendamentosDoAdmin() {
 
   const lista = useDadosDaApi(carregarLista);
   const calendario = useDadosDaApi(carregarCalendario);
-  const comApi = lista.origem === "api" && lista.dados;
-  const agendamentos = comApi ? lista.dados.pagina.conteudo.map(paraAgendamento) : null;
 
   const alterarStatus = async (a, status) => {
     try {
@@ -273,28 +267,27 @@ export function AgendamentosDoAdmin() {
   };
 
   return (
-    <AdminAgendamentosPage
-      {...(comApi
-        ? {
-            agendamentos,
-            metricas: metricasDeAgendamentos(modelosAgendamentos, lista.dados.metricas),
-            filtrosClinica: opcoesDe(agendamentos, "unidade", "Todas", "todas"),
-            filtrosProfissional: opcoesDe(agendamentos, "profissional", "Todos"),
-            marcacoes: calendario.origem === "api" && calendario.dados ? paraMarcacoes(calendario.dados) : {},
-            mesInicial: new Date(hoje.getFullYear(), hoje.getMonth(), 1),
-            diaSelecionado: hoje.getDate(),
-            periodoInicial: `${mesDe(hoje)}-${String(hoje.getDate()).padStart(2, "0")}`,
-          }
-        : {})}
-      aviso={
-        <>
-          <AvisoDeOrigem origem={lista.origem} erro={lista.erro} aoTentarDeNovo={lista.recarregar} />
-          {retorno.aviso}
-        </>
-      }
-      aoMudarMes={comApi ? (data) => definirMes(mesDe(data)) : undefined}
-      aoAlterarStatus={comApi ? alterarStatus : undefined}
-    />
+    <PortaoDaApi estados={lista} carregando="Carregando os agendamentos…">
+      {() => {
+        const agendamentos = lista.dados.pagina.conteudo.map(paraAgendamento);
+        return (
+          <AdminAgendamentosPage
+            agendamentos={agendamentos}
+            metricas={metricasDeAgendamentos(modelosAgendamentos, lista.dados.metricas)}
+            filtrosClinica={opcoesDe(agendamentos, "unidade", "Todas", "todas")}
+            filtrosProfissional={opcoesDe(agendamentos, "profissional", "Todos")}
+            // O calendário é secundário: sem ele, o mês aparece sem marcações.
+            marcacoes={calendario.origem === "api" && calendario.dados ? paraMarcacoes(calendario.dados) : {}}
+            mesInicial={new Date(hoje.getFullYear(), hoje.getMonth(), 1)}
+            diaSelecionado={hoje.getDate()}
+            periodoInicial={`${mesDe(hoje)}-${String(hoje.getDate()).padStart(2, "0")}`}
+            aviso={retorno.aviso}
+            aoMudarMes={(data) => definirMes(mesDe(data))}
+            aoAlterarStatus={alterarStatus}
+          />
+        );
+      }}
+    </PortaoDaApi>
   );
 }
 
@@ -325,8 +318,7 @@ export function FinanceiroDoAdmin() {
     ]);
     return { resumo, pagina };
   }, [periodo, hoje]);
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregar);
-  const comApi = origem === "api" && dados;
+  const estado = useDadosDaApi(carregar);
   const [modal, definirModal] = useState(null); // "formas" | "convenios"
 
   const acaoRapida = async (id) => {
@@ -349,19 +341,17 @@ export function FinanceiroDoAdmin() {
 
   return (
     <>
-      <AdminFinanceiroPage
-        {...(comApi
-          ? { ...paraFinanceiro(modelosFinanceiro, dados.resumo), transacoes: dados.pagina.conteudo.map(paraTransacao) }
-          : {})}
-        aviso={
-          <>
-            <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
-            {retorno.aviso}
-          </>
-        }
-        aoMudarPeriodo={definirPeriodo}
-        aoAcaoRapida={comApi ? acaoRapida : undefined}
-      />
+      <PortaoDaApi estados={estado} carregando="Carregando o financeiro…">
+        {() => (
+          <AdminFinanceiroPage
+            {...paraFinanceiro(modelosFinanceiro, estado.dados.resumo)}
+            transacoes={estado.dados.pagina.conteudo.map(paraTransacao)}
+            aviso={retorno.aviso}
+            aoMudarPeriodo={definirPeriodo}
+            aoAcaoRapida={acaoRapida}
+          />
+        )}
+      </PortaoDaApi>
       <ModalFormasPagamento
         aberto={modal === "formas"}
         aoFechar={() => definirModal(null)}
@@ -403,8 +393,6 @@ export function RelatoriosDoAdmin() {
   );
   const resumo = useDadosDaApi(carregarResumo);
   const opcoes = useDadosDaApi(carregarOpcoesDosRelatorios);
-  const comApi = resumo.origem === "api" && resumo.dados;
-  const comOpcoes = opcoes.origem === "api" && opcoes.dados;
 
   /** Cartões usam o período do topo; o relatório personalizado, os filtros avançados. */
   const gerar = async (id, filtros) => {
@@ -429,11 +417,11 @@ export function RelatoriosDoAdmin() {
   };
 
   return (
+    <PortaoDaApi estados={[resumo, opcoes]} carregando="Carregando os relatórios…">
+      {() => (
     <AdminRelatoriosPage
-      // Remonta quando as opções chegam: os filtros guardam ids em estado próprio.
-      key={comOpcoes ? "api" : "mocks"}
-      {...(comApi ? paraRelatorios(modelosRelatorios, resumo.dados) : {})}
-      {...(comOpcoes ? opcoes.dados : {})}
+      {...paraRelatorios(modelosRelatorios, resumo.dados)}
+      {...opcoes.dados}
       filtrosIniciais={{
         inicio: intervaloDe("30d", hoje).de,
         fim: isoDe(hoje),
@@ -443,10 +431,11 @@ export function RelatoriosDoAdmin() {
         especialidade: "todas",
         formato: "pdf",
       }}
-      aviso={<AvisoDeOrigem origem={resumo.origem} erro={resumo.erro} aoTentarDeNovo={resumo.recarregar} />}
       aoMudarPeriodo={definirPeriodo}
-      aoGerar={comApi ? gerar : undefined}
+      aoGerar={gerar}
     />
+      )}
+    </PortaoDaApi>
   );
 }
 
@@ -510,10 +499,10 @@ function informacoesDoSistema(s) {
 
 export function ConfiguracoesDoAdmin() {
   const { usuario } = useAuth();
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregarConfiguracoes);
+  const estado = useDadosDaApi(carregarConfiguracoes);
+  const { dados, recarregar } = estado;
   const retorno = useRetorno();
   const [vendoLogs, definirVendoLogs] = useState(false);
-  const comApi = origem === "api" && dados;
   const aoConcluir = (texto) => {
     retorno.sucesso(texto);
     recarregar();
@@ -526,29 +515,26 @@ export function ConfiguracoesDoAdmin() {
   });
   const unidades = useEdicaoDeUnidades({ aoConcluir });
 
-  // A aba de usuários mostra a equipe e os médicos; pacientes ficam na tela de Usuários.
-  const equipe = dados?.usuarios?.conteudo.filter((u) => u.papel !== "PACIENTE") ?? null;
+  /* A aba de usuários mostra a equipe e os médicos; pacientes ficam na tela de
+     Usuários. Módulo recusado pelo servidor: lista vazia, nunca dados de
+     demonstração. */
+  const equipe = dados?.usuarios?.conteudo.filter((u) => u.papel !== "PACIENTE") ?? [];
   const contaDaEquipe = (linha) => equipe.find((u) => u.id === linha.id);
   const unidadeDaApi = (linha) => dados.unidades.find((u) => u.id === linha.id);
-  const cadastrosDaConfiguracao = dados?.unidades?.map(paraUnidadeDaConfiguracao) ?? null;
+  const cadastrosDaConfiguracao = dados?.unidades?.map(paraUnidadeDaConfiguracao) ?? [];
 
   return (
     <>
+      <PortaoDaApi estados={estado} carregando="Carregando as configurações…">
+        {() => (
       <AdminConfiguracoesPage
-        // Remonta quando os dados chegam: as abas guardam o formulário em estado próprio.
-        key={comApi ? "api" : "mocks"}
-        aviso={
-          <>
-            <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
-            {retorno.aviso}
-          </>
-        }
+        aviso={retorno.aviso}
         propsDasAbas={
-          comApi
-            ? {
+          {
                 geral: {
                   valores: dados.grupos?.gerais,
-                  informacoes: dados.sistema ? informacoesDoSistema(dados.sistema) : undefined,
+                  // Sem o módulo de sistema, o cartão fica vazio em vez de inventar versão e banco.
+                  informacoes: dados.sistema ? informacoesDoSistema(dados.sistema) : [],
                   aoSalvar: dados.grupos ? (grupo) => api.salvarConfiguracao("gerais", grupo) : undefined,
                 },
                 usuarios: {
@@ -556,32 +542,25 @@ export function ConfiguracoesDoAdmin() {
                   aoSalvarPermissoes: async (tela) => {
                     await api.salvarPermissoes(matrizDaApi(tela, dados.permissoes));
                   },
-                  ...(equipe
-                    ? {
-                        usuarios: equipe.map(paraUsuarioDaEquipe),
-                        aoNovoUsuario: usuarios.novo,
-                        aoEditar: (linha) => usuarios.editar(contaDaEquipe(linha)),
-                        aoExcluir: (linha) => usuarios.excluir(contaDaEquipe(linha)),
-                      }
-                    : {}),
+                  usuarios: equipe.map(paraUsuarioDaEquipe),
+                  aoNovoUsuario: usuarios.novo,
+                  aoEditar: (linha) => usuarios.editar(contaDaEquipe(linha)),
+                  aoExcluir: (linha) => usuarios.excluir(contaDaEquipe(linha)),
                 },
-                ...(cadastrosDaConfiguracao
-                  ? {
-                      clinicas: {
-                        unidades: cadastrosDaConfiguracao,
-                        filtrosUnidade: opcoesDe(cadastrosDaConfiguracao, "unidade", "Todas as unidades", "todas"),
-                        aoNovaClinica: unidades.nova,
-                        aoEditar: (linha) => unidades.editar(unidadeDaApi(linha)),
-                        aoExcluir: (linha) => unidades.excluir(unidadeDaApi(linha)),
-                      },
-                    }
-                  : {}),
+                clinicas: {
+                  unidades: cadastrosDaConfiguracao,
+                  filtrosUnidade: opcoesDe(cadastrosDaConfiguracao, "unidade", "Todas as unidades", "todas"),
+                  aoNovaClinica: unidades.nova,
+                  aoEditar: (linha) => unidades.editar(unidadeDaApi(linha)),
+                  aoExcluir: (linha) => unidades.excluir(unidadeDaApi(linha)),
+                },
                 seguranca: { aoVerLogs: () => definirVendoLogs(true) },
               }
-            : {}
         }
       />
-      {comApi && (
+        )}
+      </PortaoDaApi>
+      {estado.origem === "api" && (
         <>
           {usuarios.elementos}
           {unidades.elementos}

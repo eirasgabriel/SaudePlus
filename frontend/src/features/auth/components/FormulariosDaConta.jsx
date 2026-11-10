@@ -1,28 +1,95 @@
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 
 import { CampoDaTela, CartaoDaTela, Mensagem } from "../../../components/Telas.jsx";
 import estilos from "../../../styles/telas.module.css";
-import { atualizarPerfil, trocarSenha } from "../auth.api.js";
+import { enderecoDaApi } from "../../../services/http.js";
+import { TAMANHO_MAXIMO_DA_FOTO, atualizarPerfil, enviarFotoDePerfil, trocarSenha } from "../auth.api.js";
 import { useAuth } from "../auth.context.js";
+
+/** Só .png: confere a extensão e, quando o navegador informa, o tipo. */
+function ehPng(arquivo) {
+  const extensaoOk = /\.png$/i.test(arquivo.name);
+  const tipoOk = !arquivo.type || arquivo.type === "image/png";
+  return extensaoOk && tipoOk;
+}
 
 /**
  * Nome, telefone e foto de quem está logado (`PUT /api/auth/perfil`). Serve a
  * qualquer perfil; o cabeçalho troca na hora porque o AuthProvider é avisado.
+ *
+ * A foto vem de um endereço https ou de uma imagem .png enviada do
+ * computador (`POST /api/auth/perfil/foto`, gravada na hora).
+ * `comOpcaoDoPainel` mostra a caixa "Mostrar minha foto na página principal".
  */
-export function FormularioDaConta() {
+export function FormularioDaConta({ comOpcaoDoPainel = false }) {
   const { usuario, atualizarUsuario } = useAuth();
   const [dados, setDados] = useState(() => ({
     nomeCompleto: usuario?.nomeCompleto ?? "",
     telefone: usuario?.telefone ?? "",
     fotoUrl: usuario?.fotoUrl ?? "",
+    exibirFotoNoPainel: Boolean(usuario?.exibirFotoNoPainel),
   }));
   const [erros, setErros] = useState({});
   const [retorno, setRetorno] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  const [enviandoFoto, setEnviandoFoto] = useState(false);
+  const [removendoFoto, setRemovendoFoto] = useState(false);
+  const seletorDeArquivo = useRef(null);
+  const idArquivo = `foto-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+
+  const enviarFoto = async (evento) => {
+    const arquivo = evento.target.files?.[0];
+    evento.target.value = ""; // permite escolher o mesmo arquivo de novo
+    if (!arquivo) return;
+    if (!ehPng(arquivo)) {
+      setErros((atuais) => ({ ...atuais, arquivo: "Escolha uma imagem .png." }));
+      return;
+    }
+    if (arquivo.size > TAMANHO_MAXIMO_DA_FOTO) {
+      setErros((atuais) => ({ ...atuais, arquivo: "A imagem deve ter até 2 MB." }));
+      return;
+    }
+    setEnviandoFoto(true);
+    setRetorno(null);
+    setErros((atuais) => ({ ...atuais, arquivo: undefined, fotoUrl: undefined }));
+    try {
+      const perfil = await enviarFotoDePerfil(arquivo);
+      atualizarUsuario(perfil);
+      setDados((atuais) => ({ ...atuais, fotoUrl: perfil.fotoUrl ?? "" }));
+      setRetorno({ tom: "sucesso", texto: "Foto enviada. Ela já é a sua foto de perfil." });
+    } catch (falha) {
+      setErros((atuais) => ({ ...atuais, arquivo: falha.campos?.arquivo ?? falha.message }));
+    } finally {
+      setEnviandoFoto(false);
+    }
+  };
 
   const alterar = (campo, valor) => {
     setDados((atuais) => ({ ...atuais, [campo]: valor }));
     setErros((atuais) => ({ ...atuais, [campo]: undefined }));
+  };
+
+  /* Remove na hora, sem esperar o "Salvar": usa o nome e o telefone já
+     gravados (não os ainda em edição) e manda a foto vazia. Se a foto tinha
+     sido enviada do computador, o back-end apaga o arquivo. */
+  const removerFoto = async () => {
+    setRemovendoFoto(true);
+    setRetorno(null);
+    setErros((atuais) => ({ ...atuais, arquivo: undefined, fotoUrl: undefined }));
+    try {
+      const perfil = await atualizarPerfil({
+        nomeCompleto: usuario?.nomeCompleto ?? dados.nomeCompleto.trim(),
+        telefone: usuario?.telefone || undefined,
+        fotoUrl: undefined,
+      });
+      atualizarUsuario(perfil);
+      setDados((atuais) => ({ ...atuais, fotoUrl: "" }));
+      setRetorno({ tom: "sucesso", texto: "Foto removida." });
+    } catch (falha) {
+      setRetorno({ tom: "erro", texto: falha.message });
+    } finally {
+      setRemovendoFoto(false);
+    }
   };
 
   const salvar = async (evento) => {
@@ -34,6 +101,7 @@ export function FormularioDaConta() {
         nomeCompleto: dados.nomeCompleto.trim(),
         telefone: dados.telefone.trim() || undefined,
         fotoUrl: dados.fotoUrl.trim() || undefined,
+        exibirFotoNoPainel: comOpcaoDoPainel ? dados.exibirFotoNoPainel : undefined,
       });
       atualizarUsuario(perfil);
       setErros({});
@@ -60,7 +128,60 @@ export function FormularioDaConta() {
         <CampoDaTela rotulo="Endereço da foto (https, opcional)" erro={erros.fotoUrl}>
           {(props) => <input type="url" maxLength={500} value={dados.fotoUrl} onChange={(e) => alterar("fotoUrl", e.target.value)} {...props} />}
         </CampoDaTela>
-        <p className={estilos.itemSecundario}>E-mail de acesso: {usuario?.email}. Ele não muda por aqui.</p>
+
+        {comOpcaoDoPainel && (
+          <label className={estilos.caixaDeMarcar}>
+            <input
+              type="checkbox"
+              checked={dados.exibirFotoNoPainel}
+              onChange={(e) => alterar("exibirFotoNoPainel", e.target.checked)}
+            />
+            <span>
+              Mostrar minha foto na página principal
+              <small className={estilos.itemSecundario}>Ela aparece na faixa de boas-vindas do painel. Clique em Salvar para aplicar.</small>
+            </span>
+          </label>
+        )}
+
+        <div className={estilos.fotoLinha}>
+          <span className={estilos.fotoPrevia} aria-hidden="true">
+            {dados.fotoUrl ? <img src={enderecoDaApi(dados.fotoUrl)} alt="" /> : null}
+          </span>
+          <div className={estilos.fotoAcoes}>
+            <input
+              ref={seletorDeArquivo}
+              id={idArquivo}
+              type="file"
+              accept=".png,image/png"
+              className="sr-only"
+              onChange={enviarFoto}
+              aria-describedby={`${idArquivo}-dica${erros.arquivo ? ` ${idArquivo}-erro` : ""}`}
+              disabled={enviandoFoto}
+            />
+            <div className={estilos.fotoBotoes}>
+              <button
+                type="button"
+                className={estilos.botaoSecundario}
+                onClick={() => seletorDeArquivo.current?.click()}
+                disabled={enviandoFoto || removendoFoto}
+              >
+                {enviandoFoto ? "Enviando…" : "Enviar foto do computador"}
+              </button>
+              {usuario?.fotoUrl && (
+                <button
+                  type="button"
+                  className={estilos.botaoPerigo}
+                  onClick={removerFoto}
+                  disabled={enviandoFoto || removendoFoto}
+                >
+                  {removendoFoto ? "Removendo…" : "Remover foto"}
+                </button>
+              )}
+            </div>
+            <p id={`${idArquivo}-dica`} className={estilos.itemSecundario}>Apenas imagens .png, até 2 MB.</p>
+            {erros.arquivo && <p id={`${idArquivo}-erro`} className={estilos.erroCampo}>{erros.arquivo}</p>}
+          </div>
+        </div>
         {retorno && <Mensagem tom={retorno.tom}>{retorno.texto}</Mensagem>}
         <div className={estilos.botoes}>
           <button type="submit" className={estilos.botao} disabled={enviando}>{enviando ? "Salvando…" : "Salvar"}</button>

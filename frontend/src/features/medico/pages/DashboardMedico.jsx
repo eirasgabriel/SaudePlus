@@ -21,6 +21,8 @@ import DayAgendaCard from "../components/DayAgendaCard/DayAgendaCard.jsx";
 
 import { NavegacaoProvider } from "../navegacao/NavegacaoProvider.jsx";
 import { irAtePainel } from "../foco.js";
+import { useNavegacao } from "../navegacao/useNavegacao.js";
+import { enderecoDaApi } from "../../../services/http.js";
 
 import {
   AGENDA,
@@ -41,7 +43,6 @@ import {
   resumoDoDia,
 } from "../selectors.js";
 
-import heroMedico from "../../../assets/images/hero-medico.jpg";
 import styles from "./DashboardMedico.module.css";
 
 const PACIENTES_NO_PAINEL = 5;
@@ -51,7 +52,8 @@ const PACIENTES_NO_PAINEL = 5;
    ============================================================================
 
    Funciona hoje, sem depender de tela nova:
-   - os quatro cartões de resumo levam ao painel que resumem, já filtrado;
+   - os quatro cartões de resumo abrem a tela correspondente (agenda,
+     pacientes, exames e consultas);
    - o filtro da agenda (inclusive "Próximas", o mesmo recorte do cartão);
    - o sino do cabeçalho abre as notificações não lidas;
    - o menu da conta, no avatar;
@@ -95,7 +97,6 @@ function PainelDoMedico({
   exames = EXAMES_PENDENTES,
   notificacoes = NOTIFICACOES,
   dataReferencia = DATA_REFERENCIA,
-  imagemBoasVindas = heroMedico,
 }) {
   const prefixo = `dm-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const ids = {
@@ -109,6 +110,7 @@ function PainelDoMedico({
   };
 
   const [statusFiltro, setStatusFiltro] = useState("todas");
+  const { irPara } = useNavegacao();
 
   const agendaCompleta = useMemo(() => agendaComPacientes(agenda, pacientes), [agenda, pacientes]);
   const agendaVisivel = useMemo(
@@ -124,15 +126,13 @@ function PainelDoMedico({
 
   const naoLidas = notificacoes.filter(({ lida }) => !lida).length;
 
-  /** Atalho dos cartões: filtra a agenda e leva a pessoa até ela. */
+  /** Atalho da "Agenda do dia": filtra a agenda e leva a pessoa até ela. */
   const verAgendaFiltradaPor = (filtro) => {
     setStatusFiltro(filtro);
     irAtePainel(ids.agenda);
   };
 
-  /* Os cartões apontam para o painel que resumem, com o filtro que produz
-     exatamente o número mostrado — clicar em "Pacientes atendidos: 3" deixa
-     a agenda com 3 linhas, e não com um recorte parecido. */
+  /* Cada cartão leva à tela correspondente da área do médico. */
   const cartoes = [
     {
       icon: CalendarIcon,
@@ -140,8 +140,8 @@ function PainelDoMedico({
       rotulo: "Consultas hoje",
       valor: resumo.consultasHoje,
       apoio: "Agendadas",
-      acao: "Ver a agenda do dia",
-      aoClicar: () => verAgendaFiltradaPor("todas"),
+      acao: "Abrir minha agenda",
+      aoClicar: () => irPara("agenda"),
     },
     {
       icon: UsersIcon,
@@ -149,8 +149,8 @@ function PainelDoMedico({
       rotulo: "Pacientes atendidos",
       valor: resumo.pacientesAtendidos,
       apoio: `de ${resumo.consultasHoje}`,
-      acao: "Ver as consultas já realizadas",
-      aoClicar: () => verAgendaFiltradaPor("realizada"),
+      acao: "Abrir meus pacientes",
+      aoClicar: () => irPara("pacientes"),
     },
     {
       icon: FlaskIcon,
@@ -158,8 +158,8 @@ function PainelDoMedico({
       rotulo: "Exames pendentes",
       valor: resumo.examesPendentes,
       apoio: "para resultado",
-      acao: "Ver os exames aguardando resultado",
-      aoClicar: () => irAtePainel(ids.exames),
+      acao: "Abrir exames",
+      aoClicar: () => irPara("exames"),
     },
     {
       icon: ClockIcon,
@@ -169,8 +169,8 @@ function PainelDoMedico({
       apoio: resumo.primeiroHorarioPendente
         ? `a partir das ${resumo.primeiroHorarioPendente}`
         : "nenhuma pendente",
-      acao: "Ver as consultas que ainda não começaram",
-      aoClicar: () => verAgendaFiltradaPor("pendentes"),
+      acao: "Abrir consultas",
+      aoClicar: () => irPara("consultas"),
     },
   ];
 
@@ -188,6 +188,15 @@ function PainelDoMedico({
       <Panel icon={BuildingIcon} titulo="Unidade" titleId={ids.unidade}>
         <UnitCard unidade={unidade} />
       </Panel>
+
+      <Panel
+        icon={UsersIcon}
+        titulo="Seus pacientes"
+        titleId={ids.pacientes}
+        acao={{ rotulo: "Ver todos", destino: "pacientes" }}
+      >
+        <PatientList pacientes={pacientes} limite={PACIENTES_NO_PAINEL} />
+      </Panel>
     </>
   );
 
@@ -201,7 +210,7 @@ function PainelDoMedico({
       <WelcomeBanner
         nome={medico.nome}
         subtitulo="Aqui está um resumo da sua rotina de hoje."
-        imagem={imagemBoasVindas}
+        foto={medico.exibirFotoNoPainel ? enderecoDaApi(medico.avatarUrl) : null}
         tituloId={ids.boasVindas}
       />
 
@@ -243,15 +252,6 @@ function PainelDoMedico({
         </Panel>
 
         <div className={styles.colunaLateral}>
-          <Panel
-            icon={UsersIcon}
-            titulo="Seus pacientes"
-            titleId={ids.pacientes}
-            acao={{ rotulo: "Ver todos", destino: "pacientes" }}
-          >
-            <PatientList pacientes={pacientes} limite={PACIENTES_NO_PAINEL} />
-          </Panel>
-
           <Panel
             icon={FlaskIcon}
             titulo="Exames pendentes"

@@ -6,6 +6,7 @@ import DashboardLayout from "../layouts/DashboardLayout.jsx";
 import { buscarNotificacoes } from "../medico.api.js";
 import LinkDestino from "../navegacao/LinkDestino.jsx";
 import { NavegacaoProvider } from "../navegacao/NavegacaoProvider.jsx";
+import { enderecoDaApi } from "../../../services/http.js";
 
 const carregarNotificacoes = ({ sinal }) => buscarNotificacoes({ sinal });
 
@@ -32,7 +33,7 @@ function Casca({ titulo, subtitulo, voltar, acoes, notificacoes: listaPropria, c
   const medico = {
     nome: usuario?.nomeCompleto ?? "Médico(a)",
     perfil: "Médico(a)",
-    avatarUrl: usuario?.fotoUrl ?? null,
+    avatarUrl: enderecoDaApi(usuario?.fotoUrl),
   };
 
   return (

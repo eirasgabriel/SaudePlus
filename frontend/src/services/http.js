@@ -23,6 +23,17 @@ const TEMPO_LIMITE_MS = 8000;
  * O back-end responde todo erro no mesmo formato (veja `ErroResposta.java`),
  * então `corpo.mensagem` costuma trazer um texto pronto para exibir.
  */
+/**
+ * Endereço de um arquivo servido pela própria API (ex.: foto de perfil
+ * enviada, `/api/publico/fotos/<chave>.png`). Com `VITE_API_URL` definido, o
+ * front e a API ficam em origens diferentes e o caminho precisa do domínio da
+ * API. Endereços completos (https://…) e nulos passam como estão.
+ */
+export function enderecoDaApi(url) {
+  if (!url || !url.startsWith("/api/")) return url ?? null;
+  return API_URL.replace(/\/$/, "") + url;
+}
+
 export class ErroDeApi extends Error {
   constructor(mensagem, { status, corpo, url } = {}) {
     super(mensagem);

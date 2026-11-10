@@ -1,0 +1,8 @@
+# Scripts que rodam dentro do contêiner Linux precisam de LF. Com
+# core.autocrlf=true o Git os converteria para CRLF no Windows, e o shell do
+# contêiner falharia com "./mvnw: not found" (procura o interpretador "/bin/sh\r").
+mvnw text eol=lf
+*.sh text eol=lf
+
+# O wrapper do Windows continua com CRLF.
+*.cmd text eol=crlf

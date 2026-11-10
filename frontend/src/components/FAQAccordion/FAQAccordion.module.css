@@ -1,47 +1,98 @@
+/* Perguntas em linhas brancas com traço azul-claro e ícone à esquerda.
+   No hover a linha ganha uma sombra curta; aberta, fica em azul-claro e a
+   resposta alinha com o texto da pergunta. */
 .list {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .item {
-  background: #fff;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 8px;
-  transition: border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+  position: relative;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--realce-fundo);
+  box-shadow: inset 0 1px 0 #fff, 0 6px 14px -10px rgba(0, 70, 190, 0.45);
+  overflow: hidden;
+  transition: box-shadow var(--duration) var(--ease);
 }
-.item:hover { border-color: #BFD8F6; }
+.item:hover { box-shadow: var(--realce-sombra-hover); }
+
+/* Aberta: fundo azul-claro, mantendo a borda em degradê. */
 .open {
-  border-color: #BFD8F6;
-  box-shadow: var(--shadow-card);
+  background:
+    linear-gradient(var(--color-primary-light), var(--color-primary-light)) padding-box,
+    linear-gradient(150deg, #8FC2FF, #CFE4FF 50%, #8FC2FF) border-box;
 }
+
+.icon { flex: none; color: var(--color-primary); }
 
 .heading { margin: 0; }
 
 .trigger {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-4);
   width: 100%;
-  min-height: 54px;
-  padding: 14px 18px;
+  min-height: 56px;
+  padding: var(--space-3) var(--space-5);
   border: 0;
   background: transparent;
   text-align: left;
-  font-size: 15px;
-  font-weight: var(--fw-regular);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-semibold);
   color: var(--color-navy-950);
+  transition: color var(--duration) var(--ease);
 }
+.trigger:hover { color: var(--color-primary-dark); }
+.trigger:focus-visible { outline-offset: -3px; }
+
+/* Número da pergunta: ladrilho curto, como os ícones da grade. */
+.number {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-button);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  /* A Atkinson Hyperlegible corta o zero ("Ø1"); nos números usamos a
+     fonte do sistema, de zero comum e algarismos de largura igual. */
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.open .number {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.question { flex: 1; min-width: 0; }
 
 .chevron {
-  color: var(--color-primary);
-  transition: transform var(--duration) var(--ease);
+  flex: none;
+  color: var(--color-text-soft);
+  transition: transform var(--duration) var(--ease), color var(--duration) var(--ease);
 }
-.open .chevron { transform: rotate(180deg); }
+.open .chevron { transform: rotate(180deg); color: var(--color-primary); }
 
+/* 36px do número + 16px de espaço: a resposta começa onde a pergunta começa. */
 .panel {
-  padding: 0 18px 20px;
-  font-size: 14.5px;
-  line-height: 1.5;
+  padding: 0 var(--space-5) var(--space-5) calc(var(--space-5) + 36px + var(--space-4));
+  font-size: var(--fs-small);
+  line-height: 1.6;
   color: var(--color-text-muted);
+}
+.panel p { max-width: 68ch; }
+
+@media (max-width: 560px) {
+  .trigger { padding: var(--space-3) var(--space-4); gap: var(--space-3); }
+  .panel { padding: 0 var(--space-4) var(--space-4); }
 }

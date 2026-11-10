@@ -1,7 +1,6 @@
 // Regras puras da busca de profissionais (features/profissionais/buscaParametros.js):
-// URL → consulta, consulta → parâmetros da API, resposta → cartão e o filtro
-// local usado quando a API não responde. Os mocks importam ícones e imagens,
-// então o módulo é carregado pelo Vite.
+// URL → consulta, consulta → parâmetros da API e resposta → cartão. Os dados
+// das listas importam ícones e imagens, então o módulo é carregado pelo Vite.
 import assert from 'node:assert/strict'
 import { after, before, describe, test } from 'node:test'
 import { createServer } from 'vite'
@@ -134,29 +133,3 @@ describe('resposta da API → cartão', () => {
   })
 })
 
-describe('sem API: filtro dos mocks', () => {
-  const nomes = (c) => busca.filtrarMocks(consulta(c)).map((p) => p.name.replace(/^Dra?\. /, ''))
-
-  for (const [descricao, c, esperado] of [
-    ['sem filtros', {}, ['Roberto Almeida', 'Juliana Castro', 'Marcelo Santos', 'Fernanda Lima']],
-    ['termo na especialidade', { applied: { term: 'cardiologia' } }, ['Roberto Almeida']],
-    ['termo no nome, sem caixa', { applied: { term: 'JULIANA' } }, ['Juliana Castro']],
-    ['especialidade do painel', { applied: { specialty: 'Ginecologia' } }, ['Fernanda Lima']],
-    ['cidade', { applied: { city: 'Rio de Janeiro - RJ' } }, []],
-    ['modalidade', { applied: { type: 'domiciliar' } }, []],
-    ['especialidades da barra', { filters: { specialties: ['Pediatria', 'Dermatologia'] } }, ['Juliana Castro', 'Marcelo Santos']],
-    ['convênio', { filters: { insurances: ['SulAmérica'] } }, ['Juliana Castro', 'Marcelo Santos']],
-    ['termo sem resultado', { applied: { term: 'nenhum-resultado' } }, []],
-  ]) {
-    test(descricao, () => assert.deepEqual(nomes(c), esperado))
-  }
-
-  test('ordena por avaliação e, no empate, por número de avaliações', () => {
-    assert.deepEqual(nomes({ sort: 'avaliacao' }), ['Marcelo Santos', 'Roberto Almeida', 'Fernanda Lima', 'Juliana Castro'])
-  })
-
-  test('ordena pelo nome completo, com o título', () => {
-    const ordem = busca.filtrarMocks(consulta({ sort: 'nome' })).map((p) => p.name)
-    assert.deepEqual(ordem, ['Dr. Marcelo Santos', 'Dr. Roberto Almeida', 'Dra. Fernanda Lima', 'Dra. Juliana Castro'])
-  })
-})

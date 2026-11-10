@@ -45,14 +45,20 @@ export default function DashboardLayout({
         aoAlternarTema={alternarTema}
       />
 
-      <div className={cx(styles.grade, !aside && styles.semTrilha)}>
+      {/* A barra lateral é casca (marinho); a área de trabalho clara encaixa
+          nela pela curva do canto superior esquerdo. */}
+      <div className={styles.corpo}>
         <DashboardSidebar />
 
-        <main id="conteudo" className={styles.conteudo} tabIndex={-1}>
-          {children}
-        </main>
+        <div className={styles.area}>
+          <div className={cx(styles.grade, !aside && styles.semTrilha)}>
+            <main id="conteudo" className={styles.conteudo} tabIndex={-1}>
+              {children}
+            </main>
 
-        {aside && <div className={styles.trilhaDireita}>{aside}</div>}
+            {aside && <div className={styles.trilhaDireita}>{aside}</div>}
+          </div>
+        </div>
       </div>
 
       <Footer

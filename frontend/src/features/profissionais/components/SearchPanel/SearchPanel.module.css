@@ -1,30 +1,46 @@
+/* Barra de busca como uma régua única: os campos dividem a mesma moldura,
+   separados por traços finos, e o botão encosta na ponta direita. */
 .panel {
   position: relative;
   z-index: 3;
   display: grid;
-  grid-template-columns: 350px 255px 265px 256px 1fr;
-  gap: 16px;
-  align-items: center;
-  padding: 24px;
-  background: #fff;
+  grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)) auto;
+  align-items: stretch;
+  padding: 6px;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
 }
+
+/* Campos sem moldura própria dentro da régua. */
+.panel > * { border-radius: 6px; }
+.panel > :not(.submit) {
+  border: 0;
+  box-shadow: none;
+}
+.panel > :not(.submit) + :not(.submit) { position: relative; }
+.panel > :not(.submit) + :not(.submit)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: var(--color-border);
+}
+.panel > :not(.submit):hover { background: var(--color-surface-muted); }
+.panel > :not(.submit):focus-within { background: var(--color-surface-muted); box-shadow: inset 0 0 0 2px var(--color-primary); }
 
 .field {
   display: flex;
   align-items: center;
-  gap: 18px;
-  height: 52px;
-  padding: 0 16px 0 18px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 10px;
-  transition: border-color var(--duration) var(--ease);
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 16px;
 }
-.field:focus-within { border-color: var(--color-primary); }
 
-.searchIcon { color: var(--color-navy-950); }
+.searchIcon { color: var(--color-navy-950); flex: none; }
 
 .textBody {
   flex: 1;
@@ -34,9 +50,10 @@
 }
 
 .label {
-  font-size: 13px;
+  font-size: 12px;
   line-height: 16px;
-  color: var(--color-navy-950);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-soft);
 }
 
 .input {
@@ -46,38 +63,39 @@
   outline: 0;
   background: transparent;
   font: inherit;
-  font-size: 14px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
   line-height: 20px;
   color: var(--color-navy-950);
 }
-.input::placeholder { color: var(--color-text-soft); }
+.input::placeholder { color: var(--color-text-subtle); font-weight: var(--fw-regular); }
 
 .submit {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  height: 50px;
+  gap: 10px;
+  min-height: 56px;
+  margin-left: 6px;
+  padding: 0 28px;
   border: 0;
-  border-radius: 10px;
+  border-radius: var(--radius-button);
   background: var(--color-primary);
   color: #fff;
-  font-size: 17px;
-  font-weight: var(--fw-medium);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
   transition: background var(--duration) var(--ease);
 }
 .submit:hover { background: var(--color-primary-hover); }
 .submit svg { transition: transform var(--duration) var(--ease); }
-.submit:hover svg { transform: translateX(4px); }
-
-@media (max-width: 1440px) {
-  .panel { grid-template-columns: 1.4fr 1fr 1fr 1fr 170px; }
-}
+.submit:hover svg { transform: translateX(3px); }
 
 @media (max-width: 1180px) {
-  .panel { grid-template-columns: 1fr 1fr; }
+  .panel { grid-template-columns: 1fr 1fr; gap: 6px; }
   .textField { grid-column: 1 / -1; }
-  .submit { grid-column: 1 / -1; }
+  .panel > :not(.submit) { box-shadow: inset 0 0 0 1px var(--color-border); }
+  .panel > :not(.submit) + :not(.submit)::before { display: none; }
+  .submit { grid-column: 1 / -1; margin-left: 0; }
 }
 
 @media (max-width: 640px) {

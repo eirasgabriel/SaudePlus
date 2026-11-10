@@ -2,9 +2,9 @@ import { useId } from "react";
 
 import estilos from "../styles/telas.module.css";
 
-/* Peças das telas da área logada do médico e do paciente. Diferente dos
-   painéis antigos, estas telas não têm mocks: sem API, mostram o erro e o
-   botão de tentar de novo. As classes soltas (botões, listas) vêm de
+/* Peças das telas da área logada do médico e do paciente. Como todo o
+   sistema, estas telas não usam dados de demonstração: sem API, mostram o
+   erro e o botão de tentar de novo. As classes soltas (botões, listas) vêm de
    styles/telas.module.css, importado direto por quem usa. */
 
 export function CabecalhoDaTela({ titulo, subtitulo, children }) {
@@ -55,7 +55,7 @@ export function ConteudoCarregado({ estado, carregando = "Carregando…", childr
     return (
       <div className={estilos.botoes}>
         <Mensagem tom="erro">{estado.erro?.message ?? "Não foi possível carregar."}</Mensagem>
-        <button type="button" className={estilos.botaoSecundario} onClick={estado.recarregar}>
+        <button type="button" className={estilos.botaoSecundario} onClick={estado.tentarDeNovo ?? estado.recarregar}>
           Tentar de novo
         </button>
       </div>

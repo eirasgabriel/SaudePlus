@@ -6,7 +6,8 @@ import br.com.saudeplus.usuarios.Papel;
 import br.com.saudeplus.usuarios.Usuario;
 
 /** O front decide a área inicial por `role` (PACIENTE, MEDICO, ADMIN). */
-public record UsuarioResposta(UUID id, String nomeCompleto, String email, String telefone, Papel role, String fotoUrl) {
+public record UsuarioResposta(UUID id, String nomeCompleto, String email, String telefone, Papel role, String fotoUrl,
+        boolean exibirFotoNoPainel) {
 
     public static UsuarioResposta de(Usuario usuario) {
         return new UsuarioResposta(
@@ -15,6 +16,7 @@ public record UsuarioResposta(UUID id, String nomeCompleto, String email, String
                 usuario.getEmail(),
                 usuario.getTelefone(),
                 usuario.getPapel(),
-                usuario.getFotoUrl());
+                usuario.getFotoUrl(),
+                usuario.isExibirFotoNoPainel());
     }
 }

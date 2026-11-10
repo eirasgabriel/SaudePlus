@@ -1,22 +1,27 @@
+/* Módulo de ícone: um ladrilho quadrado de canto curto, a peça básica da
+   grade (os painéis de Athos Bulcão nos hospitais Sarah). */
 .circle {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  border-radius: 50%;
+  border-radius: var(--radius-button);
 }
+
+.circle svg { width: 50%; height: 50%; }
 
 .light {
   background: var(--color-primary-light);
-  color: var(--color-primary);
+  color: var(--color-primary-dark);
 }
 
 .solid {
-  background: var(--color-primary-bright);
+  background: var(--color-primary);
   color: #fff;
 }
 
+/* Sobre a casca marinho */
 .glass {
-  background: radial-gradient(circle at 35% 30%, #3F8DF5 0%, #1560DA 55%, #0B49BC 100%);
-  box-shadow: 0 0 0 5px rgba(80, 150, 255, 0.25);
-  color: #fff;
+  background: var(--shell-raised);
+  border: 1px solid var(--shell-line);
+  color: var(--color-accent);
 }

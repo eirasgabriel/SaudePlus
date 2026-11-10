@@ -1,119 +1,144 @@
 /* ==========================================================
-   Especialidades — referência 1536 × 1024
+   Especialidades
    ========================================================== */
+@value vitrine: "../../../components/Vitrine/Vitrine.module.css";
 
 /* ---------- Hero ---------- */
-.hero {
-  --hero-height: 480px;
-  --hero-content-top: 116px;
-  --art-shift-lg: 0px;
-}
+.hero { --art-shift-lg: 0px; }
 
-.title {
-  margin-top: 0;
-  font-size: 46px;
-  line-height: 1.1;
-}
-
-.lead {
-  margin-top: 16px;
-  max-width: 560px;
-  font-size: 17px;
-  line-height: 23px;
-}
-
-.search {
-  margin-top: 20px;
-  width: 626px;
-  max-width: 100%;
-}
-
-.chips { margin-top: 16px; }
-
-/* Posições sobre a arte (px da referência) */
-.cardVerified { left: 751px; top: 140px; width: 180px; height: 74px; padding: 0 12px 0 10px; gap: 10px; font-size: 13px; line-height: 1.3; }
-.cardSafety   { left: 1148px; top: 297px; width: 197px; height: 64px; padding-left: 16px; gap: 16px; font-size: 13px; }
-.handwriting  { left: 1161px; top: 157px; }
-
-/* ---------- Cards ---------- */
-.cardHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.explore {
+/* ---------- Buscas populares: faixa branca sobre o hero ---------- */
+.popular {
+  position: relative;
   z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
   margin-top: calc(-1 * var(--hero-overlap));
-  padding: var(--section-padding);
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid transparent;
+  background: var(--realce-fundo);
+  box-shadow: var(--realce-sombra);
+  border-radius: 16px;
 }
+
+.popularLabel {
+  flex-shrink: 0;
+  font-size: 17px;
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+}
+
+.popularList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Atalhos em pílula azul cheia, com texto branco. */
+.chip {
+  composes: chip chipAtivo from vitrine;
+  box-shadow: 0 6px 14px -8px rgba(0, 112, 232, 0.8);
+}
+
+.chip:hover {
+  border-color: var(--color-primary-hover);
+  background: var(--color-primary-hover);
+  color: #fff;
+}
+
+/* ---------- Grade de especialidades ---------- */
+.explore { margin-top: var(--space-8); }
 
 .specialtyGrid {
-  margin-top: 24px;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--card-gap);
-}
-
-.empty {
-  margin-top: 18px;
-  padding: 26px;
-  border-radius: 12px;
-  background: var(--color-surface-muted);
-  color: var(--color-text-muted);
-}
-.empty button {
+  gap: var(--space-4);
+  margin: 0;
   padding: 0;
-  border: 0;
-  background: none;
+  list-style: none;
+}
+
+.specialty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: 100%;
+  padding: var(--space-5);
+  border: 1px solid transparent;
+  background: var(--realce-fundo);
+  box-shadow: var(--realce-sombra);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+  transition: box-shadow var(--duration) var(--ease), transform var(--duration) var(--ease);
+}
+
+.specialty:hover { transform: translateY(-3px); box-shadow: var(--realce-sombra-hover); }
+
+.specialtyIcon.specialtyIcon {
+  border-radius: 12px;
+  background: var(--color-primary-light);
   color: var(--color-primary);
-  font-weight: var(--fw-semibold);
-  text-decoration: underline;
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
 }
 
-.band { margin-top: var(--section-gap); }
-.bandButton { height: 52px; min-width: 210px; padding: 0 28px; font-size: 16px; }
+.specialty:hover .specialtyIcon.specialtyIcon { background: var(--color-primary); color: #fff; }
 
-.featured {
-  margin-top: var(--section-gap);
-  margin-bottom: var(--section-gap);
-  padding: var(--section-padding);
+.specialtyIcon.specialtyIcon svg { width: 56%; height: 56%; }
+
+.specialtyName {
+  display: block;
+  font-size: 18px;
+  font-weight: var(--fw-bold);
+  line-height: 1.25;
+  color: var(--color-navy-950);
 }
-.featuredTitle { font-size: 22px; }
 
-.subtitle {
+.specialty:hover .specialtyName { color: var(--color-primary); }
+
+.specialtyText {
+  display: block;
   margin-top: 4px;
-  font-size: 15px;
+  font-size: var(--fs-small);
+  line-height: 1.45;
   color: var(--color-text-muted);
 }
+
+/* ---------- Faixa de chamada ---------- */
+.band { margin-top: var(--section-gap); }
+.bandAccent { color: var(--color-accent); }
+
+/* ---------- Profissionais em destaque ---------- */
+.featured { composes: secao from vitrine; }
+.cardHeader { composes: painelCabecalho from vitrine; }
+.cardTitle { composes: painelTitulo from vitrine; }
 
 .doctorGrid {
-  margin-top: 24px;
+  margin-top: var(--space-6);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--card-gap);
+  gap: var(--space-4);
 }
 
-/* ==========================================================
-   Responsivo
-   ========================================================== */
+/* ---------- Responsivo ---------- */
 @media (max-width: 1280px) {
   .specialtyGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .doctorGrid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 1024px) {
+  .popular { flex-direction: column; align-items: flex-start; gap: var(--space-3); }
   .specialtyGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 768px) {
-  .title { font-size: 36px; line-height: 38px; }
-  .cardHeader { flex-direction: column; gap: 8px; }
-  .specialtyGrid { grid-template-columns: repeat(2, 1fr); }
   .doctorGrid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
   .specialtyGrid { grid-template-columns: 1fr; }
+  .bandButton { width: 100%; }
 }

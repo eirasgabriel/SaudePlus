@@ -16,13 +16,12 @@
   background: var(--branco);
   border: 1px solid var(--borda);
   border-radius: var(--raio);
-  box-shadow: var(--sombra);
-  transition: transform var(--transicao), box-shadow var(--transicao);
+  transition: border-color var(--transicao);
 }
 
 .canal:hover {
   transform: translateY(-2px);
-  box-shadow: var(--sombra-md);
+  border-color: var(--color-border-hover);
 }
 
 .canalIcone {
@@ -74,7 +73,7 @@
 .ajudaIcone {
   width: 42px;
   height: 42px;
-  border-radius: 12px;
+  border-radius: var(--radius-button);
   display: grid;
   place-items: center;
   background: var(--amarelo-bg);
@@ -111,7 +110,7 @@
 .horarioIcone {
   width: 46px;
   height: 46px;
-  border-radius: 13px;
+  border-radius: var(--radius-button);
   display: grid;
   place-items: center;
   background: var(--azul-claro);

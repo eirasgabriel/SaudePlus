@@ -3,6 +3,7 @@
    (rótulo, ícone, nota) continuam nos mocks; daqui só saem os números. */
 
 import { fotoDoPaciente } from "../../services/fotosPacientes";
+import { enderecoDaApi } from "../../services/http.js";
 
 const numero = new Intl.NumberFormat("pt-BR");
 const dataCurta = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
@@ -66,7 +67,7 @@ export function paraUsuario(u) {
     papel: u.papel,
     status: u.status,
     ultimoAcesso: u.ultimoAcesso ? dataHora.format(new Date(u.ultimoAcesso)).replace(",", "") : "Nunca acessou",
-    foto: u.fotoUrl ?? fotoDoPaciente(u.nome),
+    foto: enderecoDaApi(u.fotoUrl) ?? fotoDoPaciente(u.nome),
   };
 }
 
@@ -148,7 +149,7 @@ export function paraAgendamento(a) {
     dataIso: a.data,
     hora: a.horario,
     paciente: a.paciente.nome,
-    foto: a.paciente.fotoUrl ?? fotoDoPaciente(a.paciente.nome),
+    foto: enderecoDaApi(a.paciente.fotoUrl) ?? fotoDoPaciente(a.paciente.nome),
     cpf: a.paciente.cpf ?? "—",
     especialidade: a.especialidade,
     profissional: a.medico.nome,
@@ -269,12 +270,12 @@ const ROTULO_DA_FORMA = {
   convenio: "Convênio",
 };
 const COR_DA_FORMA = {
-  credito: "#5B9BFF",
-  debito: "#7FB2FF",
-  pix: "#14B8A6",
-  boleto: "#0066FF",
-  dinheiro: "#F59E0B",
-  convenio: "#A855F7",
+  credito: "var(--color-primary)",
+  debito: "var(--color-blue-600)",
+  pix: "var(--color-navy-900)",
+  boleto: "var(--color-accent)",
+  dinheiro: "var(--color-border-hover)",
+  convenio: "var(--color-navy-700)",
 };
 
 export function paraTransacao(t) {
@@ -330,7 +331,7 @@ export function paraFinanceiro(modelos, r) {
 
 /* ------------------------------------------------------------ relatórios */
 
-const CORES_DAS_FATIAS = ["var(--azul)", "var(--azul-suave)", "var(--verde-claro)", "var(--roxo)", "#c4b5fd"];
+const CORES_DAS_FATIAS = ["var(--color-primary)", "var(--color-navy-900)", "var(--color-accent)", "var(--color-border-hover)", "var(--color-navy-700)"];
 
 /** Até 4 fatias e o resto somado em "Outras", como no mock. */
 function fatias(itens) {

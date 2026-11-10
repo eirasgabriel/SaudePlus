@@ -1,5 +1,7 @@
 package br.com.saudeplus.auth;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
@@ -8,6 +10,12 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.web.multipart.MultipartFile;
+
+import br.com.saudeplus.arquivos.ArmazenamentoArquivos;
+import br.com.saudeplus.arquivos.TipoDeArquivo;
 
 import br.com.saudeplus.auth.dto.AtualizarPerfilRequisicao;
 import br.com.saudeplus.auth.dto.AuthResposta;
@@ -41,6 +49,15 @@ public class AuthService {
     private final JwtService jwt;
     private final Clock relogio;
     private final Auditoria auditoria;
+    private final ArmazenamentoArquivos armazenamento;
+
+    /** Foto de perfil: só PNG, até 2 MB. */
+    static final long TAMANHO_MAXIMO_DA_FOTO = 2L * 1024 * 1024;
+
+    /** Endereço público de uma foto enviada (ver PublicoController#foto). */
+    public static String urlDaFoto(String chave) {
+        return "/api/publico/fotos/" + chave;
+    }
 
     /**
      * Hash comparado quando o e-mail não existe, para gastar o mesmo BCrypt
@@ -49,13 +66,14 @@ public class AuthService {
     private final String hashFicticio;
 
     public AuthService(UsuarioRepository usuarios, PacienteRepository pacientes, PasswordEncoder codificador,
-            JwtService jwt, Clock relogio, Auditoria auditoria) {
+            JwtService jwt, Clock relogio, Auditoria auditoria, ArmazenamentoArquivos armazenamento) {
         this.usuarios = usuarios;
         this.pacientes = pacientes;
         this.codificador = codificador;
         this.jwt = jwt;
         this.relogio = relogio;
         this.auditoria = auditoria;
+        this.armazenamento = armazenamento;
         this.hashFicticio = codificador.encode(UUID.randomUUID().toString());
     }
 
@@ -107,7 +125,65 @@ public class AuthService {
     public UsuarioResposta atualizarPerfil(UUID usuarioId, AtualizarPerfilRequisicao requisicao) {
         Usuario usuario = buscar(usuarioId);
         usuario.atualizarPerfil(requisicao.nomeCompleto(), requisicao.telefone(), requisicao.fotoUrl());
+        if (requisicao.exibirFotoNoPainel() != null) {
+            usuario.exibirFotoNoPainel(requisicao.exibirFotoNoPainel());
+        }
+        // Trocou a foto enviada por um endereço https (ou apagou): o arquivo antigo sai.
+        if (usuario.getFotoChave() != null) {
+            String solta = usuario.soltarFotoEnviadaSeTrocada(urlDaFoto(usuario.getFotoChave()));
+            apagarDepoisDoCommit(solta);
+        }
         return UsuarioResposta.de(usuario);
+    }
+
+    /**
+     * Guarda a foto enviada do computador e passa a usá-la como foto de perfil.
+     * Só PNG (conferido pelos bytes, não pela extensão), até 2 MB. A foto
+     * anterior enviada por aqui é apagada depois que a troca é gravada.
+     */
+    @Transactional
+    public UsuarioResposta enviarFoto(UUID usuarioId, MultipartFile arquivo) {
+        Usuario usuario = buscar(usuarioId);
+        if (arquivo == null || arquivo.isEmpty()) {
+            throw RequisicaoInvalidaException.noCampo("arquivo", "Escolha uma imagem .png.");
+        }
+        if (arquivo.getSize() > TAMANHO_MAXIMO_DA_FOTO) {
+            throw RequisicaoInvalidaException.noCampo("arquivo", "A imagem deve ter até 2 MB.");
+        }
+        byte[] conteudo;
+        try {
+            conteudo = arquivo.getBytes();
+        } catch (IOException excecao) {
+            throw new UncheckedIOException("Não foi possível ler o arquivo enviado.", excecao);
+        }
+        if (TipoDeArquivo.detectar(conteudo).filter(tipo -> tipo == TipoDeArquivo.PNG).isEmpty()) {
+            throw RequisicaoInvalidaException.noCampo("arquivo", "Envie uma imagem .png.");
+        }
+        String chave = armazenamento.guardar(conteudo, TipoDeArquivo.PNG);
+        // Se a transação falhar, o arquivo novo não fica órfão.
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status != STATUS_COMMITTED) {
+                    armazenamento.remover(chave);
+                }
+            }
+        });
+        apagarDepoisDoCommit(usuario.definirFotoEnviada(chave, urlDaFoto(chave)));
+        auditoria.registrar(usuarioId, "usuario.foto", "usuario", usuarioId, null);
+        return UsuarioResposta.de(usuario);
+    }
+
+    private void apagarDepoisDoCommit(String chave) {
+        if (chave == null) {
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                armazenamento.remover(chave);
+            }
+        });
     }
 
     @Transactional

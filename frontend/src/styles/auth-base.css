@@ -9,57 +9,53 @@
      login e cadastro usarem o mesmo azul do resto do sistema. */
   --sp-primary: var(--color-primary);
   --sp-primary-dark: var(--color-primary-hover);
-  --sp-primary-light: #E6F1FD;
+  --sp-primary-light: var(--color-primary-light);
 
-  /* Cores do sistema */
-  --sp-blue-dark: #0f2341;
-  --sp-blue-text: #24354f;
-  --sp-text: #1f2937;
-  --sp-text-secondary: #6a7c95;
-  --sp-text-muted: #8b9bb3;
+  /* Cores do sistema — apelidos de tokens.css */
+  --sp-blue-dark: var(--color-navy-950);
+  --sp-blue-text: var(--color-text-strong);
+  --sp-text: var(--color-text);
+  --sp-text-secondary: var(--color-text-muted);
+  --sp-text-muted: var(--color-text-soft);
 
   /* Fundos */
-  --sp-background: #ffffff;
-  --sp-background-light: #f7faff;
-  --sp-background-blue: #eef5ff;
+  --sp-background: var(--color-surface);
+  --sp-background-light: var(--color-surface-soft);
+  --sp-background-blue: var(--color-background);
 
   /* Bordas */
-  --sp-border: #dce8f7;
-  --sp-border-light: #e3ecf8;
-  --sp-border-input: #d6e4fa;
+  --sp-border: var(--color-border);
+  --sp-border-light: var(--color-border);
+  --sp-border-input: var(--color-border-strong);
 
   /* Estados */
-  --sp-success: #12855a;
-  --sp-success-bg: #e3f7ed;
+  --sp-success: var(--state-success);
+  --sp-success-bg: var(--state-success-bg);
 
-  --sp-danger: #d93a3a;
-  --sp-danger-bg: #fdeeee;
+  --sp-danger: var(--state-danger);
+  --sp-danger-bg: var(--state-danger-bg);
 
-  --sp-warning: #c77b00;
-  --sp-warning-bg: #fff5df;
+  --sp-warning: var(--state-pending);
+  --sp-warning-bg: var(--state-pending-bg);
 
-  --sp-info: var(--color-primary);
-  --sp-info-bg: #eef5ff;
+  --sp-info: var(--color-primary-dark);
+  --sp-info-bg: var(--state-info-bg);
 
   /* Raios */
-  --sp-radius-sm: 8px;
-  --sp-radius-md: 11px;
-  --sp-radius-lg: 13px;
-  --sp-radius-xl: 16px;
-  --sp-radius-2xl: 20px;
+  --sp-radius-sm: 6px;
+  --sp-radius-md: var(--radius-button);
+  --sp-radius-lg: var(--radius-button);
+  --sp-radius-xl: var(--radius-card);
+  --sp-radius-2xl: var(--radius-card);
 
   /* Sombras */
-  --sp-shadow-sm:
-    0 2px 6px rgba(15, 35, 65, 0.06);
+  --sp-shadow-sm: var(--shadow-card);
 
-  --sp-shadow-md:
-    0 6px 16px rgba(15, 35, 65, 0.08);
+  --sp-shadow-md: var(--shadow-card-hover);
 
-  --sp-shadow-lg:
-    0 10px 28px rgba(15, 35, 65, 0.10);
+  --sp-shadow-lg: var(--shadow-float);
 
-  --sp-shadow-primary:
-    0 8px 20px rgba(0, 112, 232, 0.20);
+  --sp-shadow-primary: none;
 
   /* Transições */
   --sp-transition:
@@ -69,15 +65,7 @@
   --sp-content-max-width: 1200px;
 
   /* Fonte */
-  --sp-font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    Arial,
-    sans-serif;
+  --sp-font-family: var(--font-sans);
 }
 
 

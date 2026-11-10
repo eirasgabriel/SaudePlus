@@ -1,51 +1,46 @@
 import {
-  BookOpenIcon, QuestionCircleIcon, ChatDotsIcon, FileTextIcon, MailIcon, PhoneIcon,
+  BookOpenLineIcon, QuestionLineIcon, ChatLineIcon, FileLineIcon, MailLineIcon, PhoneLineIcon,
 } from "../../../components/icons/Icons.jsx";
 
-export const HELP_SUGGESTIONS = ["Agendamento", "Cancelamento", "Planos e pagamento", "Conta e cadastro"];
-
+/* Cartões de atalho sobre o hero. `acao` marca o que ainda não está publicado. */
 export const HELP_SHORTCUTS = [
-  { icon: BookOpenIcon, title: "Central de ajuda", description: ["Guias e tutoriais passo", "a passo"], href: "/como-funciona" },
-  { icon: QuestionCircleIcon, title: "Perguntas frequentes", description: ["Encontre respostas", "rapidamente"], href: "#perguntas-frequentes" },
-  { icon: ChatDotsIcon, title: "Fale conosco", description: ["Diversos canais", "de atendimento"], href: "#fale-conosco" },
-  { icon: FileTextIcon, title: "Termos e políticas", description: ["Condições de uso", "e privacidade"], action: "termos" },
+  { icone: BookOpenLineIcon, titulo: "Central de ajuda", descricao: "Guias, tutoriais e passo a passo", para: "/como-funciona" },
+  { icone: QuestionLineIcon, titulo: "Perguntas frequentes", descricao: "Encontre respostas rapidamente", href: "#perguntas-frequentes" },
+  { icone: ChatLineIcon, titulo: "Fale conosco", descricao: "Dúvidas e suporte ao atendimento", href: "#fale-conosco" },
+  { icone: FileLineIcon, titulo: "Termos e políticas", descricao: "Condições de uso e privacidade", acao: "Termos e políticas" },
 ];
 
+/* Respostas fiéis ao que o produto faz hoje. */
 export const FAQ = [
   {
     question: "Como agendar uma consulta pelo SaúdePlus?",
-    answer: "Nesta versão, você pode explorar os profissionais e selecionar um horário ilustrativo. A confirmação de consultas ainda não está disponível.",
-    tags: ["Agendamento"],
+    answer: "Busque a especialidade ou o profissional, escolha um horário livre na agenda e entre na sua conta para confirmar. A consulta aparece em Consultas, na sua área do paciente.",
   },
   {
     question: "É possível remarcar ou cancelar uma consulta?",
-    answer: "O gerenciamento de consultas será disponibilizado junto com o agendamento. Ainda não é possível remarcar ou cancelar consultas nesta versão.",
-    tags: ["Cancelamento", "Agendamento"],
+    answer: "Sim. Na sua área do paciente, em Consultas, cada agendamento tem as opções de remarcar para outro horário livre ou cancelar.",
   },
   {
     question: "Quais são as formas de pagamento?",
-    answer: "Os pagamentos ainda não estão disponíveis. As formas de pagamento e condições dos convênios serão informadas quando o serviço for lançado.",
-    tags: ["Planos e pagamento"],
+    answer: "O pagamento pela plataforma ainda não está disponível. As formas de pagamento e os convênios aceitos serão informados quando o serviço for lançado.",
   },
   {
     question: "Como criar uma conta no SaúdePlus?",
-    answer: "O cadastro está em desenvolvimento. O botão “Criar conta” informa quando uma funcionalidade ainda não está disponível.",
-    tags: ["Conta e cadastro"],
+    answer: "Clique em Criar conta, preencha nome, e-mail e senha e aceite os Termos de Uso. A conta de paciente fica pronta na hora.",
   },
   {
     question: "Meus dados estão seguros na plataforma?",
-    answer: "Esta demonstração não solicita cadastro nem envia agendamentos. As informações sobre privacidade serão publicadas antes da disponibilização desses serviços.",
-    tags: ["Conta e cadastro"],
+    answer: "Sua conta é acessada com e-mail e senha, e cada perfil (paciente, médico ou administração) vê apenas as informações que lhe cabem.",
   },
   {
     question: "Como falar com um atendente?",
-    answer: "Os canais de atendimento ainda não estão disponíveis. Você pode consultar as perguntas desta página enquanto o suporte é preparado.",
-    tags: [],
+    answer: "Os canais de atendimento (chat, e-mail e telefone) estão em preparação e serão anunciados nesta página. Enquanto isso, as respostas acima cobrem as dúvidas mais comuns.",
   },
 ];
 
+/* Canais de atendimento: ainda em preparação, por isso sem número nem status "on-line". */
 export const CONTACT_CHANNELS = [
-  { icon: ChatDotsIcon, title: "Chat online", description: "Atendimento em preparação", status: "Em breve" },
-  { icon: MailIcon, title: "E-mail", description: "Canal disponível em breve" },
-  { icon: PhoneIcon, title: "Telefone", description: "Canal disponível em breve" },
+  { icone: ChatLineIcon, titulo: "Chat online", descricao: "Atendimento em tempo real", status: "Em breve" },
+  { icone: MailLineIcon, titulo: "E-mail", descricao: "Canal disponível em breve" },
+  { icone: PhoneLineIcon, titulo: "Telefone", descricao: "Canal disponível em breve" },
 ];

@@ -1,33 +1,25 @@
-/* Conteúdo mockado da Homepage */
-import { CalendarIcon, UsersIcon, ShieldHeartIcon, HeartIcon, StarIcon } from "../../../components/icons/Icons.jsx";
+/* Conteúdo da página inicial */
+import {
+  ShieldHeartIcon, ClockIcon, StethoscopeIcon, FileTextIcon,
+} from "../../../components/icons/Icons.jsx";
+import { SPECIALTIES } from "../../profissionais/data/specialties.js";
 
 export const heroContent = {
-  badge: "Saúde mais perto de você",
-  titleLines: ["Agende suas", "consultas on-line"],
-  titleAccent: "com mais facilidade",
-  leadLines: [
-    "No SaúdePlus você encontra profissionais de confiança,",
-    "verifica horários disponíveis e agenda sua consulta",
-    "de forma rápida, segura e sem complicação.",
-  ],
-  cta: { label: "Agendar agora", to: "/buscar" },
+  lead: "Agende consultas, realize exames, acompanhe seu histórico e cuide da sua saúde com praticidade, segurança e confiança.",
+  agendar: { label: "Agendar consulta", to: "/buscar" },
+  conhecer: { label: "Conhecer a plataforma", to: "/como-funciona" },
 };
 
+/* Faixa sobre o hero: cada item responde a uma dúvida concreta de quem vai agendar. */
 export const benefits = [
-  { icon: CalendarIcon, iconSize: 42, title: "Agende em minutos", description: ["Escolha o melhor horário", "para você."] },
-  { icon: UsersIcon, iconSize: 54, title: "Profissionais de confiança", description: ["Encontre especialistas", "perto de você."] },
-  { icon: ShieldHeartIcon, iconSize: 40, title: "Atendimento seguro", description: ["Seus dados protegidos", "sempre."] },
-  { icon: HeartIcon, iconSize: 46, title: "Mais qualidade de vida", description: ["Cuidar da sua saúde", "é viver melhor."] },
+  { icone: ClockIcon, titulo: "Horários disponíveis", descricao: "Veja a agenda livre do profissional antes de marcar." },
+  { icone: StethoscopeIcon, titulo: "Consultas e exames", descricao: "Agende os dois no mesmo lugar." },
+  { icone: FileTextIcon, titulo: "Histórico organizado", descricao: "Consulte exames e resultados reunidos na sua conta." },
+  { icone: ShieldHeartIcon, titulo: "Dados protegidos", descricao: "Sua conta é acessada com login e senha." },
 ];
 
-export const trustContent = {
-  title: "Sua saúde em",
-  titleAccent: "boas mãos",
-  text: "No SaúdePlus, tecnologia e cuidado caminham juntos para você ter uma experiência simples e confiável.",
-};
-
-export const stats = [
-  { icon: UsersIcon, iconSize: 56, iconStyle: { marginBottom: -10 }, value: "+ de 5.000", label: "profissionais" },
-  { icon: StarIcon, iconSize: 40, iconStyle: { marginTop: 6 }, value: "+ de 100", label: "especialidades" },
-  { icon: UsersIcon, iconSize: 56, iconStyle: { marginBottom: -10 }, value: "+ de 1 milhão", label: "de consultas realizadas" },
-];
+/* Atalhos para a busca já filtrada — os mesmos nomes que /buscar entende. */
+const DESTAQUES = ["clinico-geral", "pediatria", "ginecologia", "cardiologia", "dermatologia", "ortopedia", "oftalmologia", "psiquiatria"];
+export const featuredSpecialties = DESTAQUES
+  .map((slug) => SPECIALTIES.find((s) => s.slug === slug))
+  .filter(Boolean);

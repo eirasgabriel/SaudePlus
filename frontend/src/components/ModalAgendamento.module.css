@@ -9,27 +9,27 @@
 .fundo {
   /* Paleta oficial */
   --primary: var(--color-primary);
-  --primary-700: #0052d6;
-  --primary-100: #dceaff;
-  --primary-50: #eef5ff;
+  --primary-700: var(--color-primary-hover);
+  --primary-100: var(--color-primary-light);
+  --primary-50: var(--color-surface-muted);
 
   /* Neutros */
-  --navy: #0a2463;
-  --text: #1f2a44;
-  --muted: #667085;
-  --border: #e3ecf8;
+  --navy: var(--color-navy-950);
+  --text: var(--color-text);
+  --muted: var(--color-text-muted);
+  --border: var(--color-border-strong);
   --surface: #ffffff;
 
   /* Status */
-  --danger: #d92544;
-  --danger-bg: #ffe5ea;
+  --danger: var(--state-danger);
+  --danger-bg: var(--state-danger-bg);
 
   /* Forma */
-  --radius: 16px;
-  --radius-lg: 20px;
-  --pill: 999px;
+  --radius: var(--radius-card);
+  --radius-lg: var(--radius-card);
+  --pill: var(--radius-button);
 
-  --font: 'Nunito Sans', 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+  --font: var(--font-sans);
 
   position: fixed;
   inset: 0;
@@ -40,11 +40,10 @@
   padding: 24px;
   overflow-y: auto;
   font-family: var(--font);
-  line-height: normal;
+  line-height: 1.5;
   text-align: left;
   color: var(--text);
-  background: rgba(10, 36, 99, 0.45);
-  backdrop-filter: blur(3px);
+  background: rgba(2, 15, 69, 0.62);
   animation: surgirFundo 0.18s ease-out;
 }
 
@@ -64,9 +63,9 @@
 }
 
 .fundo :focus-visible {
-  outline: 3px solid rgba(0, 112, 232, 0.45);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
-  border-radius: 10px;
+  border-radius: 6px;
 }
 
 /*  Caixa  */
@@ -76,8 +75,8 @@
   margin: auto;
   overflow: hidden;
   background: var(--surface);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 24px 60px rgba(8, 30, 84, 0.28);
+  border-radius: var(--radius-card) var(--radius-shed) var(--radius-card) var(--radius-card);
+  box-shadow: var(--shadow-float);
   animation: surgirDialogo 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 
@@ -89,10 +88,10 @@
   gap: 18px;
   padding: 24px 24px 20px;
   color: #fff;
-  background:
-    radial-gradient(120% 90% at 100% 100%, rgba(255, 255, 255, 0.14) 0 40%, transparent 41%),
-    linear-gradient(135deg, #1a82ff 0%, var(--primary) 55%, var(--primary-700) 100%);
+  background: var(--shell);
 }
+
+.cabecalho :focus-visible { outline-color: var(--color-accent); }
 
 .iconeCabecalho {
   display: grid;
@@ -100,8 +99,10 @@
   flex-shrink: 0;
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-button);
+  color: var(--color-accent);
+  background: var(--shell-raised);
+  border: 1px solid var(--shell-line);
 }
 
 .iconeCabecalho svg {
@@ -117,16 +118,16 @@
 }
 
 .titulo {
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
 }
 
 .descricao {
   margin-top: 6px;
   font-size: 14px;
   line-height: 1.5;
-  opacity: 0.95;
+  color: var(--shell-text-muted);
 }
 
 .botaoFechar {
@@ -139,15 +140,16 @@
   height: 36px;
   padding: 0;
   border: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--shell-text-muted);
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .botaoFechar:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--shell-hover);
+  color: #fff;
 }
 
 .botaoFechar svg {
@@ -181,10 +183,10 @@
   width: 100%;
   padding: 12px 14px;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #fafcff;
+  border-radius: var(--radius-button);
+  background: #fff;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text);
   transition: border-color 0.15s ease, background 0.15s ease;
 }
@@ -193,7 +195,7 @@
   /* seta própria, já que o select nativo varia muito entre navegadores */
   appearance: none;
   padding-right: 40px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230a2463' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234A5E86' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
   background-size: 18px;
@@ -202,13 +204,15 @@
 
 .select:hover:not(:disabled),
 .input:hover {
-  border-color: #c9ddf7;
+  border-color: var(--color-border-hover);
 }
 
 .select:focus,
 .input:focus {
   background: #fff;
   border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 112, 232, 0.16);
 }
 
 .select:disabled {
@@ -219,7 +223,7 @@
 
 .campoInvalido {
   border-color: var(--danger);
-  background: #fffafb;
+  background: #fff;
 }
 
 .erro {
@@ -230,27 +234,40 @@
 
 .aviso {
   padding: 14px 16px;
-  border: 1px dashed #cddcf0;
-  border-radius: 12px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-button);
   font-size: 13px;
   color: var(--muted);
+}
+
+/* "tente de novo" no aviso de falha da API: link em forma de botão. */
+.botaoTentar {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 /*  Horários  */
 .horarios {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
-  gap: 10px;
+  gap: 6px;
 }
 
 .horario {
   padding: 11px 8px;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #fafcff;
+  border-radius: 4px;
+  background: #fff;
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   color: var(--navy);
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
@@ -264,20 +281,20 @@
 
 .horarioAtivo,
 .horarioAtivo:hover {
-  border-color: var(--primary);
-  background: var(--primary);
+  border-color: var(--color-navy-900);
+  background: var(--color-navy-900);
   color: #fff;
 }
 
 /* Resumo  */
 .resumo {
   padding: 14px 16px;
-  border: 1px solid #cfe1fb;
-  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-button);
   background: var(--primary-50);
   font-size: 13.5px;
   line-height: 1.5;
-  color: #0a4fc9;
+  color: var(--color-text-strong);
 }
 
 .resumo strong {
@@ -304,19 +321,17 @@
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .botaoPrimario {
   border: 0;
   background: var(--primary);
   color: #fff;
-  box-shadow: 0 8px 20px rgba(0, 112, 232, 0.28);
 }
 
 .botaoPrimario:hover {
   background: var(--primary-700);
-  box-shadow: 0 12px 26px rgba(0, 112, 232, 0.34);
 }
 
 .botaoPrimario:active {
@@ -330,8 +345,8 @@
 }
 
 .botaoSecundario:hover {
-  background: var(--primary-50);
-  border-color: #c9ddf7;
+  background: var(--primary-100);
+  border-color: var(--color-border-hover);
 }
 
 .iconeBotao {

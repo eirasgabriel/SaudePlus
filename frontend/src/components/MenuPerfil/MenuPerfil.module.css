@@ -44,8 +44,8 @@
 }
 
 .sair:hover {
-  color: var(--tom-erro-fg, #C0392B);
-  background: var(--tom-erro-bg, #FBE3E0);
+  color: var(--state-danger);
+  background: var(--state-danger-bg);
 }
 
 /* ---------- item liga/desliga (ex.: modo escuro) ---------- */

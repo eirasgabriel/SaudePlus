@@ -1,23 +1,17 @@
-import { Fragment } from "react";
-import HeroSection, { HeroTitle, HeroLead, HeroAccent } from "../../../components/HeroSection/HeroSection.jsx";
-import Badge from "../../../components/Badge/Badge.jsx";
+import HeroSection, { HeroTitle, HeroLead } from "../../../components/HeroSection/HeroSection.jsx";
 import Button from "../../../components/Button/Button.jsx";
-import FloatingInfoCard from "../../../components/FloatingInfoCard/FloatingInfoCard.jsx";
-import Handwriting from "../../../components/Handwriting/Handwriting.jsx";
-import SectionCard from "../../../components/SectionCard/SectionCard.jsx";
-import { SectionTitle } from "../../../components/SectionTitle/SectionTitle.jsx";
-import StepCard from "../../../components/StepCard/StepCard.jsx";
-import InfoCard from "../../../components/InfoCard/InfoCard.jsx";
+import Container from "../../../components/Container/Container.jsx";
+import IconCircle from "../../../components/IconCircle/IconCircle.jsx";
+import { TituloCentral, GradeCartoes } from "../../../components/Vitrine/Vitrine.jsx";
 import CTABand from "../../../components/CTABand/CTABand.jsx";
-import { ClockIcon, ShieldCheckIcon, HeartIcon, ArrowRightIcon } from "../../../components/icons/Icons.jsx";
 
 import { STEPS, REASONS } from "../data/comoFunciona.js";
-import heroArt from "../../../assets/images/hero-como-funciona.jpg";
+import heroArt from "../../../assets/images/hero-como-funciona-rente.jpg";
 import heroMobile from "../../../assets/images/hero-como-funciona-mobile.jpg";
 
 import styles from "./ComoFunciona.module.css";
 
-export default function ComoFunciona({ onUnavailable }) {
+export default function ComoFunciona() {
   return (
     <>
       <HeroSection
@@ -29,86 +23,52 @@ export default function ComoFunciona({ onUnavailable }) {
         artCropBottom={84}
         artAlt="Mulher sorrindo usando o smartphone"
         mobileSrc={heroMobile}
-        mobileAlt="Mulher usando o smartphone com os avisos Agendamento em poucos cliques e Processo seguro e confiável"
-        overlay={
-          <>
-            <FloatingInfoCard
-              className={styles.cardSchedule}
-              icon={ClockIcon}
-              iconSize={44}
-              iconVariant="plain"
-              lines={["Agendamento", "em poucos cliques"]}
-            />
-            <FloatingInfoCard
-              className={styles.cardSafe}
-              icon={ShieldCheckIcon}
-              iconSize={42}
-              iconVariant="plain"
-              lines={["Processo seguro", "e confiável"]}
-            />
-            <Handwriting className={styles.handwriting} />
-          </>
-        }
+        mobileAlt="Mulher sorrindo usando o smartphone"
+        rente
+        cruz={{ x: 1020, y: 80, tamanho: 210 }}
       >
-        <Badge>Processo simples e seguro</Badge>
-        <HeroTitle
-          id="como-hero-title"
-          className={styles.title}
-          lines={["Cuidar da sua saúde", <>ficou <HeroAccent>mais simples</HeroAccent></>]}
-        />
+        <HeroTitle id="como-hero-title" lines={["Veja como é fácil usar o"]} accent="SaúdePlus" />
         <HeroLead
-          className={styles.lead}
           lines={[
-            "Em poucos passos você encontra o especialista ideal,",
-            "agenda sua consulta e cuida da sua saúde com",
-            "praticidade e segurança.",
+            "Do cadastro ao atendimento, um processo simples, rápido",
+            "e seguro para cuidar da sua saúde, do seu jeito.",
           ]}
         />
-        <div className={styles.actions}>
-          <Button variant="hero" onClick={() => onUnavailable("Criar conta")} withArrow className={styles.primaryCta}>Criar conta agora</Button>
-          <Button variant="ghost" to="/especialidades" className={styles.secondaryCta}>Ver especialidades</Button>
-        </div>
       </HeroSection>
 
-      {/* Etapas */}
-      <SectionCard className={styles.steps} aria-labelledby="steps-title">
-        <SectionTitle id="steps-title" accent="SaúdePlus">Veja como é fácil usar o</SectionTitle>
+      {/* Etapas: sequência real, por isso numerada */}
+      <Container as="section" className={styles.steps} aria-labelledby="steps-title">
+        <h2 id="steps-title" className="sr-only">Etapas para usar o SaúdePlus</h2>
         <ol className={styles.stepList}>
-          {STEPS.map((step, i) => (
-            <Fragment key={step.title}>
-              {i > 0 && (
-                <li className={styles.arrow} aria-hidden="true">
-                  <ArrowRightIcon size={22} />
-                </li>
-              )}
-              <StepCard number={i + 1} {...step} />
-            </Fragment>
+          {STEPS.map(({ icone, titulo, descricao }, i) => (
+            <li key={titulo} className={styles.step}>
+              <span className={styles.number} aria-hidden="true">{i + 1}</span>
+              <IconCircle icon={icone} size={72} iconSize={40} className={styles.stepIcon} />
+              <h3 className={styles.stepTitle}>
+                <span className="sr-only">Etapa {i + 1}: </span>
+                {titulo}
+              </h3>
+              <p className={styles.stepText}>{descricao}</p>
+            </li>
           ))}
         </ol>
-      </SectionCard>
+      </Container>
 
       {/* Por que escolher */}
-      <SectionCard className={styles.reasons} aria-labelledby="reasons-title">
-        <SectionTitle id="reasons-title" accent="SaúdePlus?">Por que escolher o</SectionTitle>
-        <div className={styles.reasonGrid}>
-          {REASONS.map((reason) => (
-            <InfoCard key={reason.title} {...reason} className={styles.reasonCard} />
-          ))}
-        </div>
-      </SectionCard>
+      <Container as="section" className={styles.reasons} aria-labelledby="reasons-title">
+        <TituloCentral id="reasons-title" destaque="SaúdePlus?">Por que escolher o</TituloCentral>
+        <GradeCartoes itens={REASONS} />
+      </Container>
 
       <CTABand
         className={styles.band}
-        layout="stacked"
-        accentInline
-        icon={HeartIcon}
-        title="Sua saúde em"
-        titleAccent="boas mãos"
-        subtitle="Comece agora e descubra como é simples ter um cuidado de qualidade."
+        title="Sua saúde em boas mãos"
+        subtitle="Crie sua conta gratuitamente e comece a cuidar da sua saúde hoje mesmo."
         action={
-          <Button variant="light" onClick={() => onUnavailable("Criar conta")} withArrow className={styles.bandButton}>Criar conta agora</Button>
+          <Button variant="light" to="/cadastro" withArrow className={styles.bandButton}>
+            Criar conta agora
+          </Button>
         }
-        aside={<>É rápido, gratuito<br />e seguro.</>}
       />
     </>
   );

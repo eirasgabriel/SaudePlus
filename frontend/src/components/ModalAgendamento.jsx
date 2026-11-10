@@ -151,7 +151,8 @@ export default function ModalAgendamento({
     data: formulario.data,
     versao: versaoHorarios,
   });
-  const emMocks = opcoes.origem === 'mocks';
+  // Sem a lista de especialidades da API, o modal mostra o erro (sem opções de demonstração).
+  const semCatalogo = !fixo && opcoes.origem === 'erro';
 
   const especialidades = useMemo(
     () => (fixo ? [{ id: fixo.especialidadeId, name: fixo.especialidade }] : opcoes.especialidades),
@@ -160,10 +161,8 @@ export default function ModalAgendamento({
   const especialidadeEscolhida = especialidades.find((item) => item.id === formulario.especialidadeId) ?? null;
   const profissionais = fixo ? [{ id: fixo.profissionalId, name: fixo.profissional }] : opcoes.profissionais;
   const horarios = opcoes.horarios;
-  // Com a API, os horários dependem do médico e da data; nos mocks, só da especialidade.
-  const podeVerHorarios = emMocks
-    ? Boolean(especialidadeEscolhida)
-    : Boolean(formulario.profissionalId && formulario.data);
+  // Os horários dependem do médico e da data.
+  const podeVerHorarios = Boolean(formulario.profissionalId && formulario.data);
 
   /* ---- Ao abrir: limpa o formulário ----
      Feito durante o render (padrão "ajustar estado quando uma prop muda" da
@@ -356,6 +355,15 @@ export default function ModalAgendamento({
 
         {/* Formulário  */}
         <form className={estilos.formulario} onSubmit={enviar} noValidate>
+          {semCatalogo && (
+            <div className={estilos.aviso} role="alert">
+              Não foi possível carregar as especialidades. Verifique a conexão e{' '}
+              <button type="button" className={estilos.botaoTentar} onClick={opcoes.tentarDeNovo}>
+                tente de novo
+              </button>
+              .
+            </div>
+          )}
           {/* Especialidade */}
           <div className={estilos.campo}>
             <label className={estilos.rotulo} htmlFor={ids.especialidade}>Especialidade</label>
@@ -429,9 +437,7 @@ export default function ModalAgendamento({
 
             {!podeVerHorarios ? (
               <p className={estilos.aviso} id={ids.horario} tabIndex={-1}>
-                {emMocks
-                  ? 'Os horários aparecem depois que você escolhe a especialidade.'
-                  : 'Os horários livres aparecem depois que você escolhe o profissional e a data.'}
+                Os horários livres aparecem depois que você escolhe o profissional e a data.
               </p>
             ) : opcoes.carregandoHorarios ? (
               <p className={estilos.aviso} id={ids.horario} tabIndex={-1} aria-live="polite">

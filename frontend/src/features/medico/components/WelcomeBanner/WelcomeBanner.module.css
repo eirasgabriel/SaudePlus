@@ -1,31 +1,26 @@
+/* O cartão inteiro no degradê da marca (marinho → azul → ciano), igual nos
+   dois temas; por isso o texto e o espaço da foto são sempre claros. */
 .banner {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  align-items: end;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  align-items: center;
   min-height: 186px;
   padding: var(--space-8) var(--space-8) var(--space-6);
   overflow: hidden;
-  background: var(
-    --banner-fundo,
-    radial-gradient(120% 150% at 88% 100%, #D9EAFB 0%, rgba(217, 234, 251, 0) 58%),
-    linear-gradient(180deg, #F4F9FE 0%, #E9F3FD 100%)
-  );
-  border: 1px solid var(--color-border);
+  color: #FFFFFF;
+  background: linear-gradient(115deg, #041A58 0%, #0A3C9E 38%, #0070E8 72%, #44C6F4 100%);
+  border: 0;
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
 }
 
-/* ondas decorativas do fundo */
+/* Brilho suave atrás do espaço da foto. */
 .banner::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: var(
-    --banner-brilho,
-    radial-gradient(60% 90% at 70% 120%, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0) 60%),
-    radial-gradient(40% 70% at 30% -10%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 70%)
-  );
+  background: radial-gradient(45% 120% at 88% 50%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 70%);
   pointer-events: none;
 }
 
@@ -40,52 +35,87 @@
   font-weight: var(--fw-bold);
   line-height: 1.15;
   letter-spacing: var(--tracking-tight);
-  color: var(--color-navy-950);
+  color: #FFFFFF;
 }
 
 .subtitulo {
   margin-top: var(--space-2);
   font-size: var(--fs-lead);
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.86);
 }
 
-/* Sangra até as bordas do banner, anulando o padding da direita, do topo e
-   do rodapé — a arte é um hero, não uma figura solta dentro da caixa. */
+/* Espaço da foto à direita: um círculo, com a foto ou reservado. */
 .visual {
   position: relative;
-  align-self: stretch;
-  min-height: 186px;
-  margin: calc(-1 * var(--space-8)) calc(-1 * var(--space-8)) calc(-1 * var(--space-6)) 0;
+  display: grid;
+  place-items: center;
+  align-self: center;
 }
 
-.ilustracao,
-.foto {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+.foto,
+.reservadoCirculo {
+  width: 148px;
+  height: 148px;
+  border-radius: 50%;
 }
 
-/* Ilustração provisória: fica apoiada no rodapé e não é cortada. */
-.ilustracao {
-  object-fit: contain;
-  object-position: bottom right;
-}
-
-/* A foto tem fundo azul próprio, mais escuro que o da faixa. A máscara
-   desfaz a borda esquerda para que ela se dissolva no gradiente do banner
-   em vez de aparecer como um retângulo colado. */
 .foto {
   object-fit: cover;
-  object-position: center 3%;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%);
-  mask-image: linear-gradient(to right, transparent 0%, #000 30%);
+  border: 4px solid rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-card);
+}
+
+/* Sem foto: o lugar fica marcado e leva a "Minha conta". */
+.reservado {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-card);
+  text-decoration: none;
+}
+
+.reservadoCirculo {
+  display: grid;
+  place-items: center;
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px dashed rgba(255, 255, 255, 0.65);
+  transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+
+.reservadoTexto {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: #FFFFFF;
+  /* Legível também sobre o ciano da ponta do degradê. */
+  text-shadow: 0 1px 2px rgba(4, 26, 88, 0.45);
+}
+
+.reservado:hover .reservadoCirculo {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: #FFFFFF;
+}
+
+.reservado:hover .reservadoTexto {
+  text-decoration: underline;
+}
+
+.reservado:focus-visible {
+  outline: 2px solid #FFFFFF;
+  outline-offset: 4px;
 }
 
 @media (max-width: 1100px) {
   .banner {
-    grid-template-columns: minmax(0, 1fr) 240px;
+    grid-template-columns: minmax(0, 1fr) 160px;
     padding: var(--space-6);
+  }
+
+  .foto,
+  .reservadoCirculo {
+    width: 112px;
+    height: 112px;
   }
 }
 
@@ -96,7 +126,7 @@
     padding: var(--space-5) var(--space-4);
   }
 
-  /* A ilustração é decorativa: some antes de espremer o texto. */
+  /* No celular a foto não espreme o texto: some. */
   .visual {
     display: none;
   }

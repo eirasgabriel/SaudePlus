@@ -14,6 +14,22 @@
 [data-tema="escuro"] {
   color-scheme: dark;
 
+  /* A casca (cabeçalho, barra lateral e rodapé) mantém o mesmo marinho nos
+     dois temas. Ela lê --color-navy-*, que aqui vira texto claro, então os
+     valores ficam fixos. */
+  --shell: #041A58;
+  --shell-deep: #020F45;
+
+  /* Selos de status e mensagens (tokens da main). */
+  --state-pending: #F2C065;     --state-pending-bg: rgba(226, 163, 60, 0.18);
+  --state-info: #8CC0FF;        --state-info-bg: rgba(59, 139, 240, 0.2);
+  --state-progress: #A9BEF5;    --state-progress-bg: rgba(110, 140, 230, 0.22);
+  --state-success: #5FD3A6;     --state-success-bg: rgba(47, 163, 124, 0.18);
+  --state-danger: #FF8F8F;      --state-danger-bg: rgba(224, 59, 59, 0.18);
+  --state-neutral: #A8B6CE;     --state-neutral-bg: rgba(168, 182, 206, 0.14);
+  --color-section: #0E1729;
+  --color-section-border: #22314B;
+
   --color-navy-950: #F1F5FB;
   --color-navy-900: #E1E8F4;
   --color-navy-800: #C7D4EA;

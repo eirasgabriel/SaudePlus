@@ -7,12 +7,11 @@ const INICIAL = { origem: "carregando", dados: null, erro: null };
 /**
  * Carrega o painel do médico logado da API (o médico vem do token).
  *
- * Quando a API não responde, o hook não derruba a tela: devolve
- * `origem: "mocks"` e quem chama renderiza com os dados locais. Isso mantém o
- * painel utilizável enquanto o back-end não está de pé — situação normal para
- * quem só está mexendo no front-end.
+ * O sistema não usa dados de demonstração: quando a API não responde, o hook
+ * devolve `origem: "erro"` com o erro, e a tela mostra a falha com "Tentar de
+ * novo" (ver components/PortaoDaApi).
  *
- * Estados possíveis de `origem`: "carregando" | "api" | "mocks".
+ * Estados possíveis de `origem`: "carregando" | "api" | "erro".
  */
 export function usePainelMedico({ data } = {}) {
   const [estado, setEstado] = useState(INICIAL);
@@ -26,7 +25,7 @@ export function usePainelMedico({ data } = {}) {
           if (!sinal?.aborted) setEstado({ origem: "api", dados, erro: null });
         })
         .catch((erro) => {
-          if (!sinal?.aborted) setEstado({ origem: "mocks", dados: null, erro });
+          if (!sinal?.aborted) setEstado({ origem: "erro", dados: null, erro });
         }),
     [data],
   );

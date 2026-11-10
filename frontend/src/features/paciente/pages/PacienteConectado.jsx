@@ -7,7 +7,7 @@ import ExamesPage from "../../../pages/ExamesPage";
 import HistoricoPage from "../../../pages/HistoricoPage";
 import ClinicasPage from "../../../pages/ClinicasPage";
 import ModalAgendamento from "../../../components/ModalAgendamento";
-import AvisoDeOrigem from "../../medico/components/AvisoDeOrigem/AvisoDeOrigem.jsx";
+import PortaoDaApi from "../../../components/PortaoDaApi/PortaoDaApi.jsx";
 import AvisoDeSucesso from "../components/AvisoDeSucesso.jsx";
 import { useDadosDaApi } from "../useDadosDaApi.js";
 import { paraAtendimento, paraConsulta, paraExame, paraPaciente, paraUnidade } from "../adaptadores.js";
@@ -26,10 +26,12 @@ import { http } from "../../../services/http.js";
 import { buscarProfissional, listarEspecialidades } from "../../profissionais/profissionais.api.js";
 import { lerPedidoDeAgendamento } from "../../profissionais/perfil.js";
 
-/* Telas da área do paciente ligadas à API. Cada uma carrega os dados,
-   converte para o formato que a tela já recebia dos mocks e, se a API não
-   responder, deixa a tela usar os mocks e mostra a faixa de demonstração.
-   As ações (agendar, cancelar, remarcar, avaliar) só existem com a API. */
+/* Telas da área do paciente ligadas à API. Cada uma carrega os dados e
+   converte para o formato que a tela recebe. Não há dados de demonstração:
+   enquanto a API responde, a tela mostra "Carregando…"; se ela falhar, o erro
+   com "Tentar de novo" (PortaoDaApi). */
+
+const VOLTAR_AO_PAINEL = { to: "/paciente", rotulo: "Voltar ao painel" };
 
 const formatoQuando = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" });
 
@@ -46,43 +48,37 @@ const carregarUnidades = ({ sinal }) => http.get("/api/publico/unidades", { sina
 
 export function PainelDoPaciente() {
   const navegar = useNavigate();
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregarPainel);
+  const painel = useDadosDaApi(carregarPainel);
+  const { dados, recarregar } = painel;
 
-  const props =
-    origem === "api" && dados
-      ? {
-          paciente: paraPaciente(dados.paciente),
-          agendamentos: dados.proximasConsultas.map(paraConsulta),
-          unidade: paraUnidade(dados.unidade),
-          totalNotificacoes: dados.notificacoesNaoLidas,
-        }
-      : {};
-
-  // Sem API, o dashboard mantém o comportamento de demonstração (não reserva nada).
-  const confirmar =
-    origem === "api"
-      ? async (escolha) => {
-          await reservarConsulta({
-            medicoId: escolha.profissionalId,
-            especialidadeId: escolha.especialidadeId,
-            data: escolha.data,
-            horario: escolha.horario,
-            modalidade: escolha.modalidade,
-          });
-          recarregar();
-          navegar("/paciente/consultas", {
-            state: {
-              aviso: `Consulta com ${escolha.profissional} agendada para ${descrever(escolha.data, escolha.horario)}. Ela fica pendente até a clínica confirmar.`,
-            },
-          });
-        }
-      : undefined;
+  const confirmar = async (escolha) => {
+    await reservarConsulta({
+      medicoId: escolha.profissionalId,
+      especialidadeId: escolha.especialidadeId,
+      data: escolha.data,
+      horario: escolha.horario,
+      modalidade: escolha.modalidade,
+    });
+    recarregar();
+    navegar("/paciente/consultas", {
+      state: {
+        aviso: `Consulta com ${escolha.profissional} agendada para ${descrever(escolha.data, escolha.horario)}. Ela fica pendente até a clínica confirmar.`,
+      },
+    });
+  };
 
   return (
-    <>
-      <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
-      <PacienteDashboard {...props} aoConfirmarAgendamento={confirmar} />
-    </>
+    <PortaoDaApi estados={painel} carregando="Carregando seu painel…">
+      {() => (
+        <PacienteDashboard
+          paciente={paraPaciente(dados.paciente)}
+          agendamentos={dados.proximasConsultas.map(paraConsulta)}
+          unidade={paraUnidade(dados.unidade)}
+          totalNotificacoes={dados.notificacoesNaoLidas}
+          aoConfirmarAgendamento={confirmar}
+        />
+      )}
+    </PortaoDaApi>
   );
 }
 
@@ -130,7 +126,8 @@ function usePedidoDeAgendamento(ativo) {
 
 export function ConsultasDoPaciente() {
   const location = useLocation();
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregarConsultas);
+  const consultas = useDadosDaApi(carregarConsultas);
+  const { origem, dados, recarregar } = consultas;
   const [remarcando, setRemarcando] = useState(null);
   const [aviso, setAviso] = useState(location.state?.aviso ?? null);
   const pedido = usePedidoDeAgendamento(origem === "api");
@@ -166,20 +163,18 @@ export function ConsultasDoPaciente() {
     recarregar();
   };
 
-  const comApi = origem === "api" && dados;
   return (
     <>
-      <ConsultasPage
-        {...(comApi ? { consultas: dados.map(paraConsulta) } : {})}
-        aviso={
-          <>
-            <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
-            <AvisoDeSucesso>{aviso}</AvisoDeSucesso>
-          </>
-        }
-        aoCancelar={comApi ? cancelar : undefined}
-        aoRemarcar={comApi ? setRemarcando : undefined}
-      />
+      <PortaoDaApi estados={consultas} carregando="Carregando suas consultas…" voltar={VOLTAR_AO_PAINEL}>
+        {() => (
+          <ConsultasPage
+            consultas={dados.map(paraConsulta)}
+            aviso={<AvisoDeSucesso>{aviso}</AvisoDeSucesso>}
+            aoCancelar={cancelar}
+            aoRemarcar={setRemarcando}
+          />
+        )}
+      </PortaoDaApi>
       <ModalAgendamento
         aberto={Boolean(remarcando)}
         aoFechar={() => setRemarcando(null)}
@@ -204,21 +199,22 @@ export function ConsultasDoPaciente() {
 }
 
 export function ExamesDoPaciente() {
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregarExames);
-  const comApi = origem === "api" && dados;
+  const exames = useDadosDaApi(carregarExames);
   return (
-    <>
-      <AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />
-      <ExamesPage
-        {...(comApi ? { exames: dados.map(paraExame) } : {})}
-        aoBaixarResultado={comApi ? (exame) => baixarResultadoDoExame(exame.id) : undefined}
-      />
-    </>
+    <PortaoDaApi estados={exames} carregando="Carregando seus exames…" voltar={VOLTAR_AO_PAINEL}>
+      {() => (
+        <ExamesPage
+          exames={exames.dados.map(paraExame)}
+          aoBaixarResultado={(exame) => baixarResultadoDoExame(exame.id)}
+        />
+      )}
+    </PortaoDaApi>
   );
 }
 
 export function HistoricoDoPaciente() {
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregarHistorico);
+  const historico = useDadosDaApi(carregarHistorico);
+  const { recarregar } = historico;
 
   const avaliar = useCallback(
     async (atendimento, nota) => {
@@ -228,23 +224,19 @@ export function HistoricoDoPaciente() {
     [recarregar],
   );
 
-  const comApi = origem === "api" && dados;
   return (
-    <HistoricoPage
-      {...(comApi ? { historico: dados.map(paraAtendimento) } : {})}
-      aviso={<AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />}
-      aoAvaliar={comApi ? avaliar : undefined}
-    />
+    <PortaoDaApi estados={historico} carregando="Carregando seu histórico…" voltar={VOLTAR_AO_PAINEL}>
+      {() => <HistoricoPage historico={historico.dados.map(paraAtendimento)} aoAvaliar={avaliar} />}
+    </PortaoDaApi>
   );
 }
 
 export function ClinicasDoPaciente() {
-  const { origem, dados, erro, recarregar } = useDadosDaApi(carregarUnidades);
+  const unidades = useDadosDaApi(carregarUnidades);
   return (
-    <ClinicasPage
-      {...(origem === "api" && dados ? { unidades: dados.map(paraUnidadePublica) } : {})}
-      aviso={<AvisoDeOrigem origem={origem} erro={erro} aoTentarDeNovo={recarregar} />}
-    />
+    <PortaoDaApi estados={unidades} carregando="Carregando as clínicas…" voltar={VOLTAR_AO_PAINEL}>
+      {() => <ClinicasPage unidades={unidades.dados.map(paraUnidadePublica)} />}
+    </PortaoDaApi>
   );
 }
 

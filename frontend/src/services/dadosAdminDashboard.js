@@ -74,8 +74,8 @@ export const tiposAtendimento = {
   fatias: [
     { id: "consultas", rotulo: "Consultas", percentual: 62, cor: "var(--azul)" },
     { id: "exames", rotulo: "Exames", percentual: 23, cor: "var(--azul-suave)" },
-    { id: "retornos", rotulo: "Retornos", percentual: 10, cor: "var(--verde-claro)" },
-    { id: "outros", rotulo: "Outros", percentual: 5, cor: "var(--roxo)" },
+    { id: "retornos", rotulo: "Retornos", percentual: 10, cor: "var(--color-accent)" },
+    { id: "outros", rotulo: "Outros", percentual: 5, cor: "var(--color-navy-900)" },
   ],
 };
 

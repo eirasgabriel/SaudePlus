@@ -65,7 +65,6 @@
   background: var(--branco);
   border: 1px solid var(--borda);
   border-radius: var(--raio);
-  box-shadow: var(--sombra);
 }
 
 .filtroCurto {
@@ -81,7 +80,7 @@
 .secao {
   font-size: 13px;
   font-weight: 700;
-  color: var(--texto-2);
+  color: var(--color-navy-950);
   margin: 4px 0 10px;
 }
 
@@ -95,7 +94,7 @@
   gap: 11px;
   padding: 14px 16px;
   border-radius: var(--raio-sm);
-  background: var(--azul-bg);
+  background: var(--color-surface-muted);
   border: 1px solid var(--borda);
 }
 
@@ -113,7 +112,7 @@
 }
 
 .avisoTexto {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--texto-2);
   line-height: 1.5;
 }
@@ -130,8 +129,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  font-size: 12.5px;
+  font-size: 13px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--borda);
 }
+.par:last-child { border-bottom: 0; padding-bottom: 0; }
 
 .parRotulo {
   color: var(--texto-2);
@@ -139,8 +141,9 @@
 
 .parValor {
   font-weight: 700;
-  color: var(--texto);
+  color: var(--color-navy-950);
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 /* --- responsivo --- */

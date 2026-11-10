@@ -115,6 +115,165 @@ const Stroke = ({ size, sw = 2, children, props, viewBox = "0 0 24 24" }) => (
   </svg>
 );
 
+/* ---------- Ícones de traço das páginas públicas ----------
+   Mesmo traço (1.9) e mesma grade 24×24, para ficarem iguais lado a lado
+   nos ladrilhos azul-claros. */
+const Linha = ({ size, children, props }) => <Stroke size={size} sw={1.9} props={props}>{children}</Stroke>;
+
+export const CalendarCheckLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
+    <path d="M3.5 10h17M8 3v4M16 3v4" />
+    <path d="m9 15 2.2 2.2L15.5 13" />
+  </Linha>
+);
+export const CalendarLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <rect x="3.5" y="5" width="17" height="15.5" rx="3" />
+    <path d="M3.5 10h17M8 3v4M16 3v4" />
+  </Linha>
+);
+export const ShieldCheckLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="M12 2.8 4.5 5.6v5.6c0 4.8 3.2 8.7 7.5 10 4.3-1.3 7.5-5.2 7.5-10V5.6z" />
+    <path d="m8.8 12 2.3 2.3 4.2-4.4" />
+  </Linha>
+);
+export const HeartPulseLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="M12 20.2 4.6 12.9C2.5 10.8 2.6 7.3 4.9 5.4c2-1.7 5-1.3 6.7.7L12 6.6l.4-.5c1.7-2 4.7-2.4 6.7-.7 2.3 1.9 2.4 5.4.3 7.5Z" />
+    <path d="M6.5 12h2.8l1.4-2.6 2.2 4.6 1.4-2h3.2" />
+  </Linha>
+);
+export const HeartLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="M12 20.2 4.6 12.9C2.5 10.8 2.6 7.3 4.9 5.4c2-1.7 5-1.3 6.7.7L12 6.6l.4-.5c1.7-2 4.7-2.4 6.7-.7 2.3 1.9 2.4 5.4.3 7.5Z" />
+  </Linha>
+);
+export const UserLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4.5 20.5c.8-3.6 3.8-6 7.5-6s6.7 2.4 7.5 6" />
+  </Linha>
+);
+export const UserPlusLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <circle cx="10" cy="8" r="4" />
+    <path d="M2.8 20.5c.8-3.6 3.6-6 7.2-6 1.6 0 3 .4 4.2 1.2" />
+    <path d="M18.5 13.5v6M15.5 16.5h6" />
+  </Linha>
+);
+export const UsersLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <circle cx="9" cy="8.5" r="3.5" />
+    <path d="M2.5 19.5c.6-3.2 3.2-5.3 6.5-5.3s5.9 2.1 6.5 5.3" />
+    <circle cx="16.8" cy="7.5" r="2.8" />
+    <path d="M17.2 13.4c2.4.3 4 2 4.4 4.6" />
+  </Linha>
+);
+export const BadgeCheckLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="m12 2.5 2.3 1.7 2.8-.2.9 2.7 2.3 1.6-.9 2.7.9 2.7-2.3 1.6-.9 2.7-2.8-.2L12 19.5l-2.3-1.7-2.8.2-.9-2.7-2.3-1.6.9-2.7-.9-2.7L6 6.7l.9-2.7 2.8.2Z" />
+    <path d="m8.8 11.2 2.2 2.2 4.2-4.3" />
+  </Linha>
+);
+export const LaptopUserLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <rect x="4" y="4.5" width="16" height="11.5" rx="2" />
+    <path d="M2 19.5h20" />
+    <circle cx="12" cy="9" r="2" />
+    <path d="M8.5 14.5c.6-1.5 2-2.4 3.5-2.4s2.9.9 3.5 2.4" />
+  </Linha>
+);
+export const TargetLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <circle cx="11" cy="13" r="8.5" />
+    <circle cx="11" cy="13" r="4.5" />
+    <path d="m11 13 8-8M16 5h3v3" />
+  </Linha>
+);
+export const FlagLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="M5 21V3.5" />
+    <path d="M5 4h11.5l-2.5 4.5 2.5 4.5H5" />
+  </Linha>
+);
+export const EyeLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="M1.8 12S5.6 5 12 5s10.2 7 10.2 7-3.8 7-10.2 7S1.8 12 1.8 12Z" />
+    <circle cx="12" cy="12" r="3.2" />
+  </Linha>
+);
+export const DiamondLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="M6.5 3.5h11l4 5.5L12 20.5 2.5 9Z" />
+    <path d="M2.5 9h19M9.5 3.5 8 9l4 11.5L16 9l-1.5-5.5" />
+  </Linha>
+);
+export const ChartBarsLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <rect x="3.5" y="13" width="4" height="7.5" rx="1" />
+    <rect x="10" y="8.5" width="4" height="12" rx="1" />
+    <rect x="16.5" y="3.5" width="4" height="17" rx="1" />
+  </Linha>
+);
+export const HeadsetLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
+    <rect x="3" y="13" width="4" height="6.5" rx="1.6" />
+    <rect x="17" y="13" width="4" height="6.5" rx="1.6" />
+    <path d="M19 19.5c0 1.4-1.6 2-4 2h-2" />
+  </Linha>
+);
+export const BookOpenLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="M12 6.5c-1.8-1.4-4.6-2-8.5-2v13c3.9 0 6.7.6 8.5 2 1.8-1.4 4.6-2 8.5-2v-13c-3.9 0-6.7.6-8.5 2Z" />
+    <path d="M12 6.5v13" />
+  </Linha>
+);
+export const QuestionLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <circle cx="12" cy="12" r="9.2" />
+    <path d="M9.4 9.4a2.7 2.7 0 0 1 5.2.9c0 1.8-2.6 2.3-2.6 3.9" />
+    <path d="M12 17.2h.01" />
+  </Linha>
+);
+export const ChatLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="M12 3.5c5 0 9 3.4 9 7.7s-4 7.7-9 7.7c-1 0-2-.1-2.9-.4L4 20.5l1.3-4.2C3.9 14.9 3 13.1 3 11.2 3 6.9 7 3.5 12 3.5Z" />
+    <path d="M8 11.3h.01M12 11.3h.01M16 11.3h.01" />
+  </Linha>
+);
+export const FileLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="M14 2.5H6.5a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V8Z" />
+    <path d="M14 2.5V8h5.5M8.5 13h7M8.5 17h7" />
+  </Linha>
+);
+export const MailLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+    <path d="m3.5 6.5 8.5 6.5 8.5-6.5" />
+  </Linha>
+);
+export const PhoneLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <path d="M7.8 3.2H5.6a2.3 2.3 0 0 0-2.3 2.6c.8 8 7 14.1 14.9 14.9a2.3 2.3 0 0 0 2.6-2.3v-2.2a1.4 1.4 0 0 0-1.1-1.4l-3-.6a1.4 1.4 0 0 0-1.4.6l-.8 1.2a11.6 11.6 0 0 1-5.3-5.3l1.2-.8a1.4 1.4 0 0 0 .6-1.4l-.6-3a1.4 1.4 0 0 0-1.4-1.1Z" />
+  </Linha>
+);
+export const CreditCardLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+    <path d="M2.5 9.5h19M6 15h4" />
+  </Linha>
+);
+export const PlayCircleLineIcon = ({ size = 32, ...props }) => (
+  <Linha size={size} props={props}>
+    <circle cx="12" cy="12" r="9.2" />
+    <path d="M10 8.6v6.8l5.4-3.4Z" />
+  </Linha>
+);
+
 export const ChevronRightIcon = ({ size = 24, ...props }) => <Stroke size={size} sw={2.4} props={props}><path d="m9 5 7 7-7 7" /></Stroke>;
 export const ChevronDownIcon = ({ size = 20, ...props }) => <Stroke size={size} sw={2.4} props={props}><path d="m5 9 7 7 7-7" /></Stroke>;
 export const RefreshIcon = ({ size = 16, ...props }) => <Stroke size={size} sw={2.2} props={props}><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" /></Stroke>;
@@ -216,6 +375,15 @@ export function DocumentCheckIcon({ size = 40, ...props }) {
       <path fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" d="M7 10h8M7 13.5h5.5M7 17h3" />
       <circle cx="17.8" cy="18.3" r="4.7" fill="currentColor" stroke="#fff" strokeWidth="1.3" />
       <path fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="m15.7 18.4 1.5 1.5 2.7-2.9" />
+    </svg>
+  );
+}
+
+export function BellIcon({ size = 40, ...props }) {
+  return (
+    <svg viewBox="0 0 24 24" {...base(size, props)}>
+      <path fill="currentColor" d="M12 2a1.6 1.6 0 0 1 1.6 1.6v.6A6.6 6.6 0 0 1 18.6 10.6v3.6l1.7 2.6A1.1 1.1 0 0 1 19.4 18.5H4.6a1.1 1.1 0 0 1-.9-1.7l1.7-2.6v-3.6a6.6 6.6 0 0 1 5-6.4v-.6A1.6 1.6 0 0 1 12 2z" />
+      <path fill="currentColor" d="M9.2 19.8h5.6a2.8 2.8 0 0 1-5.6 0z" />
     </svg>
   );
 }

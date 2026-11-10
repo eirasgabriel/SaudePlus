@@ -64,7 +64,7 @@ export default function RedefinirSenha() {
 
   if (!token) {
     return (
-      <CartaoAuth voltarPara="/login" atalho={{ texto: 'Fazer login', para: '/login' }}>
+      <CartaoAuth voltarPara="/login">
         <EstadoResultado
           tipo="erro"
           titulo="Link inválido"
@@ -95,7 +95,7 @@ export default function RedefinirSenha() {
   }
 
   return (
-    <CartaoAuth voltarPara="/login" atalho={{ texto: 'Fazer login', para: '/login' }}>
+    <CartaoAuth voltarPara="/login">
       <form className="sp-form" onSubmit={enviar} noValidate>
         <h1 className="sp-form__titulo">Nova senha</h1>
         <p className="sp-form__subtitulo">Escolha uma senha nova para a sua conta.</p>

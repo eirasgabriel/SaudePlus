@@ -111,7 +111,7 @@ export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
           />
 
           {erro && (
-            <p role="alert" style={{ margin: 0, fontSize: 13, color: "#b91c1c" }}>
+            <p role="alert" style={{ margin: 0, fontSize: 13, color: "var(--state-danger)" }}>
               {erro}
             </p>
           )}

@@ -6,6 +6,7 @@ import { rotaInicialDe } from '../auth.rotas.js'
 import CampoFormulario from '../components/CampoFormulario.jsx'
 import CartaoAuth from '../components/CartaoAuth.jsx'
 import EstadoResultado from '../components/EstadoResultado.jsx'
+import MedidorSenha from '../components/MedidorSenha.jsx'
 import {
   IconeAlerta,
   IconeCadeado,
@@ -28,6 +29,7 @@ export default function Cadastro() {
   const [nomeCompleto, setNomeCompleto] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
+  const [confirmarSenha, setConfirmarSenha] = useState('')
   const [telefone, setTelefone] = useState('')
   const [aceiteTermos, setAceiteTermos] = useState(false)
   const [errosDeCampo, setErrosDeCampo] = useState({})
@@ -47,11 +49,18 @@ export default function Cadastro() {
     setAviso(null)
     setErrosDeCampo({})
 
-    // Checagem local só para o aceite: evita uma ida ao servidor por um clique esquecido.
+    // Checagens locais: confirmação da senha e aceite. Evitam uma ida ao
+    // servidor por um erro de digitação ou um clique esquecido. A confirmação
+    // nunca é enviada; o back-end só recebe a senha.
+    const errosLocais = {}
+    if (senha !== confirmarSenha) {
+      errosLocais.confirmarSenha = 'As senhas não conferem.'
+    }
     if (!aceiteTermos) {
-      setErrosDeCampo({
-        aceiteTermos: 'É preciso aceitar os Termos de Uso e a Política de Privacidade.',
-      })
+      errosLocais.aceiteTermos = 'É preciso aceitar os Termos de Uso e a Política de Privacidade.'
+    }
+    if (Object.keys(errosLocais).length > 0) {
+      setErrosDeCampo(errosLocais)
       return
     }
 
@@ -108,7 +117,7 @@ export default function Cadastro() {
   }
 
   return (
-    <CartaoAuth voltarPara="/login" atalho={{ texto: 'Fazer login', para: '/login' }}>
+    <CartaoAuth largo voltarPara="/login">
       <form className="sp-form" onSubmit={enviar} noValidate>
         <h1 className="sp-form__titulo">Criar conta</h1>
         <p className="sp-form__subtitulo">Preencha seus dados para começar</p>
@@ -126,47 +135,67 @@ export default function Cadastro() {
             desabilitado={enviando}
           />
 
-          <CampoFormulario
-            rotulo="E-mail"
-            placeholder="E-mail"
-            tipo="email"
-            icone={<IconeEnvelope />}
-            valor={email}
-            aoAlterar={setEmail}
-            autoComplete="email"
-            inputMode="email"
-            maxLength={180}
-            erro={errosDeCampo.email}
-            desabilitado={enviando}
-          />
+          <div className="sp-form__linha">
+            <CampoFormulario
+              rotulo="E-mail"
+              placeholder="E-mail"
+              tipo="email"
+              icone={<IconeEnvelope />}
+              valor={email}
+              aoAlterar={setEmail}
+              autoComplete="email"
+              inputMode="email"
+              maxLength={180}
+              erro={errosDeCampo.email}
+              desabilitado={enviando}
+            />
 
-          <CampoFormulario
-            rotulo="Senha"
-            placeholder="Senha"
-            tipo="password"
-            icone={<IconeCadeado />}
-            valor={senha}
-            aoAlterar={setSenha}
-            autoComplete="new-password"
-            maxLength={72}
-            ajuda="Use pelo menos 8 caracteres."
-            erro={errosDeCampo.senha}
-            desabilitado={enviando}
-          />
+            <CampoFormulario
+              rotulo="Telefone (opcional)"
+              placeholder="Telefone (opcional)"
+              tipo="tel"
+              icone={<IconeTelefone />}
+              valor={telefone}
+              aoAlterar={setTelefone}
+              autoComplete="tel"
+              inputMode="tel"
+              maxLength={20}
+              erro={errosDeCampo.telefone}
+              desabilitado={enviando}
+            />
+          </div>
 
-          <CampoFormulario
-            rotulo="Telefone (opcional)"
-            placeholder="Telefone (opcional)"
-            tipo="tel"
-            icone={<IconeTelefone />}
-            valor={telefone}
-            aoAlterar={setTelefone}
-            autoComplete="tel"
-            inputMode="tel"
-            maxLength={20}
-            erro={errosDeCampo.telefone}
-            desabilitado={enviando}
-          />
+          <div className="sp-form__linha">
+            <div>
+              <CampoFormulario
+                rotulo="Senha"
+                placeholder="Senha"
+                tipo="password"
+                icone={<IconeCadeado />}
+                valor={senha}
+                aoAlterar={setSenha}
+                autoComplete="new-password"
+                maxLength={72}
+                erro={errosDeCampo.senha}
+                desabilitado={enviando}
+              />
+
+              <MedidorSenha senha={senha} />
+            </div>
+
+            <CampoFormulario
+              rotulo="Confirmar senha"
+              placeholder="Confirmar senha"
+              tipo="password"
+              icone={<IconeCadeado />}
+              valor={confirmarSenha}
+              aoAlterar={setConfirmarSenha}
+              autoComplete="new-password"
+              maxLength={72}
+              erro={errosDeCampo.confirmarSenha}
+              desabilitado={enviando}
+            />
+          </div>
         </div>
 
         <div className="sp-checkbox sp-checkbox--termos">

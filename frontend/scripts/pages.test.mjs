@@ -24,11 +24,11 @@ function render(path) {
 }
 
 for (const [path, heading] of [
-  ['/', 'Agende suas'],
-  ['/especialidades', 'especialidade ideal'],
-  ['/como-funciona', 'Cuidar da sua saúde'],
-  ['/sobre-nos', 'Cuidado que conecta'],
-  ['/ajuda', 'Estamos aqui'],
+  ['/', 'Sua saúde em boas mãos'],
+  ['/especialidades', 'Explore nossas'],
+  ['/como-funciona', 'Veja como é fácil usar o'],
+  ['/sobre-nos', 'Conheça o'],
+  ['/ajuda', 'Ajuda e Suporte do'],
   ['/buscar', 'Sua saúde nas'],
   ['/profissionais/c1', 'Carregando perfil'],
   ['/pagina-inexistente', 'Página não encontrada'],

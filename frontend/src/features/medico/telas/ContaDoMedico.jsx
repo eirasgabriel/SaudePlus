@@ -22,7 +22,7 @@ export default function ContaDoMedico() {
 
   return (
     <TelaDoMedico titulo="Minha conta" subtitulo="O que aparece no seu perfil público e os seus dados de acesso.">
-      <FormularioDaConta />
+      <FormularioDaConta comOpcaoDoPainel />
       <ConteudoCarregado estado={perfil} carregando="Carregando o perfil profissional…">
         {perfil.dados && <PerfilProfissional key={perfil.dados.id} perfil={perfil.dados} aoSalvar={perfil.recarregar} />}
       </ConteudoCarregado>

@@ -1,9 +1,10 @@
+/* Indicador: rótulo, valor marinho em algarismos tabulares, nota e
+   variação. A cor do valor só muda quando ela carrega estado. */
 .metrica {
   background: var(--branco);
   border: 1px solid var(--borda);
   border-radius: var(--raio);
-  box-shadow: var(--sombra);
-  padding: 18px;
+  padding: 18px 20px;
   display: flex;
   gap: 14px;
   align-items: flex-start;
@@ -11,93 +12,63 @@
 }
 
 .icone {
-  width: 50px;
-  height: 50px;
+  width: 36px;
+  height: 36px;
   flex: none;
-  border-radius: 14px;
+  border-radius: var(--radius-button);
   display: grid;
   place-items: center;
   background: var(--azul-claro);
-  color: var(--azul);
+  color: var(--azul-escuro);
 }
 
-.info {
-  min-width: 0;
-  flex: 1;
-}
+.info { min-width: 0; flex: 1; }
 
 .rotulo {
   font-size: 13px;
   color: var(--texto-2);
-  font-weight: 500;
+  font-weight: var(--fw-semibold);
 }
 
 .valor {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--azul);
-  letter-spacing: -1px;
-  line-height: 1.15;
-  margin: 3px 0 4px;
+  font-size: 32px;
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  margin: 4px 0;
 }
 
 .nota {
-  font-size: 11.5px;
-  color: var(--texto-3);
+  font-size: 12px;
+  color: var(--texto-2);
 }
 
 .variacao {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 11.5px;
-  font-weight: 700;
-  margin-top: 5px;
+  font-size: 12px;
+  font-weight: var(--fw-bold);
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* --- tons --- */
-.azul .icone {
-  background: var(--azul-claro);
-  color: var(--azul);
-}
+.azul .icone { background: var(--azul-claro); color: var(--azul-escuro); }
 
-.verde .icone {
-  background: var(--verde-bg);
-  color: var(--verde);
-}
-.verde .valor {
-  color: var(--verde);
-}
+.verde .icone { background: var(--verde-bg); color: var(--verde); }
+.verde .valor { color: var(--verde); }
 
-.vermelho .icone {
-  background: var(--vermelho-bg);
-  color: var(--vermelho);
-}
-.vermelho .valor {
-  color: var(--vermelho);
-}
+.vermelho .icone { background: var(--vermelho-bg); color: var(--vermelho); }
+.vermelho .valor { color: var(--vermelho); }
 
-.amarelo .icone {
-  background: var(--amarelo-bg);
-  color: var(--amarelo);
-}
-.amarelo .valor {
-  color: var(--amarelo);
-}
+.amarelo .icone { background: var(--amarelo-bg); color: var(--amarelo-texto); }
+.amarelo .valor { color: var(--amarelo-texto); }
 
 /* --- variações --- */
-.sobe {
-  color: var(--verde);
-}
-
-.desce {
-  color: var(--vermelho);
-}
-
-.alerta {
-  color: var(--amarelo);
-}
-
-.neutra {
-  color: var(--texto-3);
-}
+.sobe { color: var(--verde); }
+.desce { color: var(--vermelho); }
+.alerta { color: var(--amarelo-texto); }
+.neutra { color: var(--texto-2); }

@@ -1,6 +1,7 @@
 /* Regras puras do perfil do profissional e do pedido de agendamento que sai
    dele (ou do cartão da busca) para a área do paciente. Sem React, testadas
    em scripts/perfil.test.mjs. */
+import { enderecoDaApi } from "../../services/http.js";
 
 const moeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 const formatoDia = new Intl.DateTimeFormat("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit", timeZone: "UTC" });
@@ -42,7 +43,7 @@ export function paraPerfil(d) {
   return {
     id: d.id,
     nome: d.nome,
-    fotoUrl: d.fotoUrl ?? null,
+    fotoUrl: enderecoDaApi(d.fotoUrl),
     crm: `CRM ${d.crm}-${d.crmUf}`,
     bio: d.bio?.trim() || null,
     especialidades: d.especialidades,
@@ -120,7 +121,7 @@ export function paraDestaque(p) {
     specialty: p.especialidades[0]?.nome ?? "",
     rating: Number(p.nota ?? 0),
     reviews: p.avaliacoes ?? 0,
-    photo: p.fotoUrl ?? null,
+    photo: enderecoDaApi(p.fotoUrl),
     perfilHref: `/profissionais/${encodeURIComponent(p.id)}`,
   };
 }

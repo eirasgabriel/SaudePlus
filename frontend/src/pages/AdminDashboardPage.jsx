@@ -175,7 +175,7 @@ export default function AdminDashboardPage({
                     <div className={estilos.horaAgendamento}>
                       {a.data} · {a.hora}
                     </div>
-                    <Etiqueta variante={status.variante}>{status.rotulo}</Etiqueta>
+                    <Etiqueta variante={status.variante} status={a.status}>{status.rotulo}</Etiqueta>
                   </div>
                 </div>
               );

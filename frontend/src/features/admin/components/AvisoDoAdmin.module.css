@@ -4,17 +4,17 @@
   font-size: 14px;
   line-height: 1.5;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--radius-button);
 }
 
 .sucesso {
-  color: #0f6b4f;
-  background: #dcf5ea;
+  color: var(--state-success);
+  background: var(--state-success-bg);
   border-color: #b7e8d2;
 }
 
 .erro {
-  color: #9b1c1c;
-  background: #fce4e4;
+  color: var(--state-danger);
+  background: var(--state-danger-bg);
   border-color: #f5c2c2;
 }

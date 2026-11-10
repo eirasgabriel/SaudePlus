@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -226,6 +228,54 @@ class AuthApiTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.nomeCompleto").value("Maria Souza Lima"))
                     .andExpect(jsonPath("$.telefone").value("(21) 98888-7777"));
+        }
+
+        @Test
+        @DisplayName("POST /perfil/foto aceita PNG, vira a foto do perfil e fica pública")
+        void enviaFotoPng() throws Exception {
+            String email = cadastrarPaciente();
+            byte[] png = {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0};
+            String corpo = mvc().perform(multipart("/api/auth/perfil/foto")
+                            .file(new MockMultipartFile("arquivo", "eu.png", "image/png", png))
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDe(email)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.fotoUrl").value(org.hamcrest.Matchers.startsWith("/api/publico/fotos/")))
+                    .andReturn().getResponse().getContentAsString();
+            String url = json.readTree(corpo).get("fotoUrl").asString();
+            mvc().perform(get(url))
+                    .andExpect(status().isOk())
+                    .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaType.IMAGE_PNG_VALUE));
+        }
+
+        @Test
+        @DisplayName("POST /perfil/foto recusa o que não é PNG, mesmo com extensão .png")
+        void recusaNaoPng() throws Exception {
+            String email = cadastrarPaciente();
+            byte[] jpeg = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0, 0};
+            mvc().perform(multipart("/api/auth/perfil/foto")
+                            .file(new MockMultipartFile("arquivo", "foto.png", "image/png", jpeg))
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDe(email)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.campos.arquivo").exists());
+        }
+
+        @Test
+        @DisplayName("GET /publico/fotos não serve chave que não é foto de perfil")
+        void fotoDesconhecida() throws Exception {
+            mvc().perform(get("/api/publico/fotos/" + UUID.randomUUID() + ".png"))
+                    .andExpect(status().isNotFound());
+        }
+
+        @Test
+        @DisplayName("PUT /perfil grava a escolha de mostrar a foto no painel")
+        void exibirFotoNoPainel() throws Exception {
+            String email = cadastrarPaciente();
+            mvc().perform(put("/api/auth/perfil")
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDe(email))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"nomeCompleto\":\"Maria Souza Lima\",\"exibirFotoNoPainel\":true}"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.exibirFotoNoPainel").value(true));
         }
 
         @Test
