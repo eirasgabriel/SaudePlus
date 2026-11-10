@@ -1,51 +1,47 @@
-/* Selo de status com o glifo de progresso — a assinatura do sistema.
-   O disco se preenche conforme a consulta avança (pendente ¼ → confirmada ½
-   → aguardando ⅝ → em andamento ¾ → realizada inteiro); cancelada e
-   "não compareceu" ficam vazias e riscadas. Forma + cor + texto: o estado
-   nunca depende só da cor. */
+/* Cores próprias do painel: os tokens globais não cobrem estados
+   de consulta. Contraste conferido sobre fundo branco (AA em texto pequeno). */
 
 .tag {
-  --fill: 0%;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  min-height: 26px;
-  padding: 0 10px 0 8px;
-  font-size: 12px;
+  justify-content: center;
+  min-width: 88px;
+  padding: 6px 12px;
+  font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
   line-height: 1.2;
   white-space: nowrap;
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
 }
 
-.tag::before {
-  content: "";
-  flex: none;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-  background: conic-gradient(currentColor var(--fill), transparent 0);
+.sucesso {
+  color: var(--tom-sucesso-fg, #0F6B4F);
+  background: var(--tom-sucesso-bg, #DCF5EA);
 }
 
-.tag[data-status="pendente"] { --fill: 25%; }
-.tag[data-status="confirmada"] { --fill: 50%; }
-.tag[data-status="aguardando"] { --fill: 62.5%; }
-.tag[data-status="em_andamento"] { --fill: 75%; }
-.tag[data-status="realizada"] { --fill: 100%; }
-
-/* Encerrada sem atendimento: disco vazio com um risco diagonal. */
-.tag[data-status="cancelada"]::before,
-.tag[data-status="faltou"]::before {
-  background: linear-gradient(135deg, transparent 43%, currentColor 43%, currentColor 57%, transparent 57%);
+.info {
+  color: var(--tom-info-fg, #0A4FA8);
+  background: var(--tom-info-bg, #DCEBFC);
 }
 
-.sucesso { color: var(--state-success); background: var(--state-success-bg); }
-.info    { color: var(--state-progress); background: var(--state-progress-bg); }
-.alerta  { color: var(--state-pending); background: var(--state-pending-bg); }
-.erro    { color: var(--state-danger); background: var(--state-danger-bg); }
-.neutro  {
-  color: var(--state-info);
-  background: var(--color-surface);
+.alerta {
+  color: var(--tom-alerta-fg, #8A5300);
+  background: var(--tom-alerta-bg, #FCEFD6);
+}
+
+.erro {
+  color: var(--tom-erro-fg, #9B1C1C);
+  background: var(--tom-erro-bg, #FCE4E4);
+}
+
+.neutro {
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
   box-shadow: inset 0 0 0 1px var(--color-border-strong);
+}
+
+@media (max-width: 768px) {
+  .tag {
+    min-width: 0;
+  }
 }

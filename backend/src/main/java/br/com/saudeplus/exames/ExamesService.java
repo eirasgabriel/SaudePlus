@@ -7,7 +7,9 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Locale;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -51,6 +53,10 @@ public class ExamesService {
     private final AgendamentoRepository agendamentos;
     private final UnidadeRepository unidades;
     private final ArmazenamentoArquivos armazenamento;
+
+    /** Resultado de exame: só PDF, PNG e JPEG (WebP é aceito apenas como foto de perfil). */
+    private static final Set<TipoDeArquivo> FORMATOS_DO_RESULTADO =
+            EnumSet.of(TipoDeArquivo.PDF, TipoDeArquivo.PNG, TipoDeArquivo.JPEG);
     private final ApplicationEventPublisher eventos;
     private final Auditoria auditoria;
     private final Clock relogio;
@@ -144,6 +150,7 @@ public class ExamesService {
         }
         byte[] conteudo = ler(arquivo);
         TipoDeArquivo tipo = TipoDeArquivo.detectar(conteudo)
+                .filter(FORMATOS_DO_RESULTADO::contains)
                 .orElseThrow(() -> RequisicaoInvalidaException.noCampo("arquivo", "Envie um PDF, PNG ou JPEG."));
         String chave = armazenamento.guardar(conteudo, tipo);
         String anterior = exame.liberarResultado(chave, relogio.instant());

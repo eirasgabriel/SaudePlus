@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -81,6 +84,13 @@ public class AuthController {
     public UsuarioResposta atualizarPerfil(@AuthenticationPrincipal UsuarioAutenticado usuario,
             @Valid @RequestBody AtualizarPerfilRequisicao requisicao) {
         return auth.atualizarPerfil(usuario.id(), requisicao);
+    }
+
+    /** Foto de perfil enviada do computador: PNG, JPEG ou WebP, até 2 MB (campo `arquivo`). */
+    @PostMapping(path = "/perfil/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UsuarioResposta enviarFoto(@AuthenticationPrincipal UsuarioAutenticado usuario,
+            @RequestPart(name = "arquivo", required = false) MultipartFile arquivo) {
+        return auth.enviarFoto(usuario.id(), arquivo);
     }
 
     /**

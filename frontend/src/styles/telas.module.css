@@ -356,3 +356,57 @@ a.itemPrincipal:hover {
   max-width: 960px;
   margin: 0 auto;
 }
+
+/* ---------- foto de perfil (Minha conta) ---------- */
+.fotoLinha {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.fotoPrevia {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  background: var(--color-surface-muted);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 50%;
+}
+.fotoPrevia img { width: 100%; height: 100%; object-fit: cover; }
+
+.fotoAcoes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.fotoAcoes p { margin: 0; }
+
+.fotoBotoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.caixaDeMarcar {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+  cursor: pointer;
+}
+.caixaDeMarcar input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+.caixaDeMarcar span { display: flex; flex-direction: column; gap: 2px; }
+.caixaDeMarcar small { font-weight: var(--fw-regular, 400); }

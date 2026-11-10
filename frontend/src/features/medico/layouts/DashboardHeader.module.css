@@ -1,4 +1,5 @@
-/* Cabeçalho do painel do médico: faixa da casca marinho. */
+/* Cabeçalho do painel do médico: faixa da casca marinho, com marca, busca
+   recolhível, notificações e conta. A navegação fica na barra lateral. */
 .cabecalho {
   position: sticky;
   top: 0;
@@ -16,48 +17,6 @@
   min-height: 72px;
   padding: 0 var(--space-6) 0 var(--space-5);
 }
-
-/* ---------- navegação ----------
-   A barra lateral já lista os mesmos destinos; o menu do topo fica fora da
-   tela para o painel ter uma só navegação (igual ao admin). */
-.menu {
-  display: none !important;
-  align-items: stretch;
-  align-self: stretch;
-  gap: 2px;
-}
-
-/* <button> enquanto não há rota — daí o reset de fundo e borda. */
-.link {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 14px;
-  background: transparent;
-  border: 0;
-  font-family: inherit;
-  font-size: var(--fs-small);
-  font-weight: var(--fw-medium);
-  color: var(--shell-text-muted);
-  transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
-  white-space: nowrap;
-}
-.link:hover { color: #fff; background: var(--shell-hover); }
-
-.ativo { color: #fff; font-weight: var(--fw-semibold); }
-.ativo::after {
-  content: "";
-  position: absolute;
-  right: 14px;
-  bottom: 0;
-  left: 14px;
-  height: 3px;
-  background: var(--shell-marker);
-}
-.ativo .linkIcone { color: var(--color-accent); }
-
-.linkIcone { color: currentColor; width: 18px; height: 18px; }
 
 /* ---------- ações ---------- */
 .acoes {
@@ -107,7 +66,8 @@
   background: var(--shell-line);
 }
 
-.perfilArea { position: relative; }
+/* Âncora dos menus suspensos (sino e conta). */
+.ancora { position: relative; }
 
 .perfil {
   display: flex;
@@ -161,63 +121,64 @@
 }
 .perfilSetaAberta { transform: rotate(180deg); }
 
-/* ---------- painel de busca ---------- */
+/* ---------- busca recolhível ----------
+   Fechada, só a lupa aparece. Aberta, o campo branco cresce da lupa para a
+   esquerda; clicar fora (ou Esc) recolhe. */
 .busca {
+  position: relative;
   display: flex;
-  gap: var(--space-2);
-  padding: 0 var(--space-6) var(--space-4) 256px;
+  align-items: center;
 }
 
-.busca input {
-  flex: 1;
-  min-width: 0;
-  max-width: 640px;
-  min-height: 44px;
-  padding: 0 14px;
+.buscaCampo {
+  width: 0;
+  min-height: 42px;
+  padding: 0;
   font: inherit;
   font-size: var(--fs-small);
   color: var(--color-text);
   background: #fff;
-  border: 1px solid #fff;
-  border-radius: var(--radius-button);
-}
-.busca input::placeholder { color: var(--color-text-subtle); }
-.busca input:focus { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-
-.buscaEnviar {
-  min-height: 44px;
-  padding: 0 22px;
-  font-size: var(--fs-small);
-  font-weight: var(--fw-bold);
-  color: #fff;
-  background: var(--color-primary);
   border: 0;
   border-radius: var(--radius-button);
-  transition: background var(--duration) var(--ease);
+  opacity: 0;
+  visibility: hidden;
+  transition: width var(--duration-slow, 280ms) var(--ease), padding var(--duration-slow, 280ms) var(--ease),
+    opacity var(--duration) var(--ease), visibility 0s linear var(--duration-slow, 280ms);
 }
-.buscaEnviar:hover { background: var(--color-primary-hover); }
+.buscaCampo::placeholder { color: var(--color-text-subtle); }
+.buscaCampo:focus { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+.buscaAberta .buscaCampo {
+  width: 320px;
+  margin-right: var(--space-2);
+  padding: 0 14px;
+  opacity: 1;
+  visibility: visible;
+  transition: width var(--duration-slow, 280ms) var(--ease), padding var(--duration-slow, 280ms) var(--ease),
+    opacity var(--duration) var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buscaCampo,
+  .buscaAberta .buscaCampo { transition: none; }
+}
 
 /* ---------- responsivo ---------- */
 @media (max-width: 1280px) {
   .barra { gap: var(--space-4); }
-  .link { gap: 6px; padding: 0 10px; }
-  .ativo::after { right: 10px; left: 10px; }
 }
 
 @media (max-width: 1100px) {
-  /* Com pouca largura o menu vira uma faixa rolável abaixo da marca. */
-  .barra {
-    flex-wrap: wrap;
-    padding: var(--space-3) var(--page-gutter) 0;
-    min-height: 0;
-  }
-  .menu {
-    order: 3;
-    width: 100%;
-    min-height: 48px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
+  .barra { padding: 0 var(--page-gutter); }
   .perfilTexto { display: none; }
-  .busca { padding: 0 var(--page-gutter) var(--space-3); }
+  .buscaAberta .buscaCampo { width: 220px; }
+}
+
+@media (max-width: 640px) {
+  /* No celular o campo aberto cobre a marca, ancorado à direita. */
+  .buscaAberta .buscaCampo {
+    position: absolute;
+    right: 100%;
+    width: calc(100vw - 210px);
+  }
 }

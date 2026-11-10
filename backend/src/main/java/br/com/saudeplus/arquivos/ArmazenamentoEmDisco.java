@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 class ArmazenamentoEmDisco implements ArmazenamentoArquivos {
 
     /** Só chaves geradas aqui: `<uuid>.<extensão>`. Impede `../` e caminhos absolutos. */
-    private static final Pattern CHAVE_VALIDA = Pattern.compile("[0-9a-f-]{36}\\.(pdf|png|jpg)");
+    private static final Pattern CHAVE_VALIDA = Pattern.compile("[0-9a-f-]{36}\\.(pdf|png|jpg|webp)");
 
     private final Path pasta;
 

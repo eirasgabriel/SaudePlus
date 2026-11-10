@@ -12,6 +12,7 @@ export const MEDICO = {
   especialidade: "Clínico Geral",
   crm: "CRM 123.456-RJ",
   avatarUrl: null, // ex.: 'https://.../carlos.jpg'
+  exibirFotoNoPainel: false,
 };
 
 export const UNIDADE = {

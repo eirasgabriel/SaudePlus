@@ -1,0 +1,97 @@
+/* ==========================================================
+   Tema escuro da área do médico.
+   Só redefine tokens: os componentes já usam var(--...). Vale para
+   tudo dentro do elemento com data-tema="escuro" (DashboardLayout).
+   Os tons de status (--tom-*) têm o valor claro como fallback em cada
+   componente; aqui só ganham a versão escura.
+   ========================================================== */
+/* Fundo da área do médico, um tom abaixo do padrão do site: os cartões
+   brancos se destacam mais e a divisão entre eles fica clara. */
+[data-tema="claro"] {
+  --color-background: #E2ECF7;
+}
+
+[data-tema="escuro"] {
+  color-scheme: dark;
+
+  /* A casca (cabeçalho, barra lateral e rodapé) mantém o mesmo marinho nos
+     dois temas. Ela lê --color-navy-*, que aqui vira texto claro, então os
+     valores ficam fixos. */
+  --shell: #041A58;
+  --shell-deep: #020F45;
+
+  /* Selos de status e mensagens (tokens da main). */
+  --state-pending: #F2C065;     --state-pending-bg: rgba(226, 163, 60, 0.18);
+  --state-info: #8CC0FF;        --state-info-bg: rgba(59, 139, 240, 0.2);
+  --state-progress: #A9BEF5;    --state-progress-bg: rgba(110, 140, 230, 0.22);
+  --state-success: #5FD3A6;     --state-success-bg: rgba(47, 163, 124, 0.18);
+  --state-danger: #FF8F8F;      --state-danger-bg: rgba(224, 59, 59, 0.18);
+  --state-neutral: #A8B6CE;     --state-neutral-bg: rgba(168, 182, 206, 0.14);
+  --color-section: #0E1729;
+  --color-section-border: #22314B;
+
+  --color-navy-950: #F1F5FB;
+  --color-navy-900: #E1E8F4;
+  --color-navy-800: #C7D4EA;
+  --color-navy-700: #AFC0DE;
+
+  --color-primary: #3B8BF0;
+  --color-primary-hover: #5C9FF4;
+  --color-primary-dark: #8CC0FF;
+  --color-primary-bright: #5C9FF4;
+  --color-primary-light: #16304F;
+
+  --color-background: #070D19;
+  --color-surface: #111B2E;
+  --color-surface-soft: #131F35;
+  --color-surface-muted: #18253D;
+  --color-surface-tint: #1B2A45;
+  --color-border: #22314B;
+  --color-border-strong: #2D3F5E;
+  --color-border-hover: #3B5076;
+  --color-divider: #2D3F5E;
+
+  --color-text: var(--color-navy-900);
+  --color-text-strong: #D6DFEE;
+  --color-text-muted: #A8B6CE;
+  --color-text-soft: #93A3BF;
+  --color-text-subtle: #6F81A0;
+
+  --shadow-header: 0 6px 24px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.25);
+  --shadow-float: 0 12px 34px rgba(0, 0, 0, 0.5);
+  --shadow-card-hover: 0 14px 36px rgba(0, 0, 0, 0.4);
+
+  --tom-sucesso-fg: #5FD3A6;
+  --tom-sucesso-bg: rgba(47, 163, 124, 0.18);
+  --tom-info-fg: #8CC0FF;
+  --tom-info-bg: rgba(59, 139, 240, 0.2);
+  --tom-alerta-fg: #F2C065;
+  --tom-alerta-bg: rgba(226, 163, 60, 0.18);
+  --tom-alerta-borda: rgba(226, 163, 60, 0.35);
+  --tom-erro-fg: #FF8F8F;
+  --tom-erro-bg: rgba(224, 59, 59, 0.18);
+  --tom-erro-borda: rgba(224, 59, 59, 0.4);
+  --tom-roxo-fg: #B9A6FF;
+  --tom-roxo-bg: rgba(123, 92, 230, 0.22);
+
+  /* Fundos ilustrados (banner de boas-vindas e cartões de destaque). */
+  --banner-fundo:
+    radial-gradient(120% 150% at 88% 100%, rgba(59, 139, 240, 0.22) 0%, rgba(59, 139, 240, 0) 58%),
+    linear-gradient(180deg, #14213A 0%, #111B2E 100%);
+  --banner-brilho: none;
+  --destaque-fundo: linear-gradient(180deg, #16243F 0%, #132038 100%);
+  --destaque-brilho: none;
+  --pagina-auxiliar-fundo: var(--color-background);
+}
+
+/* O body resolve `color: var(--color-text)` com o valor claro, e os filhos
+   herdam a cor já calculada. Redefinir aqui faz o texto herdado acompanhar. */
+[data-tema="escuro"] {
+  color: var(--color-text);
+}
+
+/* O fundo atrás da página acompanha enquanto a área do médico está aberta. */
+:root[data-tema-painel="escuro"] body {
+  background: #070D19;
+}

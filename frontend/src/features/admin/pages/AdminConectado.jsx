@@ -43,6 +43,7 @@ import { metricas as modelosAgendamentos } from "../../../services/dadosAdminAge
 import * as modelosDashboard from "../../../services/dadosAdminDashboard";
 import * as modelosFinanceiro from "../../../services/dadosAdminFinanceiro";
 import * as modelosRelatorios from "../../../services/dadosAdminRelatorios";
+import { enderecoDaApi } from "../../../services/http.js";
 
 /* Telas do admin ligadas à API. Cada uma busca os dados e converte para o
    formato que a página recebe. Não há dados de demonstração: enquanto a API
@@ -91,7 +92,7 @@ export function LayoutDoAdmin() {
       usuario={{
         nome: usuario?.nomeCompleto ?? "Administração",
         cargo: ROTULO_DO_PAPEL[usuario?.role] ?? "Equipe",
-        foto: usuario?.fotoUrl ?? null,
+        foto: enderecoDaApi(usuario?.fotoUrl),
         naoLidas: contagem.origem === "api" ? contagem.dados.total : 0,
       }}
     />

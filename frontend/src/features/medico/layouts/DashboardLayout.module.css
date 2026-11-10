@@ -28,6 +28,8 @@
   gap: var(--space-5);
   width: 100%;
   max-width: 1440px;
+  /* O conteúdo fica centralizado na área clara em telas largas. */
+  margin: 0 auto;
   padding: var(--space-8) var(--space-8) var(--space-10);
 }
 

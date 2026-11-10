@@ -24,8 +24,9 @@ public record PainelMedicoResposta(
         List<ExamePendenteResposta> examesPendentes,
         List<NotificacaoResposta> notificacoes) {
 
+    /** @param exibirFotoNoPainel se a foto (`avatarUrl`) aparece na faixa de boas-vindas */
     public record MedicoDoPainel(UUID id, String nome, String perfil, String especialidade, String crm,
-            String avatarUrl) {
+            String avatarUrl, boolean exibirFotoNoPainel) {
     }
 
     public record UnidadeDoPainel(UUID id, String nome, String cidade, String endereco, String telefone,

@@ -1,4 +1,5 @@
-import { requisitar } from '../../services/http.js'
+import { API_URL, ErroDeApi, requisitar } from '../../services/http.js'
+import { lerToken } from '../../services/sessaoStorage.js'
 
 /** Chamadas de autenticacao. Espelham br.com.saudeplus.auth.AuthController. */
 
@@ -47,13 +48,45 @@ export function buscarPerfil() {
   return requisitar('/api/auth/perfil', { autenticado: true })
 }
 
-/** PUT /api/auth/perfil — nome, telefone e foto (https) de quem está logado. */
-export function atualizarPerfil({ nomeCompleto, telefone, fotoUrl }) {
+/**
+ * PUT /api/auth/perfil — nome, telefone e foto de quem está logado.
+ * `exibirFotoNoPainel` (opcional) mostra a foto na página principal do painel.
+ */
+export function atualizarPerfil({ nomeCompleto, telefone, fotoUrl, exibirFotoNoPainel }) {
   return requisitar('/api/auth/perfil', {
     metodo: 'PUT',
-    corpo: { nomeCompleto, telefone, fotoUrl },
+    corpo: { nomeCompleto, telefone, fotoUrl, exibirFotoNoPainel },
     autenticado: true,
   })
+}
+
+/** Tamanho máximo da foto enviada do computador (o back-end confere de novo). */
+export const TAMANHO_MAXIMO_DA_FOTO = 2 * 1024 * 1024
+
+/**
+ * POST /api/auth/perfil/foto — envia uma imagem (PNG, JPG ou WebP) do computador e a
+ * transforma na foto do perfil. Devolve o usuário atualizado.
+ */
+export async function enviarFotoDePerfil(arquivo) {
+  const dados = new FormData()
+  dados.append('arquivo', arquivo)
+  const url = `${API_URL.replace(/\/$/, '')}/api/auth/perfil/foto`
+  const token = lerToken()
+  let resposta
+  try {
+    resposta = await fetch(url, {
+      method: 'POST',
+      body: dados,
+      headers: token ? { Authorization: `Bearer ${token}`, Accept: 'application/json' } : { Accept: 'application/json' },
+    })
+  } catch {
+    throw new ErroDeApi('Não foi possível falar com o servidor.', { status: 0, url })
+  }
+  const corpo = await resposta.json().catch(() => null)
+  if (!resposta.ok) {
+    throw new ErroDeApi(corpo?.mensagem ?? 'Não foi possível enviar a foto.', { status: resposta.status, corpo, url })
+  }
+  return corpo
 }
 
 /** PUT /api/auth/senha — senha atual errada responde 400 no campo `senhaAtual`. */

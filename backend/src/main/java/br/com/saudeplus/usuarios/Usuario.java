@@ -44,6 +44,14 @@ public class Usuario extends EntidadeBase {
     @Column(name = "foto_url", length = 500)
     private String fotoUrl;
 
+    /** Chave do PNG enviado pelo próprio usuário; nula quando a foto é um endereço https. */
+    @Column(name = "foto_chave", length = 60)
+    private String fotoChave;
+
+    /** Mostrar a foto na faixa de boas-vindas do painel. */
+    @Column(name = "exibir_foto_no_painel", nullable = false)
+    private boolean exibirFotoNoPainel;
+
     @Column(name = "ultimo_acesso")
     private Instant ultimoAcesso;
 
@@ -79,6 +87,34 @@ public class Usuario extends EntidadeBase {
         this.nomeCompleto = nomeCompleto.strip();
         this.telefone = vazioComoNulo(telefone);
         this.fotoUrl = vazioComoNulo(fotoUrl);
+    }
+
+    /**
+     * Troca a foto pela que o usuário enviou. Devolve a chave da foto enviada
+     * antes (para apagar o arquivo), ou nulo.
+     */
+    public String definirFotoEnviada(String chave, String url) {
+        String anterior = fotoChave;
+        this.fotoChave = chave;
+        this.fotoUrl = url;
+        return anterior;
+    }
+
+    /**
+     * Esquece a foto enviada quando o endereço deixou de apontar para ela
+     * (trocada por um https ou apagada). Devolve a chave a apagar, ou nulo.
+     */
+    public String soltarFotoEnviadaSeTrocada(String urlDaFotoEnviada) {
+        if (fotoChave == null || urlDaFotoEnviada.equals(fotoUrl)) {
+            return null;
+        }
+        String anterior = fotoChave;
+        fotoChave = null;
+        return anterior;
+    }
+
+    public void exibirFotoNoPainel(boolean exibir) {
+        this.exibirFotoNoPainel = exibir;
     }
 
     public void alterarStatus(StatusConta status) {
@@ -130,6 +166,14 @@ public class Usuario extends EntidadeBase {
 
     public String getFotoUrl() {
         return fotoUrl;
+    }
+
+    public String getFotoChave() {
+        return fotoChave;
+    }
+
+    public boolean isExibirFotoNoPainel() {
+        return exibirFotoNoPainel;
     }
 
     public Instant getUltimoAcesso() {

@@ -8,10 +8,5 @@ import styles from "./StatusTag.module.css";
  */
 export default function StatusTag({ status }) {
   const info = STATUS_CONSULTA[status] ?? { rotulo: status, tom: "neutro" };
-  /* `data-status` alimenta o glifo de progresso (disco que se preenche). */
-  return (
-    <span className={`${styles.tag} ${styles[info.tom] ?? styles.neutro}`} data-status={status}>
-      {info.rotulo}
-    </span>
-  );
+  return <span className={`${styles.tag} ${styles[info.tom] ?? styles.neutro}`}>{info.rotulo}</span>;
 }

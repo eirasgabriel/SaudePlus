@@ -15,16 +15,9 @@ import {
 } from "../../../components/icons/Icons.jsx";
 import { HomeIcon, FlaskIcon, HelpIcon, LogoutIcon } from "../components/icons/MedicoIcons.jsx";
 
-/* O item da página atual é decidido pela URL (`destinoAtivo`, em rotas.js). */
-export const MENU_TOPO = [
-  { rotulo: "Início", icone: HomeIcon, destino: "inicio" },
-  { rotulo: "Agenda", icone: CalendarIcon, destino: "agenda" },
-  { rotulo: "Consultas", icone: StethoscopeIcon, destino: "consultas" },
-  { rotulo: "Exames", icone: FlaskIcon, destino: "exames" },
-  { rotulo: "Pacientes", icone: UsersIcon, destino: "pacientes" },
-  { rotulo: "Unidade", icone: BuildingIcon, destino: "unidade" },
-];
-
+/* A navegação entre telas fica só na barra lateral; o cabeçalho tem busca,
+   notificações e conta. O item da página atual é decidido pela URL
+   (`destinoAtivo`, em rotas.js). */
 export const MENU_LATERAL = [
   { rotulo: "Início", icone: HomeIcon, destino: "inicio" },
   { rotulo: "Minha agenda", icone: CalendarIcon, destino: "agenda" },

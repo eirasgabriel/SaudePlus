@@ -90,7 +90,8 @@ public class PainelMedicoService {
                 "Médico",
                 medico.especialidadesOrdenadas().stream().map(Especialidade::getNome).collect(Collectors.joining(", ")),
                 "CRM %s-%s".formatted(medico.getCrm(), medico.getCrmUf()),
-                medico.getUsuario().getFotoUrl());
+                medico.getUsuario().getFotoUrl(),
+                medico.getUsuario().isExibirFotoNoPainel());
     }
 
     private static UnidadeDoPainel unidadeDoPainel(Unidade unidade) {

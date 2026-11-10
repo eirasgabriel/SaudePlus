@@ -1,6 +1,7 @@
 /* Converte as respostas da API para o formato que as telas do paciente já
    recebiam dos mocks (services/dadosficticios.js). Assim as telas continuam
    sem saber de onde os dados vêm. */
+import { enderecoDaApi } from "../../services/http.js";
 
 /** Consulta → formato de `mockAppointments`, mais os campos que as ações usam. */
 export function paraConsulta(consulta) {
@@ -32,7 +33,7 @@ export function paraUnidade(unidade) {
 
 /** Paciente do painel → formato de `mockPatient`. */
 export function paraPaciente(paciente) {
-  return { name: paciente.nome, role: "Paciente", avatarUrl: paciente.fotoUrl ?? null };
+  return { name: paciente.nome, role: "Paciente", avatarUrl: enderecoDaApi(paciente.fotoUrl) };
 }
 
 /** Os status de exame da API com os rótulos que a ExamesPage já usa. */

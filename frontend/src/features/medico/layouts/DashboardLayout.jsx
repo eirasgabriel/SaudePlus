@@ -1,6 +1,8 @@
 import Footer from "../../../components/Footer/Footer.jsx";
 import { cx } from "../../../utils/cx.js";
 import { useNavegacao } from "../navegacao/useNavegacao.js";
+import { useTema } from "../tema/useTema.js";
+import "../tema/temaEscuro.css";
 import DashboardHeader from "./DashboardHeader.jsx";
 import DashboardSidebar from "./DashboardSidebar.jsx";
 import styles from "./DashboardLayout.module.css";
@@ -19,25 +21,28 @@ import styles from "./DashboardLayout.module.css";
  */
 export default function DashboardLayout({
   medico,
+  /* Lista de notificações (lidas e não lidas): o sino mostra as não lidas
+     num menu suspenso. Sem ela, só o contador `totalNotificacoes`. */
+  notificacoes,
   totalNotificacoes,
-  /* Id do <h2> do painel de Notificações. O sino do cabeçalho usa esse id
-     para rolar até lá em vez de apontar para uma tela que não existe. */
-  idPainelNotificacoes,
   aside,
   children,
 }) {
   const { avisarEmBreve } = useNavegacao();
+  const { tema, alternarTema } = useTema();
 
   return (
-    <div className={styles.pagina}>
+    <div className={styles.pagina} data-tema={tema}>
       <a className="skip-link" href="#conteudo">
         Pular para o conteúdo
       </a>
 
       <DashboardHeader
         medico={medico}
+        notificacoes={notificacoes}
         totalNotificacoes={totalNotificacoes}
-        idPainelNotificacoes={idPainelNotificacoes}
+        tema={tema}
+        aoAlternarTema={alternarTema}
       />
 
       {/* A barra lateral é casca (marinho); a área de trabalho clara encaixa

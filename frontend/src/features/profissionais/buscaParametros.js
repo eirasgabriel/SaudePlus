@@ -4,6 +4,7 @@
 
 import { SPECIALTIES } from "./data/specialties.js";
 import { CITIES, CARE_TYPES, SPECIALTY_NAMES } from "./data/buscar.js";
+import { enderecoDaApi } from "../../services/http.js";
 
 const normalize = (text = "") => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
@@ -86,7 +87,7 @@ export function paraCartao(p) {
     insurances: p.convenios,
     slots: p.proximosHorarios,
     slotsDate: p.proximaData,
-    photo: p.fotoUrl,
+    photo: enderecoDaApi(p.fotoUrl),
   };
 }
 
