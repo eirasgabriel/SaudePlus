@@ -1,0 +1,308 @@
+/* =========================================================
+   Listas das telas avulsas do paciente (Consultas, Exames, Histórico).
+   Importado no topo de cada *.module.css com @import — as classes ficam
+   locais a cada módulo, mas o desenho tem uma fonte só.
+
+   Antes estas classes não existiam: as listas saíam sem estilo.
+   ========================================================= */
+
+/* ---------- Seção ---------- */
+.secao { margin-top: var(--space-10); }
+
+.secaoCabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.secaoTitulo {
+  font-size: 22px;
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-navy-950);
+}
+
+.contador {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.vazio {
+  margin-top: var(--space-4);
+  padding: var(--space-5);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-button);
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+}
+
+/* As listas antigas tinham marcador redondo em cada <li>; o item novo não usa. */
+.lista > li.cartaoItem { padding-left: 0; }
+.lista > li.cartaoItem::before { content: none; }
+
+.secao .lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+/* ---------- Item com bloco de data ---------- */
+.cartaoItem {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+.lista > .cartaoItem:last-child { border-bottom: 0; }
+
+.cartaoPassado .data { background: var(--color-surface-muted); color: var(--color-text-soft); border: 1px solid var(--color-border); }
+.cartaoPassado .mes,
+.cartaoPassado .ano { color: var(--color-text-soft); }
+
+.data {
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  padding: 8px 0;
+  border-radius: 6px;
+  background: var(--color-navy-900);
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.dia { font-size: 26px; font-weight: var(--fw-bold); line-height: 1; }
+.mes { margin-top: 4px; font-size: 13px; font-weight: var(--fw-semibold); color: var(--shell-text-muted); text-transform: capitalize; }
+.ano { font-size: 11px; color: var(--shell-text-muted); }
+
+.somenteLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.corpo { min-width: 0; }
+
+.linhaTopo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+
+.especialidade,
+.nomeExame {
+  font-size: var(--fs-card-title);
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+}
+
+.categoria {
+  margin-top: 2px;
+  font-size: var(--fs-small);
+  color: var(--color-text-soft);
+}
+
+/* ---------- Selo de status (com o glifo de progresso quando há data-status) ---------- */
+.status {
+  --fill: 0%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+
+.status[data-status]::before {
+  content: "";
+  flex: none;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  background: conic-gradient(currentColor var(--fill), transparent 0);
+}
+.status[data-status="pendente"] { --fill: 25%; }
+.status[data-status="confirmada"] { --fill: 50%; }
+.status[data-status="aguardando"] { --fill: 62.5%; }
+.status[data-status="em_andamento"] { --fill: 75%; }
+.status[data-status="realizada"] { --fill: 100%; }
+.status[data-status="cancelada"]::before,
+.status[data-status="faltou"]::before {
+  background: linear-gradient(135deg, transparent 43%, currentColor 43%, currentColor 57%, transparent 57%);
+}
+
+.sucesso     { background: var(--state-success-bg); color: var(--state-success); }
+.alerta      { background: var(--state-pending-bg); color: var(--state-pending); }
+.perigo      { background: var(--state-danger-bg); color: var(--state-danger); }
+.informativo { background: var(--state-info-bg); color: var(--state-info); }
+.neutro      { background: var(--state-neutral-bg); color: var(--state-neutral); }
+
+/* ---------- Metadados ---------- */
+.detalhes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin-top: var(--space-3);
+}
+
+.meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: var(--space-2);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+.detalhes .meta { margin-top: 0; }
+
+.metaIcone {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  color: var(--color-primary);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.clinica { display: block; font-weight: var(--fw-semibold); color: var(--color-text-strong); }
+.endereco { display: block; color: var(--color-text-soft); }
+
+/* ---------- Resultado de exame ---------- */
+.acaoResultado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  margin-top: var(--space-4);
+  padding: 0 16px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-button);
+  background: var(--color-primary);
+  color: #fff;
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease);
+}
+.acaoResultado:hover { background: var(--color-primary-hover); }
+.acaoResultado:disabled { opacity: 0.6; cursor: progress; }
+
+.acaoIcone { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+.acaoIndisponivel {
+  margin-top: var(--space-4);
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+}
+
+/* ---------- Linha do tempo (Histórico) ---------- */
+.linhaDoTempo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  padding-left: 28px;
+}
+
+/* O trilho da linha do tempo. */
+.linhaDoTempo::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--color-border-strong);
+}
+
+.item { position: relative; }
+
+.marcador {
+  position: absolute;
+  left: -28px;
+  top: 22px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 4px solid var(--color-navy-900);
+}
+
+.linhaDoTempo .cartaoItem {
+  display: block;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.quando {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.resumo {
+  margin-top: var(--space-2);
+  max-width: 70ch;
+  font-size: var(--fs-small);
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.desfecho {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: var(--space-3);
+  padding: 10px 12px;
+  border-radius: var(--radius-button);
+  background: var(--color-surface-muted);
+  font-size: var(--fs-small);
+  color: var(--color-text-strong);
+}
+
+.desfechoIcone {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  color: var(--color-primary);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+@media (max-width: 560px) {
+  .cartaoItem { grid-template-columns: 56px minmax(0, 1fr); gap: var(--space-4); padding: var(--space-4); }
+  .data { min-height: 64px; }
+  .dia { font-size: 22px; }
+}

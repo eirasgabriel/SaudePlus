@@ -1,0 +1,47 @@
+/* Cores próprias do painel: os tokens globais não cobrem estados
+   de consulta. Contraste conferido sobre fundo branco (AA em texto pequeno). */
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  padding: 6px 12px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  line-height: 1.2;
+  white-space: nowrap;
+  border-radius: var(--radius-pill);
+}
+
+.sucesso {
+  color: var(--tom-sucesso-fg, #0F6B4F);
+  background: var(--tom-sucesso-bg, #DCF5EA);
+}
+
+.info {
+  color: var(--tom-info-fg, #0A4FA8);
+  background: var(--tom-info-bg, #DCEBFC);
+}
+
+.alerta {
+  color: var(--tom-alerta-fg, #8A5300);
+  background: var(--tom-alerta-bg, #FCEFD6);
+}
+
+.erro {
+  color: var(--tom-erro-fg, #9B1C1C);
+  background: var(--tom-erro-bg, #FCE4E4);
+}
+
+.neutro {
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+  box-shadow: inset 0 0 0 1px var(--color-border-strong);
+}
+
+@media (max-width: 768px) {
+  .tag {
+    min-width: 0;
+  }
+}

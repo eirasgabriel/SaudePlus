@@ -1,0 +1,294 @@
+/* =========================================================
+   Casca da área administrativa — mundo "Modulado"
+   -----------------------------------------------------------
+   A barra do topo e o menu lateral são uma única estrutura
+   azul-marinho em L; a área de trabalho clara encaixa nela pela
+   curva "shed" no canto superior esquerdo.
+
+   O reset fica escopado em `.app` com `:where()` (especificidade
+   zero) para não vazar para as telas do paciente.
+   ========================================================= */
+.app {
+  font-family: var(--font-sans);
+  background: var(--shell);
+  color: var(--texto);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:where(.app) *,
+:where(.app) *::before,
+:where(.app) *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:where(.app) a { color: inherit; text-decoration: none; }
+
+:where(.app) button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+:where(.app) ul,
+:where(.app) ol { list-style: none; }
+
+:where(.app) table { border-collapse: collapse; width: 100%; }
+
+:where(.app) input,
+:where(.app) select,
+:where(.app) textarea { font: inherit; color: inherit; }
+
+.app :focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* =========================================================
+   Barra do topo (casca)
+   ========================================================= */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: 0 var(--space-6) 0 var(--space-5);
+  background: var(--shell);
+  color: var(--shell-text);
+}
+
+.topbar :focus-visible,
+.sidebar :focus-visible { outline-color: var(--color-accent); }
+
+.marca {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  flex: none;
+  min-width: calc(var(--sidebar-w) - var(--space-5));
+}
+
+.marcaNome {
+  display: block;
+  font-size: 24px;
+  font-weight: var(--fw-heavy);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.marcaNome span:first-child { color: #fff; }
+.marcaNome span:last-child { color: var(--color-accent); }
+
+.marcaSlogan {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--shell-text-muted);
+  white-space: nowrap;
+}
+
+/* O menu lateral já lista todos os módulos; repetir os mesmos links no
+   topo dividia a atenção entre duas navegações iguais. */
+.nav { display: none; }
+.navItem,
+.navAtivo { display: none; }
+
+/* --- ações --- */
+.acoes {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+}
+
+.iconeBtn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-button);
+  color: var(--shell-text-muted);
+  position: relative;
+  transition: background var(--transicao), color var(--transicao);
+}
+.iconeBtn:hover { background: var(--shell-hover); color: #fff; }
+
+.badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  background: #E5484D;
+  color: #fff;
+  font-size: 10px;
+  font-weight: var(--fw-bold);
+  border-radius: var(--raio-pill);
+  border: 2px solid var(--shell);
+}
+
+/* Âncora do MenuPerfil. */
+.perfilCaixa {
+  position: relative;
+  margin-left: var(--space-2);
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--shell-line);
+}
+
+.perfil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 4px 4px;
+  border-radius: var(--radius-button);
+  transition: background var(--transicao);
+}
+.perfil:hover { background: var(--shell-hover); }
+
+.perfilTexto { text-align: left; }
+
+.perfilNome {
+  display: block;
+  font-size: 13.5px;
+  font-weight: var(--fw-bold);
+  line-height: 1.2;
+  color: #fff;
+}
+
+.perfilCargo {
+  font-size: 12px;
+  color: var(--shell-text-muted);
+}
+
+.chevron { color: var(--shell-text-muted); }
+
+/* =========================================================
+   Corpo
+   ========================================================= */
+.corpo {
+  display: flex;
+  align-items: flex-start;
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  flex: none;
+  position: sticky;
+  top: var(--header-h);
+  height: calc(100vh - var(--header-h));
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) var(--space-3) var(--space-5);
+  background: var(--shell);
+  color: var(--shell-text);
+  overflow-y: auto;
+  scrollbar-color: var(--shell-line) transparent;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menuItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: var(--radius-button);
+  font-size: 14px;
+  font-weight: var(--fw-medium);
+  color: var(--shell-text-muted);
+  transition: background var(--transicao), color var(--transicao);
+}
+.menuItem:hover { background: var(--shell-hover); color: #fff; }
+
+/* Item ativo: fundo ciano translúcido, ícone ciano e texto em negrito. */
+.menuAtivo,
+.menuAtivo:hover {
+  background: var(--shell-active);
+  color: #fff;
+  font-weight: var(--fw-semibold);
+}
+.menuAtivo svg { color: var(--color-accent); }
+
+/* --- mensagem institucional no pé do menu --- */
+.promo {
+  margin-top: auto;
+  position: relative;
+  padding: var(--space-4) var(--space-3) 0;
+  border-top: 1px solid var(--shell-line);
+}
+
+.promoOnda,
+.promoCoracao { display: none; }
+
+.promoIcone {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-button);
+  display: grid;
+  place-items: center;
+  background: var(--shell-raised);
+  color: var(--color-accent);
+  margin-bottom: var(--space-3);
+}
+
+.promoTexto {
+  font-size: 13px;
+  font-weight: var(--fw-semibold);
+  line-height: 1.4;
+  color: var(--shell-text-muted);
+}
+.promoTexto br { display: none; }
+
+/* =========================================================
+   Área de trabalho
+   ========================================================= */
+.conteudo {
+  flex: 1;
+  min-width: 0;
+  min-height: calc(100vh - var(--header-h));
+  padding: var(--space-8) var(--space-8) var(--space-10);
+  background: var(--color-background);
+  border-top-left-radius: var(--radius-shed);
+  color: var(--texto);
+}
+
+/* =========================================================
+   Responsivo
+   ========================================================= */
+@media (max-width: 900px) {
+  .marca { width: auto; }
+  .sidebar { padding: var(--space-2) 10px var(--space-4); }
+  .menuItem { justify-content: center; padding: 0; }
+  .menuRotulo,
+  .promo,
+  .marcaSlogan { display: none; }
+  .conteudo { padding: var(--space-5) var(--space-4) var(--space-8); }
+}
+
+@media (max-width: 620px) {
+  .topbar { padding: 0 var(--space-3); gap: var(--space-3); }
+  .perfilTexto { display: none; }
+  .perfilCaixa { padding-left: var(--space-2); }
+}

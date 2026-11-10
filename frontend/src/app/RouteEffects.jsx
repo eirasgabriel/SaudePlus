@@ -13,7 +13,9 @@ const titles = {
 export default function RouteEffects() {
   const { pathname, search, hash } = useLocation()
   useEffect(() => {
-    document.title = `SaúdePlus — ${titles[pathname] ?? 'Página não encontrada'}`
+    // O perfil troca pelo nome do profissional quando os dados chegam.
+    const title = titles[pathname] ?? (pathname.startsWith('/profissionais/') ? 'Perfil do profissional' : 'Página não encontrada')
+    document.title = `SaúdePlus — ${title}`
     const target = hash && document.getElementById(decodeURIComponent(hash.slice(1)))
     if (target) target.scrollIntoView()
     else {

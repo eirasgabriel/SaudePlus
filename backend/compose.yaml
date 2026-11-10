@@ -1,0 +1,17 @@
+# Banco local do perfil dev. O Spring Boot sobe este serviço sozinho ao
+# rodar `./mvnw spring-boot:run` (spring-boot-docker-compose), então não é
+# preciso `docker compose up` manual.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: saudeplus
+      POSTGRES_USER: saudeplus
+      POSTGRES_PASSWORD: saudeplus
+    ports:
+      - "5432:5432"
+    volumes:
+      - saudeplus-dados:/var/lib/postgresql/data
+
+volumes:
+  saudeplus-dados:

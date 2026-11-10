@@ -1,48 +1,84 @@
 /* ==========================================================
-   SaúdePlus — Design Tokens
-   Fonte de verdade: Homepage de referência (1536 × 1024)
+   SaúdePlus — Design Tokens (fonte única do sistema)
+
+   Mundo visual "Modulado": a estrutura do produto é azul-marinho, como o
+   aço pintado dos hospitais da Rede Sarah; as superfícies de trabalho são
+   brancas e penduradas nessa estrutura. Linhas finas separam, sombras quase
+   não existem. Uma única curva grande ("shed") marca onde a casca encontra
+   o conteúdo. O azul principal fica reservado a ação, seleção e links; o
+   ciano, a foco e ao marcador do item ativo.
+
+   `tokens-admin.css` e `auth-base.css` apenas apelidam estes valores.
    ========================================================== */
 :root {
-  /* ---------- Cores ---------- */
-  --color-navy-950: #020F45;      /* títulos */
-  --color-navy-900: #041A58;      /* texto principal */
-  --color-navy-800: #042B78;      /* azul marinho */
+  /* ---------- Paleta (mantida) ---------- */
+  --color-navy-950: #020F45;
+  --color-navy-900: #041A58;
+  --color-navy-800: #042B78;
   --color-navy-700: #06378F;
-  --color-blue-600: #0A58CE;      /* azul médio */
-  --color-primary: #0066F5;       /* azul principal (botões, destaques) */
-  --color-primary-hover: #0057D9;
-  --color-primary-bright: #0878F9;
-  --color-accent: #44C6F4;        /* azul-ciano */
-  --color-primary-light: #EAF4FF; /* círculos de ícone */
-  --color-background: #F0F7FD;    /* fundo da página */
+  --color-blue-600: #0A58CE;
+  /* Azul da Cartilha Digital — única definição literal do azul principal.
+     4.68:1 sobre branco (AA para texto grande e componentes). */
+  --color-primary: #0070E8;
+  --color-primary-hover: #005EC3;   /* 6.20:1 */
+  --color-primary-dark: #004A99;    /* 8.61:1 — texto azul sobre fundo claro */
+  --color-primary-bright: #1A7EEA;
+  --color-accent: #44C6F4;          /* ciano: foco e marcador ativo sobre marinho */
+  --color-primary-light: #EAF4FF;
+  --color-background: #F0F7FD;
   --color-surface: #FFFFFF;
-  --color-surface-soft: #FAFCFE;  /* SectionCard suave */
-  --color-surface-muted: #F5F9FE; /* cards e chips internos */
-  --color-surface-tint: #EEF5FE;  /* paineis destacados dentro de cards */
-  --color-border: #E3F0FC;        /* borda de cards */
-  --color-border-strong: #D2E3F8; /* borda de inputs e controles */
-  --color-border-hover: #C6DDF8;  /* borda em hover */
-  --color-divider: #CFE3FA;
+  --color-surface-soft: #F8FBFE;
+  --color-surface-muted: #F3F8FD;
+  /* Fundo das seções de conteúdo: branco fosco, acinzentado. Os cartões
+     dentro delas continuam brancos. */
+  --color-section: #EEF0F3;
+  --color-section-border: #D3D9E2;
+  --color-surface-tint: #EAF4FF;
+
+  /* Linhas: o sistema separa por traço fino, não por sombra. */
+  --color-border: #D9E6F6;
+  --color-border-strong: #C3D6EF;
+  --color-border-hover: #9FBCE4;
+  --color-divider: #D9E6F6;
+
+  /* Texto — do mais forte ao mais discreto (todos ≥ 4.5:1 sobre branco). */
   --color-text: var(--color-navy-900);
-  /* Escala de texto de apoio — do mais forte ao mais discreto.
-     Antes existiam 4 cinzas quase iguais espalhados pelas paginas. */
-  --color-text-strong: #1F2F63;   /* rotulos de controles sobre fundo claro */
-  --color-text-muted: #3C4A70;    /* descricoes e textos de apoio */
-  --color-text-soft: #4A5E86;     /* rotulos secundarios */
-  --color-text-subtle: #8EA3C7;   /* placeholders e bordas de controle */
+  --color-text-strong: #1F2F63;
+  --color-text-muted: #3C4A70;
+  --color-text-soft: #4A5E86;
+  --color-text-subtle: #6B7FA6;     /* placeholders: 4.6:1 */
   --color-text-on-dark: #FFFFFF;
   --color-handwriting: #EAF4FF;
 
-  /* Gradiente do hero (usado fora da arte e em telas > 1536px) */
+  /* ---------- Casca (estrutura marinho) ---------- */
+  --shell: var(--color-navy-900);
+  --shell-deep: var(--color-navy-950);
+  --shell-raised: #0A2468;
+  --shell-line: rgba(255, 255, 255, 0.12);
+  --shell-text: #FFFFFF;
+  --shell-text-muted: #B8C7EB;      /* 8.9:1 sobre #041A58 */
+  --shell-hover: rgba(255, 255, 255, 0.07);
+  --shell-active: rgba(68, 198, 244, 0.14);
+  --shell-marker: var(--color-accent);
+
+  /* ---------- Estados (carregam significado; sempre com texto/forma) ---------- */
+  --state-pending: #8A5300;     --state-pending-bg: #FDF1D8;
+  --state-info: #004A99;        --state-info-bg: #E3EFFD;
+  --state-progress: #06378F;    --state-progress-bg: #DCE6FA;
+  --state-success: #0F6B4F;     --state-success-bg: #DDF4EA;
+  --state-danger: #A3201F;      --state-danger-bg: #FCE6E5;
+  --state-neutral: #3C4A70;     --state-neutral-bg: #EEF3FA;
+
+  /* Gradiente do hero (arte rasterizada usa estes azuis) */
   --gradient-hero: linear-gradient(115deg, #0050BC 0%, #013A96 38%, #012D7E 60%, #013C9E 82%, #0049B0 100%);
 
   /* ---------- Tipografia ---------- */
-  --font-sans: "Inter", "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-hand: "Caveat", "Segoe Script", cursive;
 
-  --fs-hero: 50px;
-  --fs-section: 34px;       /* titulo de bloco em destaque */
-  --fs-section-title: 26px; /* titulo padrao de secao (SectionTitle) */
+  --fs-hero: 54px;
+  --fs-section: 34px;
+  --fs-section-title: 28px;
   --fs-stat: 24px;
   --fs-lead: 18px;
   --fs-card-title: 18px;
@@ -55,10 +91,12 @@
   --fw-medium: 500;
   --fw-semibold: 600;
   --fw-bold: 700;
+  --fw-heavy: 800;
 
-  --tracking-tight: -0.04em;
+  --tracking-tight: -0.022em;
 
-  /* ---------- Espaçamento ---------- */
+  /* ---------- Espaçamento (módulo de 4/8px) ---------- */
+  --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
@@ -66,63 +104,86 @@
   --space-6: 24px;
   --space-8: 32px;
   --space-10: 40px;
+  --space-12: 48px;
   --space-16: 64px;
-  --section-gap: 32px;
+  --section-gap: 56px;
   --section-padding: 32px;
-  --card-gap: 20px;
-  --hero-overlap: 32px;
+  --card-gap: 16px;
+  --hero-overlap: 40px;
 
   /* ---------- Raios ---------- */
-  --radius-card: 20px;
-  --radius-header: 22px;
-  --radius-float: 14px;
-  --radius-button: 12px;
+  --radius-card: 12px;
+  --radius-header: 0;
+  --radius-float: 10px;
+  --radius-button: 8px;
   --radius-pill: 999px;
-  --radius-image: 14px;
+  --radius-image: 10px;
+  --radius-shed: 28px;        /* a curva onde a casca encontra o conteúdo */
+  --radius-shed-lg: 72px;     /* versão da curva no hero público */
 
-  /* ---------- Sombras (mínimas) ---------- */
-  --shadow-header: 0 6px 24px rgba(2, 30, 100, 0.08);
-  --shadow-card: 0 8px 30px rgba(8, 60, 150, 0.06);
-  --shadow-float: 0 10px 30px rgba(2, 20, 80, 0.18);
-  --shadow-card-hover: 0 14px 36px rgba(8, 60, 150, 0.12);
+  /* ---------- Sombras (raras, com deslocamento real) ---------- */
+  --shadow-header: none;
+  --shadow-card: 0 1px 2px rgba(2, 15, 69, 0.04);
+  --shadow-card-hover: 0 6px 18px -6px rgba(2, 15, 69, 0.16);
+  --shadow-float: 0 18px 40px -12px rgba(2, 15, 69, 0.28);
+
+  /* Realce dos cartões das páginas públicas: borda em degradê azul-claro
+     (truque padding-box/border-box, com `border: 1px solid transparent`),
+     brilho fino no topo e sombra azulada em camadas. No hover o cartão
+     ganha um contorno azul e a sombra cresce. */
+  --realce-fundo:
+    linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+    linear-gradient(150deg, #B9D8FF 0%, #EAF3FF 42%, #EAF3FF 58%, #8FC2FF 100%) border-box;
+  --realce-sombra:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 6px -2px rgba(2, 40, 120, 0.10),
+    0 18px 38px -20px rgba(0, 70, 190, 0.50);
+  --realce-sombra-hover:
+    inset 0 1px 0 #fff,
+    0 0 0 1px rgba(0, 112, 232, 0.28),
+    0 8px 16px -8px rgba(0, 80, 210, 0.25),
+    0 28px 48px -20px rgba(0, 80, 210, 0.60);
 
   /* ---------- Containers ---------- */
-  --container-header: 1472px;  /* 32px das bordas em 1536 */
-  --container-width: 1408px;   /* 64px das bordas em 1536 */
+  --container-header: 1408px;
+  --container-width: 1280px;
   --page-gutter: 32px;
-  --header-top: 20px;
-  --header-height: 76px;
-  --header-content-gap: 48px;
-  --hero-height: 658px;
+  --header-top: 0px;
+  --header-height: 72px;
+  --header-content-gap: 56px;
+  /* Mesma altura em todas as páginas públicas. O número sem unidade serve
+     para calcular a escala da foto do hero (ver HeroSection `rente`). */
+  --hero-height-num: 470;
+  --hero-height: calc(var(--hero-height-num) * 1px);
 
   /* ---------- Movimento ---------- */
-  --ease: cubic-bezier(.2, .7, .2, 1);
-  --duration: 180ms;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration: 160ms;
+  --duration-slow: 420ms;
 }
 
 @media (max-width: 1100px) {
   :root {
     --fs-hero: 46px;
     --fs-section: 30px;
-    --fs-section-title: 24px;
+    --fs-section-title: 26px;
   }
 }
 
 @media (max-width: 768px) {
   :root {
     --page-gutter: 16px;
-    --header-top: 12px;
     --header-height: 64px;
-    --header-content-gap: 44px;
-    --section-gap: 24px;
-    --section-padding: 24px;
-    --card-gap: 16px;
+    --header-content-gap: 40px;
+    --section-gap: 40px;
+    --section-padding: 20px;
+    --card-gap: 12px;
     --hero-overlap: 24px;
     --fs-hero: 36px;
     --fs-section: 28px;
-    --fs-section-title: 22px;
-    --fs-lead: 16px;
-    --radius-card: 18px;
-    --radius-header: 18px;
+    --fs-section-title: 24px;
+    --fs-lead: 17px;
+    --radius-shed: 20px;
+    --radius-shed-lg: 36px;
   }
 }

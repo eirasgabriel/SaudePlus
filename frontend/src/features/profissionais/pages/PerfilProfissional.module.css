@@ -1,0 +1,256 @@
+/* Perfil do profissional. O cabeçalho do site é a faixa marinho do topo;
+   a página começa logo abaixo dela. */
+.pagina {
+  padding-top: calc(var(--header-top) + var(--header-height) + var(--space-8));
+}
+
+.voltar { margin-bottom: var(--space-4); font-size: var(--fs-small); }
+.voltar a { color: var(--color-primary-dark); font-weight: var(--fw-semibold); }
+.voltar a:hover { text-decoration: underline; }
+
+/* ---- Estados: carregando, não encontrado, erro ---- */
+.estado {
+  max-width: 560px;
+  margin: var(--space-10) auto 0;
+  text-align: center;
+}
+.estadoTitulo {
+  font-size: 28px;
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+  letter-spacing: var(--tracking-tight);
+}
+.estado .vazio { margin: 12px 0 24px; }
+.estadoAcoes { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+
+/* ---- Cabeçalho do perfil ---- */
+.cabecalho {
+  display: grid;
+  grid-template-columns: 144px minmax(0, 1fr) 280px;
+  align-items: stretch;
+  gap: var(--space-8);
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.foto {
+  width: 144px;
+  height: 144px;
+  border-radius: var(--radius-image);
+  object-fit: cover;
+}
+.fotoVazia {
+  display: grid;
+  place-items: center;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-size: 40px;
+  font-weight: var(--fw-bold);
+}
+
+.identidade { min-width: 0; align-self: center; }
+
+.nome {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 32px;
+  line-height: 1.15;
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-navy-950);
+}
+.verificado { color: var(--color-primary); }
+
+.meta {
+  margin-top: var(--space-3);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+}
+.tag {
+  padding: 2px 10px;
+  border-radius: 4px;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-weight: var(--fw-semibold);
+}
+
+.nota { margin-top: var(--space-3); }
+
+.modalidades {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.modalidade {
+  padding: 2px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-strong);
+  font-size: var(--fs-xs);
+}
+
+/* Chamada para agendar: a peça marinho da página. */
+.chamada {
+  display: grid;
+  align-content: center;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-button) var(--radius-shed) var(--radius-button) var(--radius-button);
+  background: var(--shell);
+  color: #fff;
+}
+.chamada :focus-visible { outline-color: var(--color-accent); }
+.valor { display: grid; gap: 2px; font-size: var(--fs-xs); color: var(--shell-text-muted); }
+.valor strong { font-size: 26px; color: #fff; font-variant-numeric: tabular-nums; }
+.agendar { width: 100%; min-height: 48px; }
+.dica { font-size: 12px; line-height: 1.45; color: var(--shell-text-muted); }
+
+/* ---- Seções ---- */
+.grade {
+  margin-top: var(--space-6);
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: start;
+}
+.coluna { display: grid; gap: var(--space-6); }
+
+.secao {
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+.secaoTitulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--fs-card-title);
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+}
+.secaoTitulo svg { color: var(--color-primary); }
+
+.bio { max-width: 70ch; line-height: 1.65; color: var(--color-text); white-space: pre-line; }
+.vazio { font-size: var(--fs-small); color: var(--color-text-muted); }
+
+/* Horários por dia: cada dia é uma linha da tabela do quadro de horários. */
+.dias { display: grid; }
+.dia,
+.dias > * {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.dias > *:first-child { padding-top: 0; }
+.dias > *:last-child { border-bottom: 0; padding-bottom: 0; }
+.diaTitulo {
+  margin-bottom: 8px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+  text-transform: capitalize;
+}
+.horarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 6px;
+}
+.horario {
+  display: grid;
+  place-items: center;
+  height: 38px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--color-navy-950);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.horario:hover,
+.horario:focus-visible {
+  border-color: var(--color-navy-900);
+  background: var(--color-navy-900);
+  color: #fff;
+}
+
+/* Avaliações */
+.avaliacoes { display: grid; gap: var(--space-4); }
+.avaliacao { padding-bottom: var(--space-4); border-bottom: 1px solid var(--color-border); }
+.avaliacao:last-child { padding-bottom: 0; border-bottom: 0; }
+.avaliacaoNota { display: flex; align-items: center; gap: 4px; font-size: var(--fs-small); font-weight: var(--fw-semibold); }
+.avaliacaoNota svg { color: #C77A00; }
+.avaliacaoTexto { margin-top: 6px; max-width: 70ch; line-height: 1.55; color: var(--color-text); }
+.avaliacaoAutor { margin-top: 6px; font-size: var(--fs-xs); color: var(--color-text-soft); }
+.verMais {
+  margin-top: var(--space-4);
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary-dark);
+  cursor: pointer;
+}
+.verMais:hover { text-decoration: underline; }
+.verMais:disabled { opacity: 0.6; cursor: default; text-decoration: none; }
+
+/* Unidades e convênios */
+.unidades { display: grid; gap: var(--space-4); }
+.unidadeNome { font-size: var(--fs-body); font-weight: var(--fw-bold); color: var(--color-navy-950); }
+.linha {
+  margin-top: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+}
+.linha svg { flex: none; margin-top: 2px; color: var(--color-primary); }
+.mapa {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary-dark);
+}
+.mapa:hover { text-decoration: underline; }
+.convenios { display: flex; flex-wrap: wrap; gap: 6px; }
+.convenio {
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: var(--fs-xs);
+  color: var(--color-text-strong);
+}
+
+@media (max-width: 1024px) {
+  .cabecalho { grid-template-columns: 120px 1fr; }
+  .foto { width: 120px; height: 120px; }
+  .chamada { grid-column: 1 / -1; }
+  .grade { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .cabecalho { grid-template-columns: 1fr; padding: var(--space-5); }
+  .nome { font-size: 26px; }
+  .secao { padding: var(--space-5); }
+}

@@ -1,0 +1,54 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item {
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-sm);
+  overflow: hidden;
+  transition: border-color var(--transicao);
+}
+
+.itemAberto {
+  border-color: var(--azul-suave);
+}
+
+.gatilho {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--texto);
+  background: var(--branco);
+  transition: background var(--transicao);
+}
+
+.gatilho:hover {
+  background: var(--azul-bg);
+}
+
+.seta {
+  color: var(--texto-3);
+  transition: transform var(--transicao);
+  flex: none;
+}
+
+.setaAberta {
+  transform: rotate(180deg);
+  color: var(--azul);
+}
+
+.resposta {
+  padding: 0 16px 16px;
+  font-size: 13px;
+  color: var(--texto-2);
+  line-height: 1.6;
+  background: var(--branco);
+}

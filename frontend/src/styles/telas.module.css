@@ -1,0 +1,412 @@
+/* Peças das telas da área logada do médico e do paciente (listas, detalhes e
+   formulários). Os tokens vêm de styles/tokens.css. */
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.titulo {
+  margin: 0;
+  font-size: var(--fs-section-title);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-navy-950);
+}
+
+.subtitulo {
+  margin: 4px 0 0;
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+}
+
+.cartao {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.cartaoTitulo {
+  margin: 0;
+  font-size: 17px;
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+}
+
+.cartaoTopo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ---------------------------------------------------------------- filtros */
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.campoLargo {
+  flex: 1 1 220px;
+}
+
+.rotulo {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-strong);
+}
+
+.input,
+.select,
+.area {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-button);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: var(--fs-small);
+  color: var(--color-text);
+}
+
+.area {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.input:hover,
+.select:hover,
+.area:hover { border-color: var(--color-border-hover); }
+
+.input:focus,
+.select:focus,
+.area:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 112, 232, 0.16);
+}
+
+.invalido {
+  border-color: var(--state-danger);
+}
+
+.erroCampo {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: var(--fw-semibold);
+  color: var(--state-danger);
+}
+
+.grade2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ---------------------------------------------------------------- botões */
+
+.botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.botao,
+.botaoSecundario,
+.botaoPerigo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: var(--radius-button);
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+
+.botao {
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.botao:hover {
+  background: var(--color-primary-hover);
+}
+
+.botaoSecundario {
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-primary-dark);
+}
+
+.botaoSecundario:hover {
+  border-color: var(--color-border-hover);
+  background: var(--color-primary-light);
+}
+
+.botaoPerigo {
+  border: 1px solid #F3C7C5;
+  background: var(--color-surface);
+  color: var(--state-danger);
+}
+
+.botaoPerigo:hover {
+  background: var(--state-danger-bg);
+}
+
+.botao:disabled,
+.botaoSecundario:disabled,
+.botaoPerigo:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------- listas */
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.item:first-child {
+  border-top: 0;
+}
+
+.itemTexto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemPrincipal {
+  font-weight: var(--fw-semibold);
+  color: var(--color-navy-900);
+  text-decoration: none;
+}
+
+a.itemPrincipal:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.itemSecundario {
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+}
+
+.naoLida {
+  background: var(--color-surface-muted);
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+}
+
+/* Pares rótulo/valor dos detalhes. */
+.dados {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-3) var(--space-5);
+  margin: 0;
+}
+
+.dados dt {
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+}
+
+.dados dd {
+  margin: 2px 0 0;
+  font-weight: var(--fw-medium);
+  color: var(--color-navy-900);
+  overflow-wrap: anywhere;
+}
+
+.texto {
+  margin: 0;
+  white-space: pre-line;
+  color: var(--color-text);
+}
+
+/* ---------------------------------------------------------------- estados */
+
+.vazio,
+.carregando {
+  margin: 0;
+  padding: var(--space-4) 0;
+  color: var(--color-text-soft);
+}
+
+.mensagem {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-button);
+  font-size: var(--fs-small);
+}
+
+.sucesso {
+  background: var(--state-success-bg);
+  color: var(--state-success);
+}
+
+.erro {
+  background: var(--state-danger-bg);
+  color: var(--state-danger);
+}
+
+.info {
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+}
+
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: var(--fw-medium);
+  color: var(--color-primary-dark);
+  text-decoration: none;
+}
+
+.voltar:hover {
+  text-decoration: underline;
+}
+
+/* Página avulsa da área do paciente (sem o layout do painel). */
+.paginaAvulsa {
+  position: relative;
+  min-height: 100vh;
+  padding: 0 var(--page-gutter) var(--space-12);
+  background: var(--color-background);
+}
+
+/* Faixa da casca marinho no topo, fechada pela curva shed. */
+.paginaAvulsa::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 72px;
+  background: var(--shell);
+  border-bottom-right-radius: var(--radius-shed);
+}
+
+.paginaAvulsaConteudo > .voltar:first-child {
+  min-height: 72px;
+  color: #fff;
+}
+.paginaAvulsaConteudo > .voltar:first-child:focus-visible { outline-color: var(--color-accent); }
+
+.paginaAvulsaConteudo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  position: relative;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ---------- foto de perfil (Minha conta) ---------- */
+.fotoLinha {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.fotoPrevia {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  background: var(--color-surface-muted);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 50%;
+}
+.fotoPrevia img { width: 100%; height: 100%; object-fit: cover; }
+
+.fotoAcoes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+.fotoAcoes p { margin: 0; }
+
+.fotoBotoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.caixaDeMarcar {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+  cursor: pointer;
+}
+.caixaDeMarcar input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+.caixaDeMarcar span { display: flex; flex-direction: column; gap: 2px; }
+.caixaDeMarcar small { font-weight: var(--fw-regular, 400); }

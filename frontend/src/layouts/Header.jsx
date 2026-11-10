@@ -9,7 +9,7 @@ import { cx } from "../utils/cx.js";
 import styles from "./Header.module.css";
 
 /** Header global — o mesmo componente (e o mesmo tamanho) em todas as páginas. */
-export default function Header({ onUnavailable }) {
+export default function Header() {
   const [openPanel, setOpenPanel] = useState(null); // "search" | "menu" | null
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
@@ -46,7 +46,8 @@ export default function Header({ onUnavailable }) {
   return (
     <header className={styles.header}>
       <div className={styles.bar}>
-        <Logo />
+        <Logo tone="light" />
+        <span className={styles.divisor} aria-hidden="true" />
 
         <nav className={styles.nav} aria-label="Principal">
           {NAV_ITEMS.map((item) => (
@@ -75,8 +76,8 @@ export default function Header({ onUnavailable }) {
             <span className="sr-only">Pesquisar</span>
           </button>
 
-          <Button variant="outline" onClick={() => { setOpenPanel(null); onUnavailable("Entrar"); }} className={styles.loginButton}>Entrar</Button>
-          <Button variant="primary" onClick={() => { setOpenPanel(null); onUnavailable("Criar conta"); }} className={styles.signupButton}>Criar conta</Button>
+          <Button variant="ghost" to="/login" onClick={() => setOpenPanel(null)} className={styles.loginButton}>Entrar</Button>
+          <Button variant="light" to="/cadastro" onClick={() => setOpenPanel(null)} className={styles.signupButton}>Criar conta</Button>
 
           <button
             type="button"
@@ -121,8 +122,8 @@ export default function Header({ onUnavailable }) {
             </NavLink>
           ))}
           <div className={styles.mobileActions}>
-            <Button variant="outline" onClick={() => { setOpenPanel(null); onUnavailable("Entrar"); }}>Entrar</Button>
-            <Button variant="primary" onClick={() => { setOpenPanel(null); onUnavailable("Criar conta"); }}>Criar conta</Button>
+            <Button variant="outline" to="/login" onClick={() => setOpenPanel(null)}>Entrar</Button>
+            <Button variant="primary" to="/cadastro" onClick={() => setOpenPanel(null)}>Criar conta</Button>
           </div>
         </nav>
       )}

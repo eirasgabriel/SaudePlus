@@ -1,46 +1,37 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import HeroSection, { HeroTitle, HeroLead } from "../../../components/HeroSection/HeroSection.jsx";
-import Badge from "../../../components/Badge/Badge.jsx";
-import SearchBar from "../../../components/SearchBar/SearchBar.jsx";
-import ChipList from "../../../components/ChipList/ChipList.jsx";
-import FloatingInfoCard from "../../../components/FloatingInfoCard/FloatingInfoCard.jsx";
-import Handwriting from "../../../components/Handwriting/Handwriting.jsx";
-import SectionCard from "../../../components/SectionCard/SectionCard.jsx";
 import Container from "../../../components/Container/Container.jsx";
-import { SectionTitle, SectionLink } from "../../../components/SectionTitle/SectionTitle.jsx";
-import HelpCard from "../components/HelpCard/HelpCard.jsx";
-import FAQAccordion from "../../../components/FAQAccordion/FAQAccordion.jsx";
-import ContactPanel from "../components/ContactPanel/ContactPanel.jsx";
 import IconCircle from "../../../components/IconCircle/IconCircle.jsx";
+import FAQAccordion from "../../../components/FAQAccordion/FAQAccordion.jsx";
+import CTABand from "../../../components/CTABand/CTABand.jsx";
 import Button from "../../../components/Button/Button.jsx";
-import { HeadsetIcon, HeartIcon } from "../../../components/icons/Icons.jsx";
+import {
+  ArrowRightIcon, ChevronRightIcon, HeadsetLineIcon, HeartIcon, QuestionCircleIcon,
+} from "../../../components/icons/Icons.jsx";
 
-import { HELP_SUGGESTIONS, HELP_SHORTCUTS, FAQ, CONTACT_CHANNELS } from "../data/ajuda.js";
-import heroArt from "../../../assets/images/hero-ajuda.jpg";
+import { HELP_SHORTCUTS, FAQ, CONTACT_CHANNELS } from "../data/ajuda.js";
+import heroArt from "../../../assets/images/hero-ajuda-rente.jpg";
 import heroMobile from "../../../assets/images/hero-ajuda-mobile.jpg";
 
 import styles from "./Ajuda.module.css";
 
-const normalize = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+/* Conteúdo de um cartão de atalho: ícone em círculo, texto e seta. */
+function ConteudoAtalho({ icone: Icone, titulo, descricao }) {
+  return (
+    <>
+      <span className={styles.shortcutIcon}><Icone size={30} /></span>
+      <span className={styles.shortcutBody}>
+        <span className={styles.shortcutTitle}>{titulo}</span>
+        <span className={styles.shortcutText}>{descricao}</span>
+      </span>
+      <ChevronRightIcon size={22} className={styles.shortcutChevron} />
+    </>
+  );
+}
 
 export default function Ajuda({ onUnavailable }) {
-  const [query, setQuery] = useState("");
-  const [activeTopic, setActiveTopic] = useState(null);
   const [openIndex, setOpenIndex] = useState(null);
-
-  const faqItems = useMemo(() => {
-    const term = normalize(query.trim());
-    return FAQ.filter((item) => {
-      const matchesTopic = !activeTopic || item.tags.includes(activeTopic);
-      const matchesTerm = !term || normalize(`${item.question} ${item.answer}`).includes(term);
-      return matchesTopic && matchesTerm;
-    });
-  }, [query, activeTopic]);
-
-  const scrollToFaq = () => {
-    setOpenIndex(faqItems.length ? 0 : null);
-    document.getElementById("perguntas-frequentes")?.scrollIntoView({ block: "start" });
-  };
 
   return (
     <>
@@ -53,106 +44,97 @@ export default function Ajuda({ onUnavailable }) {
         artCropBottom={70}
         artAlt="Atendente sorridente usando headset"
         mobileSrc={heroMobile}
-        mobileAlt="Atendente sorridente usando headset com o aviso Nossa equipe está pronta para ajudar"
-        overlay={
-          <>
-            <FloatingInfoCard
-              className={styles.cardTeam}
-              icon={HeadsetIcon}
-              iconSize={44}
-              iconVariant="plain"
-              lines={["Nossa equipe", "está pronta para ajudar!"]}
-            />
-            <Handwriting className={styles.handwriting} />
-          </>
-        }
+        mobileAlt="Atendente sorridente usando headset"
+        rente
+        cruz={{ x: 1050, y: 75, tamanho: 195 }}
       >
-        <Badge>Suporte SaúdePlus</Badge>
-        <HeroTitle id="ajuda-hero-title" className={styles.title} lines={["Estamos aqui"]} accent="para ajudar você" />
+        <HeroTitle id="ajuda-hero-title" lines={["Ajuda e Suporte do"]} accent="SaúdePlus" />
         <HeroLead
-          className={styles.lead}
-          lines={["Encontre respostas, tire suas dúvidas e conte com", "o nosso time de suporte sempre que precisar."]}
-        />
-        <SearchBar
-          className={styles.search}
-          label="Buscar dúvida"
-          placeholder="Digite sua dúvida aqui (ex.: como agendar uma consulta?)"
-          value={query}
-          onChange={(value) => {
-            setQuery(value);
-            setOpenIndex(null);
-          }}
-          onSubmit={scrollToFaq}
-        />
-        <ChipList
-          className={styles.chips}
-          label="Exemplos de buscas:"
-          items={HELP_SUGGESTIONS}
-          activeItem={activeTopic}
-          onSelect={(topic) => {
-            setActiveTopic((current) => (current === topic ? null : topic));
-            setOpenIndex(null);
-          }}
+          lines={["Tire suas dúvidas, encontre orientações e receba", "suporte sempre que precisar."]}
         />
       </HeroSection>
 
-      {/* Atalhos */}
-      <SectionCard className={styles.shortcuts} aria-label="Atalhos de ajuda">
-        {HELP_SHORTCUTS.map((item) => (
-          <HelpCard key={item.title} {...item} onClick={item.action ? () => onUnavailable(item.title) : undefined} />
-        ))}
-      </SectionCard>
-
-      <Container className={styles.columns}>
-        {/* FAQ */}
-        <section id="perguntas-frequentes" className={styles.faq} aria-labelledby="faq-title">
-          <header className={styles.faqHeader}>
-            <div>
-              <SectionTitle id="faq-title" accent="frequentes">Perguntas</SectionTitle>
-              <p className={styles.faqSubtitle}>Veja as dúvidas mais comuns dos nossos pacientes.</p>
-            </div>
-            <SectionLink onClick={() => { setQuery(""); setActiveTopic(null); setOpenIndex(null); }}>Ver todas as perguntas</SectionLink>
-          </header>
-
-          {faqItems.length > 0 ? (
-            <FAQAccordion className={styles.accordion} items={faqItems} openIndex={openIndex} onToggle={setOpenIndex} />
-          ) : (
-            <div className={styles.empty}>
-              <p>Nenhuma pergunta encontrada para essa busca.</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery("");
-                  setActiveTopic(null);
-                }}
-              >
-                Limpar busca
-              </button>
-            </div>
-          )}
-        </section>
-
-        <ContactPanel
-          id="fale-conosco"
-          title="Precisa de"
-          titleAccent="mais ajuda?"
-          description="Fale com o nosso time de suporte e receba atendimento rápido e personalizado."
-          channels={CONTACT_CHANNELS}
-          onUnavailable={onUnavailable}
-        />
+      {/* Atalhos: cartões azuis sobre a base do hero */}
+      <Container as="nav" className={styles.shortcuts} aria-label="Atalhos de ajuda">
+        <ul className={styles.shortcutList}>
+          {HELP_SHORTCUTS.map(({ acao, para, href, ...item }) => (
+            <li key={item.titulo}>
+              {para ? (
+                <Link to={para} className={styles.shortcut}><ConteudoAtalho {...item} /></Link>
+              ) : href ? (
+                <a href={href} className={styles.shortcut}><ConteudoAtalho {...item} /></a>
+              ) : (
+                <button type="button" className={styles.shortcut} onClick={() => onUnavailable(acao)}>
+                  <ConteudoAtalho {...item} />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
       </Container>
 
-      {/* Satisfação */}
-      <SectionCard className={styles.satisfaction} aria-labelledby="satisfaction-title">
-        <IconCircle icon={HeartIcon} size={68} iconSize={36} />
-        <div className={styles.satisfactionCopy}>
-          <SectionTitle id="satisfaction-title" accent="nossa prioridade" className={styles.satisfactionTitle}>
-            Sua satisfação é a
-          </SectionTitle>
-          <p>Conte com a gente para ter sempre a melhor experiência na sua jornada de saúde.</p>
-        </div>
-        <Button onClick={() => onUnavailable("Falar com o suporte")} withArrow className={styles.supportButton}>Falar com o suporte</Button>
-      </SectionCard>
+      <Container className={styles.columns}>
+        {/* Perguntas frequentes */}
+        <section id="perguntas-frequentes" className={styles.faq} aria-labelledby="faq-title">
+          <header className={styles.faqHeader}>
+            <IconCircle icon={QuestionCircleIcon} size={60} iconSize={32} className={styles.faqIcon} />
+            <div>
+              <h2 id="faq-title" className={styles.faqTitle}>
+                Perguntas <span>frequentes</span>
+              </h2>
+              <p className={styles.faqSubtitle}>Veja as dúvidas mais comuns dos nossos pacientes.</p>
+            </div>
+          </header>
+          <FAQAccordion items={FAQ} openIndex={openIndex} onToggle={setOpenIndex} className={styles.faqList} />
+        </section>
+
+        {/* Canais de atendimento */}
+        <section id="fale-conosco" className={styles.contact} aria-labelledby="contact-title">
+          <HeadsetLineIcon size={150} className={styles.contactArt} />
+
+          <div className={styles.contactHeader}>
+            <span className={styles.contactIcon}><HeadsetLineIcon size={30} /></span>
+            <h2 id="contact-title" className={styles.contactTitle}>
+              Precisa de <span>mais ajuda?</span>
+            </h2>
+          </div>
+          <p className={styles.contactText}>
+            Fale com o nosso time de suporte e receba atendimento rápido e personalizado.
+          </p>
+
+          <ul className={styles.channels}>
+            {CONTACT_CHANNELS.map(({ icone, titulo, descricao, status }) => (
+              <li key={titulo}>
+                <button type="button" className={styles.channel} onClick={() => onUnavailable(titulo)}>
+                  <IconCircle icon={icone} size={52} iconSize={28} className={styles.channelIcon} />
+                  <span className={styles.channelBody}>
+                    <span className={styles.channelTitle}>{titulo}</span>
+                    <span className={styles.channelText}>{descricao}</span>
+                  </span>
+                  {status && <span className={styles.status}>{status}</span>}
+                  <ArrowRightIcon size={20} className={styles.channelArrow} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </Container>
+
+      <CTABand
+        className={styles.band}
+        icon={HeartIcon}
+        iconTone="dark"
+        cross={false}
+        title="Sua satisfação é a"
+        titleAccent="nossa prioridade"
+        accentBlock
+        aside="Conte com a gente para ter sempre a melhor experiência na sua jornada de saúde."
+        action={
+          <Button variant="light" withArrow onClick={() => onUnavailable("Falar com o suporte")} className={styles.bandButton}>
+            Falar com o suporte
+          </Button>
+        }
+      />
     </>
   );
 }

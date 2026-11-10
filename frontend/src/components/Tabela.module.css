@@ -1,0 +1,152 @@
+/* Tabela densa com traço fino: cabeçalho em versalete discreto, linhas de
+   44px, números tabulares. Densidade de quadro de horários, não de cartão. */
+.wrap {
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  min-width: 620px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela thead th {
+  position: sticky;
+  top: 0;
+  text-align: left;
+  font-size: 12px;
+  font-weight: var(--fw-bold);
+  color: var(--texto-2);
+  padding: 10px 14px;
+  background: var(--color-surface-muted);
+  border-top: 1px solid var(--borda);
+  border-bottom: 1px solid var(--color-border-strong);
+  white-space: nowrap;
+}
+
+.tabela tbody td {
+  height: 52px;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  border-bottom: 1px solid var(--borda);
+  vertical-align: middle;
+}
+
+.tabela tbody tr:last-child td { border-bottom: none; }
+.tabela tbody tr { transition: background var(--transicao); }
+.tabela tbody tr:hover { background: var(--color-surface-soft); }
+
+.vazio {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--texto-2);
+  font-size: 13.5px;
+}
+
+/* --- célula com título + subtítulo --- */
+.principal {
+  font-weight: var(--fw-semibold);
+  color: var(--color-navy-950);
+}
+
+.secundario {
+  font-size: 12px;
+  color: var(--texto-2);
+  margin-top: 1px;
+}
+
+.comIcone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.iconeCelula {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  background: var(--azul-claro);
+  color: var(--azul-escuro);
+  flex: none;
+}
+
+.linhaIcone {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--texto-2);
+}
+.linhaIcone svg { color: var(--azul); }
+
+/* --- ações da linha --- */
+.acoes {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.acaoBtn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--azul-escuro);
+  transition: background var(--transicao), color var(--transicao);
+}
+.acaoBtn:hover { background: var(--azul-claro); }
+
+.acaoPerigo { color: var(--vermelho); }
+.acaoPerigo:hover { background: var(--vermelho-bg); }
+
+.acaoNeutra { color: var(--texto-3); }
+.acaoNeutra:hover { background: var(--color-surface-muted); color: var(--texto-2); }
+
+/* --- rodapé / paginação --- */
+.rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px 4px;
+  border-top: 1px solid var(--borda);
+  flex-wrap: wrap;
+}
+
+.contagem {
+  font-size: 12.5px;
+  color: var(--texto-2);
+}
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagBtn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-strong);
+  background: var(--branco);
+  font-size: 13px;
+  font-weight: var(--fw-semibold);
+  color: var(--texto-2);
+  transition: border-color var(--transicao), color var(--transicao), background var(--transicao);
+}
+.pagBtn:hover:not(:disabled) { border-color: var(--azul); color: var(--azul-escuro); }
+.pagBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pagAtiva,
+.pagAtiva:hover:not(:disabled) {
+  background: var(--color-navy-900);
+  border-color: var(--color-navy-900);
+  color: #fff;
+}

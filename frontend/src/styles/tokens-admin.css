@@ -1,0 +1,103 @@
+/* =========================================================
+   SaúdePlus — apelidos da área administrativa
+   Os nomes em português continuam (as folhas do admin usam
+   `var(--azul)`, `var(--texto)` …), mas TODOS os valores vêm de
+   tokens.css. Nada aqui é uma cor nova.
+   ========================================================= */
+
+:root {
+  /* --- Azul --- */
+  --azul: var(--color-primary);
+  --azul-hover: var(--color-primary-hover);
+  --azul-escuro: var(--color-primary-dark);
+  --azul-medio: var(--color-primary-bright);
+  --azul-suave: var(--color-border-hover);
+  --azul-claro: var(--color-primary-light);
+  --azul-bg: var(--color-background);
+
+  /* --- Estados --- */
+  --verde: var(--state-success);
+  --verde-claro: #2FA37A;
+  --verde-bg: var(--state-success-bg);
+  --vermelho: var(--state-danger);
+  --vermelho-bg: var(--state-danger-bg);
+  --amarelo: #C77A00;
+  --amarelo-bg: var(--state-pending-bg);
+  --amarelo-texto: var(--state-pending);
+  /* Séries extras de gráficos: tons da própria paleta azul. */
+  --roxo: var(--color-navy-700);
+  --roxo-bg: var(--state-progress-bg);
+  --ciano: var(--color-accent);
+  --rosa: var(--color-blue-600);
+
+  /* --- Neutros --- */
+  --texto: var(--color-text);
+  --texto-2: var(--color-text-soft);
+  --texto-3: var(--color-text-subtle);
+  --borda: var(--color-border);
+  --borda-suave: var(--color-surface-muted);
+  --branco: var(--color-surface);
+
+  /* --- Raios --- */
+  --raio-sm: 6px;
+  --raio: var(--radius-card);
+  --raio-lg: var(--radius-card);
+  --raio-pill: var(--radius-pill);
+
+  /* --- Sombras --- */
+  --sombra: var(--shadow-card);
+  --sombra-md: var(--shadow-card-hover);
+  --sombra-azul: 0 6px 16px -6px rgba(0, 112, 232, 0.45);
+
+  /* --- Layout --- */
+  --sidebar-w: 240px;
+  --header-h: 64px;
+  --transicao: var(--duration) var(--ease);
+}
+
+@media (max-width: 900px) {
+  :root {
+    --sidebar-w: 72px;
+  }
+}
+
+/* Este arquivo não tem reset global, de propósito: o reset do admin fica
+   escopado em `.app` (AdminLayout.module.css) e o do paciente em `.pagina`. */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Blindagem: garante o tamanho de ícones e imagens nas áreas que ainda têm
+   regras de elemento com !important (ex.: .area-paciente). */
+.spIcone {
+  width: var(--sp-icone, 20px) !important;
+  height: var(--sp-icone, 20px) !important;
+  max-width: none !important;
+  max-height: none !important;
+  flex: none;
+  display: block;
+}
+
+.spImagem {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
+.spLogo {
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 0;
+  object-fit: contain;
+  display: block;
+}

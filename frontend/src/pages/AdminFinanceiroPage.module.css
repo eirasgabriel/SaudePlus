@@ -1,0 +1,30 @@
+.extraGrafico {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.seletorPeriodo {
+  width: 165px;
+}
+
+.tabelaWrap {
+  padding: 0 12px 16px;
+}
+
+.valor {
+  font-weight: 700;
+  color: var(--texto);
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .extraGrafico {
+    width: 100%;
+  }
+
+  .seletorPeriodo {
+    width: 100%;
+  }
+}

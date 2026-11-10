@@ -1,0 +1,58 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.item:last-child {
+  border-bottom: 0;
+}
+
+.icone {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  border-radius: 9px;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nome {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--color-navy-950);
+}
+
+.paciente {
+  font-size: var(--fs-xs);
+  color: var(--color-text-soft);
+}
+
+.prazo {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.vazio {
+  padding: var(--space-5) var(--space-2);
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+  text-align: center;
+}

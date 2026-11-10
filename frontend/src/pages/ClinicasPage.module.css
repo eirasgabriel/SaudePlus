@@ -1,0 +1,138 @@
+/* Unidades e clínicas — página avulsa da área do paciente. */
+.pagina {
+  position: relative;
+  min-height: 100vh;
+  padding: 0 var(--page-gutter) var(--space-12);
+  background: var(--color-background);
+  font-family: var(--font-sans);
+}
+
+/* Faixa da casca marinho no topo; o "Voltar" fica dentro dela. */
+.pagina::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 72px;
+  background: var(--shell);
+  border-bottom-right-radius: var(--radius-shed);
+}
+
+.conteudo {
+  position: relative;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+}
+
+.somenteLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Voltar */
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 72px;
+  color: #fff;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+}
+.voltar:hover { text-decoration: underline; }
+.voltar:focus-visible { outline-color: var(--color-accent); }
+
+.voltar svg,
+.icone svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.voltar svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+
+.voltar:hover svg {
+  transform: translateX(-3px);
+}
+
+/* Cabeçalho */
+.cabecalho {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: var(--space-8) 0 var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-border-strong);
+}
+
+.icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-button);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+.icone svg { width: 24px; height: 24px; stroke-width: 1.9; }
+
+.titulo {
+  margin: 0;
+  font-size: 30px;
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-navy-950);
+}
+
+.subtitulo {
+  margin: 6px 0 0;
+  max-width: 60ch;
+  color: var(--color-text-muted);
+}
+
+.gridCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.nomeClinica {
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--fs-card-title);
+  color: var(--color-navy-950);
+}
+
+.info {
+  margin: 8px 0 0;
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+}
+.info strong { color: var(--color-text-strong); }

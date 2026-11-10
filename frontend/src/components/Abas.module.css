@@ -1,0 +1,47 @@
+.abas {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  margin-bottom: 18px;
+  scrollbar-width: thin;
+}
+
+.aba {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 20px;
+  border-radius: var(--raio);
+  background: var(--branco);
+  border: 1px solid var(--borda);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--texto-2);
+  white-space: nowrap;
+  transition: all var(--transicao);
+}
+
+.aba:hover {
+  border-color: var(--azul-suave);
+  color: var(--azul);
+}
+
+.aba svg {
+  color: var(--texto-3);
+  transition: color var(--transicao);
+}
+
+.aba:hover svg {
+  color: var(--azul);
+}
+
+.ativa {
+  background: var(--azul-claro);
+  border-color: var(--azul-claro);
+  color: var(--azul);
+}
+
+.ativa svg {
+  color: var(--azul);
+}

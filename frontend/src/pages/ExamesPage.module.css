@@ -1,0 +1,510 @@
+@import "../styles/listaPaciente.css";
+/* 
+   Página de exames (placeholder)
+   Os tokens ficam no wrapper .pagina para não colidir com
+   variáveis globais do restante da aplicação.
+  */
+
+.pagina {
+  /* Paleta oficial */
+  --primary: var(--color-primary);
+  --green: var(--color-primary-dark);
+  --green-bg: var(--color-primary-light);
+  --navy: var(--color-navy-950);
+  --text: var(--color-text);
+  --muted: var(--color-text-muted);
+  --border: var(--color-border);
+  --surface: #ffffff;
+  --radius-lg: var(--radius-card);
+  --shadow: none;
+  --font: var(--font-sans);
+
+  /* Tom desta seção */
+  --tom: #10a37f;
+  --tom-fundo: #ddf6ec;
+  --tom-escuro: #0b7a5c; /* usado no preenchimento do botão: branco passa em AA */
+  --tom-borda: #cfe8df;
+
+  /* Status */
+  --sucesso: #0c7a45;
+  --sucesso-bg: #e2f7eb;
+  --sucesso-borda: rgba(12, 122, 69, 0.22);
+
+  --alerta: #8a5a0c;
+  --alerta-bg: #fff4dc;
+  --alerta-borda: rgba(138, 90, 12, 0.22);
+
+  --informativo: #0a4fc9;
+  --informativo-bg: #dceaff;
+  --informativo-borda: rgba(10, 79, 201, 0.2);
+
+  --radius: 16px;
+  --radius-lg: 20px;
+  --pill: 999px;
+  --shadow: 0 6px 24px rgba(16, 68, 160, 0.06);
+  --font: 'Nunito Sans', 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+
+  width: 100%;
+  min-height: 100vh;
+  font-family: var(--font);
+  line-height: 1.5;
+  text-align: left;
+  color: var(--text);
+  position: relative;
+  background: var(--color-background);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+:where(.pagina) *,
+:where(.pagina) *::before,
+:where(.pagina) *::after {
+  box-sizing: border-box;
+}
+
+:where(.pagina) h1,
+:where(.pagina) h2,
+:where(.pagina) h3,
+:where(.pagina) p,
+:where(.pagina) ul,
+:where(.pagina) li {
+  margin: 0;
+  padding: 0;
+}
+
+:where(.pagina) ul { list-style: none; }
+:where(.pagina) a { color: inherit; text-decoration: none; }
+
+.pagina :focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+.conteudo {
+  max-width: 820px;
+  margin: 0 auto;
+  position: relative;
+  padding: 0 24px 48px;
+}
+
+.somenteLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Voltar  */
+.voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.voltar svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+
+.voltar:hover svg {
+  transform: translateX(-3px);
+}
+
+/* Cabeçalho */
+.cabecalho {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.icone {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 62px;
+  height: 62px;
+  border-radius: var(--radius-button);
+  background: var(--tom-fundo);
+  color: var(--tom);
+}
+
+.icone svg {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.titulo {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--navy);
+}
+
+.subtitulo {
+  max-width: 56ch;
+  margin-top: 8px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* Seções  */
+.secao {
+  margin-top: 34px;
+}
+
+.secaoCabecalho {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.secaoTitulo {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.contador {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.vazio {
+  padding: 22px;
+  border: 1px dashed #cddcf0;
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* 
+   CARTÃO DE EXAME
+    */
+
+.cartao {
+  padding: 18px 22px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.cartao:hover {
+  border-color: var(--tom-borda);
+  box-shadow: 0 12px 30px rgba(11, 122, 92, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Topo  */
+.topo {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.selo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 60px;
+  padding: 10px 0 11px;
+  border-radius: 14px;
+  background: var(--tom-fundo);
+  color: #0c6a53;
+}
+
+.seloDia {
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* respiro entre o dia e o mês dentro do selo */
+.seloMes {
+  margin-top: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.identificacao {
+  flex: 1;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.nomeExame {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--navy);
+}
+
+.categoria {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 7px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.categoriaIcone {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--tom);
+}
+
+/* Badge de status */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  padding: 6px 13px 6px 11px;
+  border: 1px solid transparent;
+  border-radius: var(--pill);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.statusPonto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sucesso {
+  background: var(--sucesso-bg);
+  border-color: var(--sucesso-borda);
+  color: var(--sucesso);
+}
+
+.alerta {
+  background: var(--alerta-bg);
+  border-color: var(--alerta-borda);
+  color: var(--alerta);
+}
+
+.informativo {
+  background: var(--informativo-bg);
+  border-color: var(--informativo-borda);
+  color: var(--informativo);
+}
+
+.neutro {
+  background: #eef2f7;
+  border-color: rgba(102, 112, 133, 0.2);
+  color: var(--muted);
+}
+
+/*Detalhes  */
+.detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Coluna fixa para o ícone: todas as linhas alinham no mesmo eixo */
+.linha {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+}
+
+/* 2px alinha o ícone de 18px ao centro óptico da 1ª linha de texto
+   (caixa de linha de 21px: (21 - 18) / 2 ≈ 2) */
+.linhaIcone {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--tom);
+}
+
+.linhaValor {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.horario {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--navy);
+}
+
+.local {
+  display: block;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+/*  Rodapé: ação do resultado  */
+.rodape {
+  margin-top: 16px;
+}
+
+.botaoResultado {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 11px 22px;
+  border-radius: var(--pill);
+  background: var(--tom-escuro);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(11, 122, 92, 0.26);
+  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
+}
+
+.botaoResultado:hover {
+  background: #096348;
+  box-shadow: 0 10px 22px rgba(11, 122, 92, 0.34);
+}
+
+.botaoResultado:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(11, 122, 92, 0.24);
+}
+
+.botaoIcone {
+  width: 17px;
+  height: 17px;
+}
+
+/* Aviso de resultado ainda indisponível */
+.aguardando {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #f8fbfa;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.aguardandoIcone {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  color: var(--tom);
+}
+
+/* Responsividade  */
+
+/* Com largura sobrando, data e horário dividem a mesma faixa
+   e as demais linhas ocupam a largura inteira. */
+@media (min-width: 640px) {
+  .detalhes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 28px;
+  }
+
+  .linhaLarga {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .conteudo { padding: 20px 16px 36px; }
+
+  .cabecalho { gap: 16px; }
+  .icone { width: 50px; height: 50px; }
+  .icone svg { width: 24px; height: 24px; }
+  .titulo { font-size: 24px; }
+  .subtitulo { font-size: 15px; }
+
+  .cartao { padding: 16px 16px 18px; }
+
+  /* O status desce para a própria linha, abaixo do nome */
+  .topo {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+    column-gap: 14px;
+    row-gap: 12px;
+  }
+
+  .selo { width: 52px; }
+  .seloDia { font-size: 20px; }
+  .identificacao { padding-top: 0; }
+  .nomeExame { font-size: 16px; }
+
+  .status {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .detalhes { margin-top: 14px; padding-top: 14px; }
+  .linha { column-gap: 10px; }
+
+  .botaoResultado { width: 100%; }
+}
+
+/* Faixa da casca marinho no topo; o "Voltar" fica dentro dela. */
+.pagina::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 72px;
+  background: var(--shell);
+  border-bottom-right-radius: var(--radius-shed);
+}
+
+.conteudo > .voltar:first-child { min-height: 72px; color: #fff; }
+.conteudo > .voltar:first-child:focus-visible { outline-color: var(--color-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pagina *,
+  .pagina *::before,
+  .pagina *::after {
+    transition: none !important;
+  }
+}

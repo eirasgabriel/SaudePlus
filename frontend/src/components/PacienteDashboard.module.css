@@ -1,0 +1,725 @@
+/*
+   SaúdePlus · Painel do Paciente — mundo "Modulado"
+   Cabeçalho e menu lateral formam a casca azul-marinho em L; a área de
+   trabalho clara encaixa nela pela curva "shed" (pseudo-elemento da grade).
+   1. Tokens e reset escopado
+   2. Casca e grade
+   3. Cabeçalho
+   4. Menu lateral
+   5. Boas-vindas
+   6. Atalhos
+   7. Painéis e links
+   8. Faixa de segurança
+   9. Agende sua consulta
+   10. Acesso rápido
+   11. Unidade
+   12. Responsividade
+*/
+
+/* 1. Tokens (apelidos de tokens.css) e reset escopado */
+.pagina {
+  --primary: var(--color-primary);
+  --primary-700: var(--color-primary-dark);
+  --primary-100: var(--color-primary-light);
+  --primary-50: var(--color-surface-muted);
+
+  --navy: var(--color-navy-950);
+  --text: var(--color-text);
+  --muted: var(--color-text-muted);
+  --border: var(--color-border);
+  --surface: var(--color-surface);
+
+  /* Tons dos atalhos: todos da família azul — a cor fica para estado. */
+  --green: var(--color-primary-dark);
+  --green-bg: var(--color-primary-light);
+  --purple: var(--color-primary-dark);
+  --purple-bg: var(--color-primary-light);
+  --pink: var(--color-primary-dark);
+  --pink-bg: var(--color-primary-light);
+
+  /* Status (usados também pela ListaAgendamentos) */
+  --success: var(--state-success);
+  --success-bg: var(--state-success-bg);
+  --warning: var(--state-pending);
+  --warning-bg: var(--state-pending-bg);
+  --danger: var(--state-danger);
+  --danger-bg: var(--state-danger-bg);
+
+  --radius-sm: 6px;
+  --radius: var(--radius-card);
+  --radius-lg: var(--radius-card);
+  --pill: 999px;
+  --shadow: none;
+  --shadow-hover: var(--shadow-card-hover);
+
+  --font: var(--font-sans);
+  --lateral-w: 240px;
+
+  width: 100%;
+  min-height: 100vh;
+  font-family: var(--font);
+  line-height: 1.5;
+  text-align: left;
+  color: var(--text);
+  background: var(--shell);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+:where(.pagina) *,
+:where(.pagina) *::before,
+:where(.pagina) *::after { box-sizing: border-box; }
+
+:where(.pagina) h1,
+:where(.pagina) h2,
+:where(.pagina) p,
+:where(.pagina) ul,
+:where(.pagina) li,
+:where(.pagina) address { margin: 0; padding: 0; }
+
+:where(.pagina) ul { list-style: none; }
+:where(.pagina) a { color: inherit; text-decoration: none; }
+
+:where(.pagina) button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pagina :focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.cabecalho :focus-visible,
+.menuLateral :focus-visible { outline-color: var(--color-accent); }
+
+/* 2. Casca e grade */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.grade {
+  position: relative;
+  isolation: isolate;
+  flex: 1;
+  display: grid;
+  grid-template-columns: var(--lateral-w) minmax(0, 1fr) 360px;
+  align-items: start;
+  gap: var(--space-6);
+  padding-right: var(--space-8);
+  padding-bottom: var(--space-10);
+}
+
+/* A área clara com a curva shed, atrás das colunas de conteúdo. */
+.grade::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: var(--lateral-w);
+  background: var(--color-background);
+  border-top-left-radius: var(--radius-shed);
+}
+
+.conteudo,
+.painelDireito {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+  padding-top: var(--space-8);
+}
+
+/* 3. Cabeçalho (casca) */
+.cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-height: 72px;
+  padding: 0 var(--space-6) 0 var(--space-5);
+  background: var(--shell);
+  color: var(--shell-text);
+}
+
+.marca {
+  display: flex;
+  flex-direction: column;
+  min-width: max-content;
+  width: calc(var(--lateral-w) - var(--space-5) - var(--space-6));
+}
+
+.nomeMarca {
+  font-size: 24px;
+  font-weight: var(--fw-heavy);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.nomeMarca span { color: var(--color-accent); }
+
+.slogan {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--shell-text-muted);
+}
+
+/* O menu lateral lista os mesmos destinos; o do topo só aparece quando a
+   lateral some (telas estreitas). */
+.menuTopo {
+  display: none;
+  align-self: stretch;
+  gap: 2px;
+}
+
+.linkMenuTopo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--shell-text-muted);
+  white-space: nowrap;
+}
+.iconeMenuTopo { width: 18px; height: 18px; color: currentColor; }
+.linkMenuTopo:hover { background: var(--shell-hover); color: #fff; }
+.linkMenuTopo[aria-current='page'] { color: #fff; font-weight: var(--fw-semibold); }
+.linkMenuTopo[aria-current='page'] .iconeMenuTopo { color: var(--color-accent); }
+.linkMenuTopo[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 3px;
+  background: var(--shell-marker);
+}
+
+.acoes {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: auto;
+}
+
+.botaoIcone {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-button);
+  color: var(--shell-text-muted);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.botaoIcone:hover { background: var(--shell-hover); color: #fff; }
+.botaoIcone > svg { width: 22px; height: 22px; stroke-width: 2; }
+
+.contador {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border: 2px solid var(--shell);
+  border-radius: var(--pill);
+  background: #E5484D;
+  color: #fff;
+  font-size: 11px;
+  font-weight: var(--fw-bold);
+}
+
+.divisor {
+  width: 1px;
+  height: 28px;
+  margin: 0 var(--space-2);
+  background: var(--shell-line);
+}
+
+.perfil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 4px 4px;
+  border-radius: var(--radius-button);
+  text-align: left;
+  transition: background var(--duration) var(--ease);
+}
+.perfil:hover { background: var(--shell-hover); }
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--shell);
+}
+.avatar svg,
+.avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nomePerfil {
+  display: block;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: #fff;
+  white-space: nowrap;
+}
+
+.papelPerfil {
+  display: block;
+  font-size: 12px;
+  color: var(--shell-text-muted);
+}
+
+.setaPerfil {
+  width: 18px;
+  height: 18px;
+  margin-left: var(--space-2);
+  color: var(--shell-text-muted);
+  stroke-width: 2.2;
+}
+
+/* 4. Menu lateral (casca) */
+.menuLateral {
+  position: sticky;
+  top: 72px;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 72px);
+  padding: var(--space-2) var(--space-3) var(--space-5);
+  color: var(--shell-text);
+}
+
+.listaMenuLateral {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.linkMenuLateral {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: var(--radius-button);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--shell-text-muted);
+  white-space: nowrap;
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+.iconeMenuLateral { width: 20px; height: 20px; color: currentColor; }
+
+.linkMenuLateral:hover { background: var(--shell-hover); color: #fff; }
+
+.linkMenuLateral[aria-current='page'] {
+  background: var(--shell-active);
+  color: #fff;
+  font-weight: var(--fw-semibold);
+}
+.linkMenuLateral[aria-current='page'] .iconeMenuLateral { color: var(--color-accent); }
+
+.cardCuidado {
+  margin-top: auto;
+  padding: var(--space-4) var(--space-3) 0;
+  border-top: 1px solid var(--shell-line);
+  color: var(--shell-text-muted);
+}
+.iconeCuidado { width: 24px; height: 24px; color: var(--color-accent); }
+.textoCuidado {
+  margin-top: var(--space-3);
+  font-size: 13px;
+  font-weight: var(--fw-semibold);
+  line-height: 1.45;
+}
+.arteCuidado { display: none; }
+
+/* 5. Boas-vindas */
+.boasVindas {
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+  padding: var(--space-8);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.boasVindasConteudo {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+}
+
+.boasVindasTitulo {
+  font-size: 34px;
+  font-weight: var(--fw-bold);
+  line-height: 1.1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--navy);
+}
+
+.boasVindasSubtitulo {
+  margin-top: 6px;
+  font-size: var(--fs-lead);
+  color: var(--muted);
+}
+
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-button);
+  background: var(--color-surface-muted);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--color-text-strong);
+}
+
+.iconeAviso { width: 28px; height: 28px; color: var(--primary); stroke-width: 1.8; flex: none; }
+
+/* O visual decorativo saía como um avatar de 60px (regra de img da
+   .area-paciente); o cartão de boas-vindas fica só com o texto. */
+.boasVindasVisual { display: none; }
+.boasVindasVisual svg,
+.boasVindasVisual img {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: bottom right;
+}
+
+/* 6. Atalhos: parede de ladrilhos com junta de 1px */
+.gradeAtalhos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.cardAtalho {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5);
+  background: var(--surface);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.cardAtalho:hover { background: var(--shell); }
+.cardAtalho:hover .tituloAtalho { color: #fff; }
+.cardAtalho:hover .descricaoAtalho { color: var(--shell-text-muted); }
+.cardAtalho:hover .iconeAtalho { background: var(--shell-raised); color: var(--color-accent); }
+.cardAtalho:hover .linkSeta { color: var(--color-accent); }
+
+.iconeAtalho {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--space-5);
+  border-radius: var(--radius-button);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.iconeAtalho svg { width: 22px; height: 22px; stroke-width: 1.9; }
+
+.tituloAtalho {
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  color: var(--navy);
+}
+
+.descricaoAtalho {
+  flex: 1;
+  margin-top: 6px;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.linkAtalho { align-self: flex-start; margin-top: var(--space-4); }
+
+.azul .iconeAtalho,
+.verde .iconeAtalho,
+.roxo .iconeAtalho,
+.rosa .iconeAtalho { background: var(--color-primary-light); color: var(--color-primary-dark); }
+
+/* 7. Painéis e links */
+.painel {
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.painelCabecalho {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.painelIcone { width: 22px; height: 22px; color: var(--primary); }
+
+.painelTitulo {
+  font-size: var(--fs-card-title);
+  font-weight: var(--fw-bold);
+  color: var(--navy);
+}
+
+.painelAcao { margin-left: auto; }
+
+.linkSeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary-dark);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+}
+.linkSeta:hover { text-decoration: underline; }
+
+.linkSetaPequeno { font-size: var(--fs-xs); }
+
+.linkSetaIcone {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
+  transition: transform var(--duration) var(--ease);
+}
+.linkSeta:hover .linkSetaIcone { transform: translateX(3px); }
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.metaIcone { width: 15px; height: 15px; color: var(--primary); }
+
+/* 8. Faixa de segurança */
+.faixaSeguranca {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.faixaIcone { width: 32px; height: 32px; color: var(--primary); stroke-width: 1.7; flex: none; }
+
+.faixaCorpo { flex: 1; min-width: 0; }
+
+.faixaTitulo {
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--navy);
+}
+
+.faixaTexto {
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+
+.faixaSelo { flex-shrink: 0; width: 36px; height: 40px; }
+
+/* 9. Agende sua consulta: a peça marinho do painel */
+.agendar {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-6);
+  border-radius: var(--radius-card) var(--radius-shed) var(--radius-card) var(--radius-card);
+  color: #fff;
+  background: var(--shell);
+}
+.agendar :focus-visible { outline-color: var(--color-accent); }
+
+.agendarIcone { width: 28px; height: 28px; stroke-width: 1.8; color: var(--color-accent); }
+
+.agendarTitulo {
+  margin-top: var(--space-4);
+  font-size: 22px;
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.agendarTexto {
+  max-width: 34ch;
+  margin-top: 6px;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--shell-text-muted);
+}
+
+.botaoAgendar {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  margin-top: var(--space-5);
+  padding: 0 22px;
+  border-radius: var(--radius-button);
+  background: #fff;
+  color: var(--color-navy-900);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  transition: background var(--duration) var(--ease);
+}
+.botaoAgendar:hover { background: var(--color-primary-light); }
+.botaoAgendar:active { transform: translateY(1px); }
+
+.botaoAgendarIcone { width: 18px; height: 18px; stroke-width: 2.2; }
+
+/* A arte decorativa sai: o canto curvo já é a assinatura da peça. */
+.agendarArte { display: none; }
+
+/* 10. Acesso rápido */
+.acessoLista { margin-bottom: -8px; }
+
+.acessoLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 52px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-medium);
+  color: var(--text);
+}
+.acessoLista li:last-child .acessoLink { border-bottom: 0; }
+
+.acessoIcone { width: 20px; height: 20px; color: var(--color-text-soft); }
+.acessoRotulo { flex: 1; min-width: 0; }
+.acessoSeta { width: 16px; height: 16px; color: var(--color-text-soft); stroke-width: 2.2; }
+
+.acessoLink:hover,
+.acessoLink:hover .acessoIcone,
+.acessoLink:hover .acessoSeta { color: var(--color-primary-dark); }
+
+/* 11. Unidade */
+.unidade {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.unidadeMapa {
+  flex-shrink: 0;
+  width: 56px;
+  height: 120px;
+  overflow: hidden;
+  border-radius: var(--radius-button);
+}
+.unidadeMapa svg { display: block; width: 100%; height: 100%; }
+
+.unidadeInfo { min-width: 0; }
+
+.unidadeNome {
+  display: block;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--navy);
+}
+
+.unidadeDetalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  font-style: normal;
+}
+
+.unidadeLink { margin-top: var(--space-3); }
+
+/* 12. Responsividade */
+@media (max-width: 1400px) {
+  .grade { grid-template-columns: var(--lateral-w) minmax(0, 1fr) 320px; gap: var(--space-5); padding-right: var(--space-6); }
+  .boasVindasVisual { width: 240px; }
+}
+
+@media (max-width: 1200px) {
+  .grade { grid-template-columns: var(--lateral-w) minmax(0, 1fr); }
+  .painelDireito {
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-top: 0;
+  }
+  .linhaInteira { grid-column: 1 / -1; }
+  .gradeAtalhos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 1024px) {
+  .cabecalho { flex-wrap: wrap; row-gap: 0; padding: var(--space-3) var(--page-gutter) 0; }
+  .menuTopo { display: flex; order: 3; width: 100%; min-height: 48px; overflow-x: auto; scrollbar-width: none; }
+
+  .grade { grid-template-columns: minmax(0, 1fr); padding: 0 var(--page-gutter) var(--space-8); }
+  .grade::before { left: 0; border-radius: var(--radius-shed) var(--radius-shed) 0 0; }
+  .painelDireito { grid-column: auto; }
+  .menuLateral { display: none; }
+  .conteudo { padding-top: var(--space-6); }
+}
+
+@media (max-width: 720px) {
+  .painelDireito,
+  .gradeAtalhos { grid-template-columns: minmax(0, 1fr); }
+
+  .slogan,
+  .textoPerfil,
+  .setaPerfil,
+  .divisor { display: none; }
+  .acoes { gap: 2px; }
+
+  .boasVindas { min-height: 0; padding: var(--space-5); }
+  .boasVindasTitulo { font-size: 26px; }
+  .boasVindasSubtitulo { font-size: var(--fs-body); }
+  .boasVindasVisual { display: none; }
+
+  .painel { padding: var(--space-4); }
+
+  .faixaSeguranca { flex-wrap: wrap; gap: var(--space-3); }
+  .faixaLink { flex: 0 0 calc(100% - 46px); margin-left: 46px; }
+  .faixaSelo { display: none; }
+}

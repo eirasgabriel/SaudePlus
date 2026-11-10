@@ -1,0 +1,3 @@
+# Netlify: toda rota cai no index.html, porque quem roteia é o React Router.
+# Sem isto, recarregar a página em /medico ou /admin devolve 404.
+/*  /index.html  200

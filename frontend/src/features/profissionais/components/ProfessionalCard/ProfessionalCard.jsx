@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Button from "../../../../components/Button/Button.jsx";
 import Rating from "../../../../components/Rating/Rating.jsx";
 import { VerifiedIcon, MapPinIcon, BuildingIcon, VideoChatIcon, ClockOutlineIcon, ArrowRightIcon } from "../../../../components/icons/Icons.jsx";
 import { cx } from "../../../../utils/cx.js";
+import { rotuloDoDia } from "../../perfil.js";
 import styles from "./ProfessionalCard.module.css";
 
 const TYPE_LABELS = {
@@ -11,13 +13,33 @@ const TYPE_LABELS = {
   domiciliar: { label: "Atendimento domiciliar", icon: BuildingIcon },
 };
 
-/** Profissional na lista de resultados da busca. */
-export default function ProfessionalCard({ id, name, specialty, crm, rating, reviews, address, types, slots, photo, className, onUnavailable }) {
+/** "Dra. Camila Duarte" → "CD": o título não entra nas iniciais. */
+function iniciais(nome = "") {
+  const partes = nome.replace(/^(dra?\.?)\s+/i, "").split(/\s+/).filter(Boolean);
+  return ((partes[0]?.[0] ?? "") + (partes.length > 1 ? partes.at(-1)[0] : "")).toUpperCase();
+}
+
+/**
+ * Profissional na lista de resultados da busca. Sem foto, mostra as
+ * iniciais; sem horários livres conhecidos, só o botão de ver a agenda.
+ *
+ * Com `perfilHref` e `agendarHref(horario)` (dados da API), "Ver perfil",
+ * "Ver mais horários" e "Agendar consulta" navegam; sem eles (profissionais
+ * de demonstração), avisam por `onUnavailable`.
+ */
+export default function ProfessionalCard({
+  id, name, specialty, crm, rating, reviews, address, types, slots, slotsDate, photo, className,
+  onUnavailable, perfilHref, agendarHref,
+}) {
   const [selectedSlot, setSelectedSlot] = useState(null);
 
   return (
     <article className={cx(styles.card, className)} aria-labelledby={`pro-${id}`}>
-      <img className={styles.photo} src={photo} alt={`Foto de ${name}`} width="110" height="107" loading="lazy" />
+      {photo ? (
+        <img className={styles.photo} src={photo} alt={`Foto de ${name}`} width="110" height="107" loading="lazy" />
+      ) : (
+        <span className={cx(styles.photo, styles.photoVazia)} aria-hidden="true">{iniciais(name)}</span>
+      )}
 
       <div className={styles.info}>
         <h3 id={`pro-${id}`} className={styles.name}>
@@ -49,37 +71,56 @@ export default function ProfessionalCard({ id, name, specialty, crm, rating, rev
       <div className={styles.slots}>
         <p className={styles.slotsTitle}>
           <ClockOutlineIcon size={15} />
-          Horários ilustrativos
+          {slots.length ? `Próximos horários${slotsDate ? ` · ${rotuloDoDia(slotsDate)}` : ""}` : "Horários"}
         </p>
-        <ul className={styles.slotGrid}>
-          {slots.map((slot) => (
-            <li key={slot}>
-              <button
-                type="button"
-                className={cx(styles.slot, selectedSlot === slot && styles.slotSelected)}
-                aria-pressed={selectedSlot === slot}
-                onClick={() => setSelectedSlot((current) => (current === slot ? null : slot))}
-              >
-                {slot}
-              </button>
-            </li>
-          ))}
-        </ul>
-        <button type="button" onClick={() => onUnavailable("Mais horários", name)} className={styles.moreSlots}>
-          Ver mais horários
-          <ArrowRightIcon size={14} />
-        </button>
+        {slots.length > 0 && (
+          <ul className={styles.slotGrid}>
+            {slots.map((slot) => (
+              <li key={slot}>
+                <button
+                  type="button"
+                  className={cx(styles.slot, selectedSlot === slot && styles.slotSelected)}
+                  aria-pressed={selectedSlot === slot}
+                  onClick={() => setSelectedSlot((current) => (current === slot ? null : slot))}
+                >
+                  {slot}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {perfilHref ? (
+          <Link to={perfilHref} className={styles.moreSlots}>
+            {slots.length ? "Ver mais horários" : "Ver agenda"}
+            <ArrowRightIcon size={14} />
+          </Link>
+        ) : (
+          <button type="button" onClick={() => onUnavailable("Mais horários", name)} className={styles.moreSlots}>
+            {slots.length ? "Ver mais horários" : "Ver agenda"}
+            <ArrowRightIcon size={14} />
+          </button>
+        )}
       </div>
 
       <div className={styles.actions}>
-        <Button onClick={() => onUnavailable("Perfil completo", name)} className={styles.action}>Ver perfil</Button>
-        <Button
-          variant="outline"
-          onClick={() => onUnavailable("Agendar consulta", `${name}${selectedSlot ? ` — ${selectedSlot}` : ""}`)}
-          className={styles.action}
-        >
-          Agendar consulta
-        </Button>
+        {perfilHref ? (
+          <Button to={perfilHref} className={styles.action}>Ver perfil</Button>
+        ) : (
+          <Button onClick={() => onUnavailable("Perfil completo", name)} className={styles.action}>Ver perfil</Button>
+        )}
+        {agendarHref ? (
+          <Button variant="outline" to={agendarHref(selectedSlot)} className={styles.action}>
+            Agendar consulta{selectedSlot ? <span className="sr-only"> às {selectedSlot}</span> : null}
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            onClick={() => onUnavailable("Agendar consulta", `${name}${selectedSlot ? ` — ${selectedSlot}` : ""}`)}
+            className={styles.action}
+          >
+            Agendar consulta
+          </Button>
+        )}
       </div>
     </article>
   );

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import HeroSection, { HeroTitle, HeroLead } from "../../../components/HeroSection/HeroSection.jsx";
@@ -9,32 +9,27 @@ import SearchPanel from "../components/SearchPanel/SearchPanel.jsx";
 import FilterSidebar from "../components/FilterSidebar/FilterSidebar.jsx";
 import ProfessionalCard from "../components/ProfessionalCard/ProfessionalCard.jsx";
 import Container from "../../../components/Container/Container.jsx";
+import { mensagemDaFalha } from "../../../components/PortaoDaApi/mensagemDaFalha.js";
 import { UsersIcon, ChevronDownIcon } from "../../../components/icons/Icons.jsx";
 
-import { PROFESSIONALS } from "../data/professionals.js";
+import { useBuscaProfissionais, useListasDaBusca } from "../useBuscaProfissionais.js";
+import { lerConsultaDaUrl } from "../buscaParametros.js";
+import { linkDeAgendamento } from "../perfil.js";
 import {
-  SEARCH_BENEFITS, CITIES, CARE_TYPES, SPECIALTY_NAMES, SIDEBAR_SPECIALTIES, INSURANCES, SORT_OPTIONS,
+  SEARCH_BENEFITS, CITIES, CARE_TYPES, SPECIALTY_NAMES, SIDEBAR_SPECIALTIES, SORT_OPTIONS,
 } from "../data/buscar.js";
 import heroArt from "../../../assets/images/hero-buscar.jpg";
 import heroMobile from "../../../assets/images/hero-buscar-mobile.jpg";
 
 import styles from "./Buscar.module.css";
 
-const normalize = (text = "") => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
 const EMPTY_FILTERS = { types: [], specialties: [], insurances: [], allInsurances: false };
 
 export default function Buscar({ onUnavailable }) {
   const [params, setParams] = useSearchParams();
 
-  // Parâmetros vindos de outras páginas (?q=, ?especialidade=, ?profissional=)
-  const initialSpecialty = SPECIALTY_NAMES.find((s) => normalize(s) === normalize(params.get("especialidade") ?? ""));
-  const initialPanel = {
-    term: params.get("q") ?? (initialSpecialty ? "" : params.get("especialidade") ?? ""),
-    city: CITIES.includes(params.get("cidade")) ? params.get("cidade") : CITIES[0],
-    specialty: initialSpecialty ?? "",
-    type: CARE_TYPES.some((t) => t.value === params.get("tipo")) ? params.get("tipo") : "",
-  };
+  // Parâmetros vindos de outras páginas (?q=, ?especialidade=, ?cidade=, ?tipo=)
+  const initialPanel = lerConsultaDaUrl(params);
 
   const [panel, setPanel] = useState(initialPanel);
   const [applied, setApplied] = useState(initialPanel);
@@ -42,30 +37,8 @@ export default function Buscar({ onUnavailable }) {
   const [specialtyQuery, setSpecialtyQuery] = useState("");
   const [showAllSpecialties, setShowAllSpecialties] = useState(false);
   const [sort, setSort] = useState(SORT_OPTIONS[0].value);
-  const professionalId = params.get("profissional");
-
-  const results = useMemo(() => {
-    const term = normalize(applied.term.trim());
-    const list = PROFESSIONALS.filter((p) => {
-      if (professionalId && p.id !== professionalId) return false;
-      if (term && !normalize(`${p.name} ${p.specialty}`).includes(term)) return false;
-      if (applied.city && p.city !== applied.city) return false;
-      if (applied.specialty && p.specialty !== applied.specialty) return false;
-      if (applied.type && !p.types.includes(applied.type)) return false;
-      if (filters.types.length && !filters.types.some((t) => p.types.includes(t))) return false;
-      if (filters.specialties.length && !filters.specialties.includes(p.specialty)) return false;
-      if (filters.insurances.length && !filters.insurances.some((i) => p.insurances.includes(i))) return false;
-      return true;
-    });
-
-    const sorters = {
-      relevancia: () => 0,
-      avaliacao: (a, b) => b.rating - a.rating || b.reviews - a.reviews,
-      avaliacoes: (a, b) => b.reviews - a.reviews,
-      nome: (a, b) => a.name.localeCompare(b.name, "pt-BR"),
-    };
-    return [...list].sort(sorters[sort]);
-  }, [applied, filters, sort, professionalId]);
+  const { cidades, convenios } = useListasDaBusca();
+  const { origem, resultados: results, total, carregando, erro, tentarDeNovo } = useBuscaProfissionais({ applied, filters, sort });
 
   const clearAll = () => {
     const reset = { term: "", city: CITIES[0], specialty: "", type: "" };
@@ -77,7 +50,11 @@ export default function Buscar({ onUnavailable }) {
     setParams({});
   };
 
-  const countTitle = `${results.length} ${results.length === 1 ? "profissional" : "profissionais"}`;
+  const countTitle = origem === "carregando"
+    ? "Buscando profissionais…"
+    : origem === "erro"
+      ? "Busca indisponível"
+      : `${total} ${total === 1 ? "profissional" : "profissionais"}`;
 
   return (
     <>
@@ -94,7 +71,6 @@ export default function Buscar({ onUnavailable }) {
         overlay={<Handwriting className={styles.handwriting} />}
       >
         <div className={styles.heroText}>
-          <Badge>Encontre os melhores profissionais</Badge>
           <HeroTitle id="buscar-hero-title" className={styles.title} lines={["Sua saúde nas"]} accent="melhores mãos" />
           <HeroLead
             className={styles.lead}
@@ -103,6 +79,7 @@ export default function Buscar({ onUnavailable }) {
               "e agende sua consulta de forma rápida, segura e sem complicação.",
             ]}
           />
+          <Badge>Encontre os melhores profissionais</Badge>
         </div>
 
         <ul className={styles.benefits}>
@@ -131,7 +108,7 @@ export default function Buscar({ onUnavailable }) {
           if (panel.type) next.tipo = panel.type;
           setParams(next);
         }}
-        cities={CITIES}
+        cities={cidades.includes(panel.city) ? cidades : [panel.city, ...cidades]}
         specialties={SPECIALTY_NAMES}
         careTypes={CARE_TYPES}
       />
@@ -144,7 +121,7 @@ export default function Buscar({ onUnavailable }) {
           careTypes={CARE_TYPES}
           specialties={SIDEBAR_SPECIALTIES}
           allSpecialties={SPECIALTY_NAMES}
-          insurances={INSURANCES}
+          insurances={convenios}
           specialtyQuery={specialtyQuery}
           onSpecialtyQueryChange={setSpecialtyQuery}
           showAllSpecialties={showAllSpecialties}
@@ -152,12 +129,14 @@ export default function Buscar({ onUnavailable }) {
         />
 
         <section className={styles.results} aria-labelledby="results-title">
-          <p className={styles.demoNotice}>Demonstração: profissionais, avaliações e horários ilustrativos. Nenhuma consulta será agendada.</p>
+          <p className={styles.demoNotice}>
+            Para agendar, entre na sua conta: as consultas são marcadas pela área do paciente.
+          </p>
           <header className={styles.resultsHeader}>
             <IconCircle icon={UsersIcon} tone="glass" size={48} iconSize={30} />
             <div className={styles.resultsHeading}>
               <h2 id="results-title" className={styles.resultsTitle} aria-live="polite">{countTitle}</h2>
-              <p className={styles.resultsSubtitle}>encontrados para você em {applied.city}</p>
+              {origem !== "erro" && <p className={styles.resultsSubtitle}>encontrados para você em {applied.city}</p>}
             </div>
 
             <label htmlFor="sort" className={styles.sortLabel}>Ordenar por:</label>
@@ -169,9 +148,23 @@ export default function Buscar({ onUnavailable }) {
             </div>
           </header>
 
-          {results.length > 0 ? (
-            <div className={styles.list}>
-              {results.map((p) => <ProfessionalCard key={p.id} {...p} onUnavailable={onUnavailable} />)}
+          {origem === "carregando" ? null : origem === "erro" ? (
+            <div className={styles.empty} role="alert">
+              <h3>Não foi possível buscar os profissionais</h3>
+              <p>{mensagemDaFalha(erro)}</p>
+              <button type="button" onClick={tentarDeNovo}>Tentar de novo</button>
+            </div>
+          ) : results.length > 0 ? (
+            <div className={styles.list} aria-busy={carregando}>
+              {results.map((p) => (
+                <ProfessionalCard
+                  key={p.id}
+                  {...p}
+                  onUnavailable={onUnavailable}
+                  perfilHref={`/profissionais/${encodeURIComponent(p.id)}`}
+                  agendarHref={(horario) => linkDeAgendamento(p.id, { data: p.slotsDate, horario })}
+                />
+              ))}
             </div>
           ) : (
             <div className={styles.empty}>

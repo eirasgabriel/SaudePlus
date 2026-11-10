@@ -1,34 +1,41 @@
 .logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex-shrink: 0;
+  border-radius: var(--radius-button);
 }
 
-.mark { width: 52px; height: 62px; }
+.mark { width: 42px; height: 42px; flex: none; }
 
 .text { display: flex; flex-direction: column; }
 
 .name {
-  font-size: 36px;
+  font-size: 26px;
   line-height: 1;
-  font-weight: var(--fw-bold);
-  letter-spacing: -0.035em;
+  font-weight: var(--fw-heavy);
+  letter-spacing: -0.03em;
   color: var(--color-navy-950);
 }
-.name span { color: var(--color-primary-bright); }
+.name span { color: var(--color-primary); }
 
 .tagline {
-  margin-top: 6px;
-  font-size: var(--fs-xs);
+  margin-top: 5px;
+  font-size: 12px;
   line-height: 1;
-  color: #1F3470;
+  color: var(--color-text-soft);
   white-space: nowrap;
 }
 
+/* ---------- Sobre a casca marinho ---------- */
+.light .name { color: #fff; }
+.light .name span { color: var(--color-accent); }
+.light .tagline { color: var(--shell-text-muted); }
+.light:focus-visible { outline-color: var(--color-accent); }
+
 @media (max-width: 768px) {
   .logo { gap: 10px; }
-  .mark { width: 38px; height: 46px; }
-  .name { font-size: 28px; }
+  .mark { width: 36px; height: 36px; }
+  .name { font-size: 22px; }
   .tagline { display: none; }
 }

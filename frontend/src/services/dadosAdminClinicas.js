@@ -1,0 +1,182 @@
+/* Dados fictícios da tela de Clínicas. */
+
+export const metricas = [
+  {
+    id: "total",
+    rotulo: "Total de clínicas",
+    valor: "12",
+    icone: "clinica",
+    nota: "unidades cadastradas no sistema",
+    variacao: { valor: "9%", tendencia: "sobe" },
+  },
+  {
+    id: "ativas",
+    rotulo: "Clínicas ativas",
+    valor: "10",
+    icone: "checkCirculo",
+    nota: "em funcionamento",
+    tom: "verde",
+    variacao: { valor: "11%", tendencia: "sobe" },
+  },
+  {
+    id: "manutencao",
+    rotulo: "Em manutenção",
+    valor: "1",
+    icone: "relogio",
+    nota: "temporariamente indisponível",
+    tom: "amarelo",
+    variacao: { valor: "0%", tendencia: "neutra" },
+  },
+  {
+    id: "inativas",
+    rotulo: "Clínicas inativas",
+    valor: "1",
+    icone: "alertaX",
+    nota: "suspensa",
+    tom: "vermelho",
+    variacao: { valor: "1%", tendencia: "desce" },
+  },
+];
+
+export const statusClinica = {
+  ativa: { rotulo: "Ativa", variante: "sucesso" },
+  manutencao: { rotulo: "Em manutenção", variante: "aviso" },
+  inativa: { rotulo: "Inativa", variante: "erro" },
+};
+
+export const clinicas = [
+  {
+    id: 1,
+    nome: "Clínica da Família - Centro",
+    especialidade: "Clínica Geral",
+    endereco: "Rua das Flores, 123",
+    municipio: "Saquarema - RJ",
+    telefone: "(22) 99876-5432",
+    status: "ativa",
+  },
+  {
+    id: 2,
+    nome: "Posto de Saúde - Jaconé",
+    especialidade: "Clínica Geral",
+    endereco: "Av. Beira Mar, 456",
+    municipio: "Jaconé - RJ",
+    telefone: "(22) 99765-4321",
+    status: "ativa",
+  },
+  {
+    id: 3,
+    nome: "Policlínica Municipal",
+    especialidade: "Especialidades",
+    endereco: "Av. Saquarema, 789",
+    municipio: "Saquarema - RJ",
+    telefone: "(22) 99654-3210",
+    status: "ativa",
+  },
+  {
+    id: 4,
+    nome: "UBS de Vilatur",
+    especialidade: "Clínica Geral",
+    endereco: "Rua Principal, 320",
+    municipio: "Saquarema - RJ",
+    telefone: "(22) 99543-2109",
+    status: "ativa",
+  },
+  {
+    id: 5,
+    nome: "Hospital Municipal Nossa Senhora de Nazareth",
+    especialidade: "Emergência / Internação",
+    endereco: "Av. Getúlio Vargas, 1000",
+    municipio: "Saquarema - RJ",
+    telefone: "(22) 99432-1098",
+    status: "ativa",
+  },
+  {
+    id: 6,
+    nome: "Clínica Vida & Saúde",
+    especialidade: "Ginecologia / Obstetrícia",
+    endereco: "Rua do Comércio, 45",
+    municipio: "Jaconé - RJ",
+    telefone: "(22) 99321-0876",
+    status: "manutencao",
+  },
+  {
+    id: 7,
+    nome: "Centro Médico Praia",
+    especialidade: "Clínica Geral / Pediatria",
+    endereco: "Av. Litorânea, 250",
+    municipio: "Sampaio Corrêa - RJ",
+    telefone: "(22) 99211-7654",
+    status: "inativa",
+  },
+  {
+    id: 8,
+    nome: "Clínica da Família - Sampaio Corrêa",
+    especialidade: "Clínica Geral",
+    endereco: "Rua Principal, 321",
+    municipio: "Sampaio Corrêa - RJ",
+    telefone: "(22) 99100-6543",
+    status: "ativa",
+  },
+  {
+    id: 9,
+    nome: "Centro de Especialidades",
+    especialidade: "Especialidades",
+    endereco: "Av. Oceânica, 654",
+    municipio: "Saquarema - RJ",
+    telefone: "(22) 99099-5432",
+    status: "ativa",
+  },
+  {
+    id: 10,
+    nome: "ESF Itaúna",
+    especialidade: "Clínica Geral",
+    endereco: "Rua do Sol, 789",
+    municipio: "Itaúna - RJ",
+    telefone: "(22) 99777-6655",
+    status: "ativa",
+  },
+  {
+    id: 11,
+    nome: "CAPS Saquarema",
+    especialidade: "Saúde Mental",
+    endereco: "Rua da Esperança, 321",
+    municipio: "Saquarema - RJ",
+    telefone: "(22) 99666-5544",
+    status: "ativa",
+  },
+  {
+    id: 12,
+    nome: "UBS Boqueirão",
+    especialidade: "Clínica Geral",
+    endereco: "Rua das Acácias, 210",
+    municipio: "Boqueirão - RJ",
+    telefone: "(22) 99444-3322",
+    status: "ativa",
+  },
+];
+
+export const filtrosStatus = [
+  { valor: "todos", rotulo: "Todos" },
+  { valor: "ativa", rotulo: "Ativas" },
+  { valor: "manutencao", rotulo: "Em manutenção" },
+  { valor: "inativa", rotulo: "Inativas" },
+];
+
+export const filtrosEspecialidade = [
+  { valor: "todas", rotulo: "Todas" },
+  { valor: "Clínica Geral", rotulo: "Clínica Geral" },
+  { valor: "Especialidades", rotulo: "Especialidades" },
+  { valor: "Emergência / Internação", rotulo: "Emergência / Internação" },
+  { valor: "Ginecologia / Obstetrícia", rotulo: "Ginecologia / Obstetrícia" },
+  { valor: "Clínica Geral / Pediatria", rotulo: "Clínica Geral / Pediatria" },
+  { valor: "Saúde Mental", rotulo: "Saúde Mental" },
+];
+
+export const filtrosMunicipio = [
+  { valor: "todos", rotulo: "Todos" },
+  { valor: "Saquarema - RJ", rotulo: "Saquarema" },
+  { valor: "Jaconé - RJ", rotulo: "Jaconé" },
+  { valor: "Sampaio Corrêa - RJ", rotulo: "Sampaio Corrêa" },
+  { valor: "Itaúna - RJ", rotulo: "Itaúna" },
+  { valor: "Boqueirão - RJ", rotulo: "Boqueirão" },
+];

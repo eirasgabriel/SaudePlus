@@ -1,19 +1,19 @@
 import {
-  UserPlusIcon, MagnifierBoldIcon, CalendarIcon, DocumentCheckIcon, MonitorPlayIcon,
-  ShieldHeartIcon, HeartIcon, UsersIcon,
+  UserPlusLineIcon, SpecStethoscopeIcon, CalendarLineIcon, ShieldCheckLineIcon, LaptopUserLineIcon,
+  CalendarCheckLineIcon, BadgeCheckLineIcon, UsersLineIcon, HeartPulseLineIcon,
 } from "../../../components/icons/Icons.jsx";
 
 export const STEPS = [
-  { icon: UserPlusIcon, iconSize: 38, title: "Crie sua conta", description: ["É rápido, gratuito", "e seguro."] },
-  { icon: MagnifierBoldIcon, iconSize: 34, title: "Busque a especialidade", description: ["Encontre o profissional", "ideal para você."] },
-  { icon: CalendarIcon, iconSize: 36, title: "Agende sua consulta", description: ["Escolha o melhor dia", "e horário."] },
-  { icon: DocumentCheckIcon, iconSize: 38, title: "Confirme o atendimento", description: ["Receba a confirmação", "e lembretes."] },
-  { icon: MonitorPlayIcon, iconSize: 38, title: "Compareça ou acesse on-line", description: ["Seja no consultório", "ou por teleconsulta."] },
+  { icone: UserPlusLineIcon, titulo: "Crie sua conta", descricao: "Faça um cadastro rápido e seguro, com seus dados básicos." },
+  { icone: SpecStethoscopeIcon, titulo: "Busque a especialidade", descricao: "Encontre a especialidade ou o profissional ideal para a sua necessidade." },
+  { icone: CalendarLineIcon, titulo: "Agende sua consulta", descricao: "Escolha a data, o horário e o formato do atendimento (presencial ou on-line)." },
+  { icone: ShieldCheckLineIcon, titulo: "Confirme o atendimento", descricao: "Revise as informações, confirme seu agendamento e receba a confirmação na sua conta." },
+  { icone: LaptopUserLineIcon, titulo: "Compareça ou acesse on-line", descricao: "Vá até o local do atendimento ou participe da consulta on-line no horário agendado." },
 ];
 
 export const REASONS = [
-  { icon: CalendarIcon, iconSize: 38, title: "Praticidade no seu dia a dia", description: ["Agende suas consultas", "de onde estiver, em", "qualquer momento."] },
-  { icon: ShieldHeartIcon, iconSize: 40, title: "Profissionais verificados", description: ["Especialistas qualificados", "e de confiança, perto", "de você."] },
-  { icon: HeartIcon, iconSize: 46, title: "Atendimento para todos", description: ["Opções presenciais", "e on-line, com a mesma", "qualidade de cuidado."] },
-  { icon: UsersIcon, iconSize: 52, title: "Mais saúde, mais bem-estar", description: ["Cuidar da sua saúde", "é viver melhor, todos", "os dias."] },
+  { icone: CalendarCheckLineIcon, titulo: "Praticidade no seu dia a dia", descricao: "Agende consultas, exames e acompanhe tudo em um só lugar." },
+  { icone: BadgeCheckLineIcon, titulo: "Profissionais verificados", descricao: "Conte com profissionais qualificados e validados pela plataforma." },
+  { icone: UsersLineIcon, titulo: "Atendimento para todos", descricao: "Diversas especialidades, para diferentes idades e necessidades de saúde." },
+  { icone: HeartPulseLineIcon, titulo: "Mais saúde, mais bem-estar", descricao: "Cuidado completo, acesso facilitado e apoio contínuo para a sua qualidade de vida." },
 ];

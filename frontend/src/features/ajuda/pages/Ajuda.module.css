@@ -1,140 +1,293 @@
 /* ==========================================================
-   Ajuda — referência 1536 × 1024
+   Ajuda
    ========================================================== */
+@value vitrine: "../../../components/Vitrine/Vitrine.module.css";
 
-.hero {
-  --hero-height: 470px;
-  --hero-content-top: 114px;
-  --art-shift-lg: 10px;
-}
+/* ---------- Hero ---------- */
+.hero { --art-shift-lg: 10px; }
 
-.title {
-  margin-top: 8px;
-  font-size: 54px;
-  line-height: 1.1;
-}
-
-.lead {
-  margin-top: 16px;
-  max-width: 520px;
-  font-size: 18px;
-  line-height: 1.5;
-}
-
-.search {
-  margin-top: 20px;
-  width: 645px;
-  max-width: 100%;
-}
-
-/* Oculta os exemplos mantendo o espaço e as quebras do layout. */
-.chips { margin-top: 10px; visibility: hidden; }
-
-/* Posições sobre a arte (px da referência) */
-.cardTeam    { left: 1145px; top: 308px; width: 239px; height: 63px; padding-left: 18px; gap: 16px; font-size: 14px; }
-.handwriting { left: 1156px; top: 167px; }
-
-/* ---------- Atalhos ---------- */
+/* ---------- Atalhos: cartões azuis num painel claro sobre o hero ---------- */
 .shortcuts {
+  position: relative;
   z-index: 3;
   margin-top: calc(-1 * var(--hero-overlap));
-  padding: 20px;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--card-gap);
+  padding: var(--space-5);
+  border: 1px solid transparent;
+  background: var(--realce-fundo);
+  box-shadow: var(--realce-sombra);
+  border-radius: 20px;
 }
 
-/* ---------- FAQ + contato ---------- */
+.shortcutList {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid rgba(120, 210, 255, 0.55);
+  border-radius: 14px;
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(68, 198, 244, 0.22), transparent 55%),
+    linear-gradient(150deg, #0B5BE3 0%, #0848C7 55%, #063AA8 100%);
+  box-shadow: 0 10px 24px -14px rgba(0, 72, 200, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  font: inherit;
+  text-align: left;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+
+.shortcut:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -14px rgba(0, 72, 200, 0.95), 0 0 0 1px rgba(120, 210, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.shortcut:focus-visible { outline-color: var(--color-accent); }
+
+.shortcutIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 14px rgba(120, 210, 255, 0.45);
+}
+
+.shortcutBody { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+
+.shortcutTitle {
+  font-size: 19px;
+  font-weight: var(--fw-bold);
+  line-height: 1.2;
+}
+
+.shortcutText {
+  margin-top: 4px;
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: #DCEAFF;
+}
+
+.shortcutChevron { flex-shrink: 0; transition: transform var(--duration) var(--ease); }
+.shortcut:hover .shortcutChevron { transform: translateX(3px); }
+
+/* ---------- Perguntas + canais ---------- */
 .columns {
-  margin-top: var(--section-gap);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 480px;
-  gap: var(--section-gap);
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: var(--space-6);
   align-items: start;
+  margin-top: var(--section-gap);
 }
 
-.faq {
-  padding: var(--section-padding);
-  background: #fff;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-}
+/* Âncoras dos atalhos não ficam sob o cabeçalho. */
+.faq,
+.contact { scroll-margin-top: calc(var(--header-height) + var(--space-6)); }
+
+.faq { composes: painel from vitrine; }
 
 .faqHeader {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
+  align-items: center;
+  gap: var(--space-4);
 }
+
+.faqIcon.faqIcon {
+  border-radius: 14px;
+  background: linear-gradient(160deg, #EAF4FF, #D6E8FF);
+  color: var(--color-primary);
+  box-shadow: 0 8px 18px -10px rgba(0, 112, 232, 0.6);
+}
+
+.faqIcon.faqIcon svg { width: 58%; height: 58%; }
+
+.faqTitle,
+.contactTitle {
+  margin: 0;
+  font-size: clamp(26px, 2.4vw, 34px);
+  font-weight: var(--fw-bold);
+  line-height: 1.12;
+  letter-spacing: var(--tracking-tight);
+}
+
+.faqTitle { color: var(--color-navy-950); }
+.faqTitle span { color: var(--color-primary); }
 
 .faqSubtitle {
-  margin-top: 2px;
-  font-size: 15px;
-  color: var(--color-text-soft);
-}
-
-.accordion { margin-top: 24px; }
-
-.empty {
-  margin-top: 14px;
-  padding: 24px;
-  border-radius: 10px;
-  background: var(--color-surface-muted);
+  margin-top: 4px;
+  font-size: var(--fs-body);
   color: var(--color-text-muted);
 }
-.empty button {
-  margin-top: 8px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--color-primary);
-  font-weight: var(--fw-semibold);
-  text-decoration: underline;
+
+.faqList { margin-top: var(--space-6); }
+
+/* ---------- Canais: cartão azul com lista branca ---------- */
+.contact {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: var(--space-8);
+  border-radius: 20px;
+  border: 1px solid rgba(120, 210, 255, 0.5);
+  color: #fff;
+  background:
+    radial-gradient(90% 60% at 100% 0%, rgba(68, 198, 244, 0.28), transparent 60%),
+    linear-gradient(160deg, #0B5BE3 0%, #0848C7 55%, #063AA8 100%);
+  box-shadow: 0 24px 50px -28px rgba(2, 40, 120, 0.6);
 }
 
-/* ---------- Satisfação ---------- */
-.satisfaction {
-  margin-top: var(--section-gap);
-  margin-bottom: var(--section-gap);
-  padding: 24px var(--section-padding);
+.contact :focus-visible { outline-color: var(--color-accent); }
+
+/* Fone grande e translúcido no canto, decorativo. */
+.contactArt {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  z-index: -1;
+  color: #5FD0FF;
+  opacity: 0.55;
+  transform: rotate(-12deg);
+  filter: drop-shadow(0 0 16px rgba(95, 208, 255, 0.6));
+}
+
+.contactHeader {
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: var(--space-4);
 }
 
-.satisfactionCopy { flex: 1; }
-.satisfactionTitle { font-size: 24px; }
-.satisfactionCopy p {
+.contactIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.contactTitle span { display: block; color: var(--color-accent); }
+
+.contactText {
+  max-width: 34ch;
+  margin-top: var(--space-4);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: #E4EEFF;
+}
+
+.channels {
+  margin: var(--space-6) 0 0;
+  padding: var(--space-2) var(--space-5);
+  list-style: none;
+  border: 1px solid transparent;
+  background: var(--realce-fundo);
+  box-shadow: var(--realce-sombra);
+  border-radius: 16px;
+}
+
+.channels > li + li { border-top: 1px solid var(--color-border); }
+
+.channel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-4) 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+
+.channel:hover .channelTitle { color: var(--color-primary); }
+.channel:focus-visible { outline-color: var(--color-primary); }
+
+.channelIcon.channelIcon {
+  border-radius: 12px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+.channel:hover .channelIcon.channelIcon { background: var(--color-primary); color: #fff; }
+
+.channelIcon.channelIcon svg { width: 56%; height: 56%; }
+
+.channelBody { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+
+.channelTitle {
+  font-size: 18px;
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+  transition: color var(--duration) var(--ease);
+}
+
+.channelText {
   margin-top: 2px;
-  font-size: 14.5px;
-  color: var(--color-text-soft);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  color: var(--color-text-muted);
 }
 
-.supportButton {
-  height: 48px;
-  min-width: 232px;
-  padding: 0 26px;
-  font-size: 16px;
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--state-success-bg);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--state-success);
 }
 
-/* ==========================================================
-   Responsivo
-   ========================================================== */
-@media (max-width: 1280px) {
-  .shortcuts { grid-template-columns: repeat(2, 1fr); }
-  .columns { grid-template-columns: minmax(0, 1fr) 400px; }
+.status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.channelArrow { flex-shrink: 0; color: var(--color-primary); }
+
+/* ---------- Faixa de satisfação ---------- */
+.band { margin-top: var(--section-gap); }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 1180px) {
+  .shortcutList { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 1024px) {
   .columns { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 768px) {
-  .title { font-size: 40px; line-height: 42px; }
-  .shortcuts { grid-template-columns: 1fr; }
-  .faqHeader { flex-direction: column; gap: 8px; }
-  .satisfaction { flex-direction: column; align-items: flex-start; padding: 20px; }
-  .supportButton { width: 100%; }
+@media (max-width: 560px) {
+  .shortcutList { grid-template-columns: 1fr; }
+  .contact { padding: var(--space-5); }
+  .contactArt { display: none; }
+  .channel { gap: var(--space-3); }
+  .status { padding: 3px 8px; }
+  .status::before { display: none; }
+  .bandButton { width: 100%; }
 }

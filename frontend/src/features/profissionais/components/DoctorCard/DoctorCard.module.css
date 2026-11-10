@@ -1,21 +1,30 @@
 .card {
   display: flex;
-  gap: 18px;
-  padding: 20px;
-  background: #fff;
-  border: 1px solid var(--color-border);
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid transparent;
+  background: var(--realce-fundo);
+  box-shadow: var(--realce-sombra);
   border-radius: 14px;
-  box-shadow: var(--shadow-card);
   transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
 }
-.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-card-hover); }
+.card:hover { transform: translateY(-3px); box-shadow: var(--realce-sombra-hover); }
 
 .photo {
-  width: 106px;
-  height: 117px;
+  width: 96px;
+  height: 112px;
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: var(--radius-image);
   object-fit: cover;
+}
+
+.photoVazia {
+  display: grid;
+  place-items: center;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-size: 28px;
+  font-weight: var(--fw-bold);
 }
 
 .body {
@@ -27,33 +36,32 @@
 }
 
 .tag {
-  margin-top: 4px;
   padding: 2px 8px;
-  border-radius: var(--radius-pill);
+  border-radius: 4px;
   background: var(--color-primary-light);
-  color: var(--color-primary);
-  font-size: 11px;
+  color: var(--color-primary-dark);
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
   line-height: 1.4;
 }
 
 .name {
-  margin-top: 7px;
-  font-size: 15px;
-  font-weight: var(--fw-semibold);
-  letter-spacing: -0.01em;
+  margin-top: 8px;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  line-height: 1.25;
   color: var(--color-navy-950);
 }
 
-.rating { margin-top: 4px; margin-bottom: 16px; }
+.rating { margin-top: 4px; margin-bottom: var(--space-4); }
 
-/* margin-top: auto prende o botao na base do card: se um nome ocupar duas
-   linhas, os botoes da fileira continuam alinhados. */
+/* margin-top: auto prende o botão na base: nomes de duas linhas não
+   desalinham os botões da fileira. */
 .button {
   margin-top: auto;
   width: 100%;
-  height: 34px;
-  border-radius: 8px;
-  font-size: 14px;
+  min-height: 38px;
+  font-size: var(--fs-small);
 }
 
 @media (max-width: 560px) {
