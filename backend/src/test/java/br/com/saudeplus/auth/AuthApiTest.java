@@ -248,12 +248,30 @@ class AuthApiTest {
         }
 
         @Test
-        @DisplayName("POST /perfil/foto recusa o que não é PNG, mesmo com extensão .png")
-        void recusaNaoPng() throws Exception {
+        @DisplayName("POST /perfil/foto aceita JPEG e WebP")
+        void aceitaJpegEWebp() throws Exception {
             String email = cadastrarPaciente();
             byte[] jpeg = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 0, 0};
+            byte[] webp = {'R', 'I', 'F', 'F', 4, 0, 0, 0, 'W', 'E', 'B', 'P', 0, 0};
             mvc().perform(multipart("/api/auth/perfil/foto")
-                            .file(new MockMultipartFile("arquivo", "foto.png", "image/png", jpeg))
+                            .file(new MockMultipartFile("arquivo", "eu.jpg", "image/jpeg", jpeg))
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDe(email)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.fotoUrl").value(org.hamcrest.Matchers.endsWith(".jpg")));
+            mvc().perform(multipart("/api/auth/perfil/foto")
+                            .file(new MockMultipartFile("arquivo", "eu.webp", "image/webp", webp))
+                            .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDe(email)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.fotoUrl").value(org.hamcrest.Matchers.endsWith(".webp")));
+        }
+
+        @Test
+        @DisplayName("POST /perfil/foto recusa o que não é imagem, mesmo com extensão de imagem")
+        void recusaNaoImagem() throws Exception {
+            String email = cadastrarPaciente();
+            byte[] pdf = {'%', 'P', 'D', 'F', '-', '1', '.', '4'};
+            mvc().perform(multipart("/api/auth/perfil/foto")
+                            .file(new MockMultipartFile("arquivo", "foto.png", "image/png", pdf))
                             .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenDe(email)))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.campos.arquivo").exists());

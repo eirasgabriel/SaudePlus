@@ -15,7 +15,7 @@ public record AtualizarPerfilRequisicao(
         String telefone,
 
         @Size(max = 500, message = "O endereço da foto deve ter até 500 caracteres")
-        @Pattern(regexp = "(https://\\S+|/api/publico/fotos/[0-9a-f-]{36}\\.png)?",
+        @Pattern(regexp = "(https://\\S+|/api/publico/fotos/[0-9a-f-]{36}\\.(png|jpg|webp))?",
                 message = "A foto precisa ser um endereço https")
         String fotoUrl,
 

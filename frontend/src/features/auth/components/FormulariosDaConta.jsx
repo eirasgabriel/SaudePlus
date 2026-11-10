@@ -6,10 +6,14 @@ import { enderecoDaApi } from "../../../services/http.js";
 import { TAMANHO_MAXIMO_DA_FOTO, atualizarPerfil, enviarFotoDePerfil, trocarSenha } from "../auth.api.js";
 import { useAuth } from "../auth.context.js";
 
-/** Só .png: confere a extensão e, quando o navegador informa, o tipo. */
-function ehPng(arquivo) {
-  const extensaoOk = /\.png$/i.test(arquivo.name);
-  const tipoOk = !arquivo.type || arquivo.type === "image/png";
+/** Formatos aceitos na foto de perfil (o back-end confere de novo pelos bytes). */
+const TIPOS_DA_FOTO = ["image/png", "image/jpeg", "image/webp"];
+const ACEITA_FOTO = ".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp";
+
+/** PNG, JPG ou WebP: confere a extensão e, quando o navegador informa, o tipo. */
+function ehImagemAceita(arquivo) {
+  const extensaoOk = /\.(png|jpe?g|webp)$/i.test(arquivo.name);
+  const tipoOk = !arquivo.type || TIPOS_DA_FOTO.includes(arquivo.type);
   return extensaoOk && tipoOk;
 }
 
@@ -17,7 +21,7 @@ function ehPng(arquivo) {
  * Nome, telefone e foto de quem está logado (`PUT /api/auth/perfil`). Serve a
  * qualquer perfil; o cabeçalho troca na hora porque o AuthProvider é avisado.
  *
- * A foto vem de um endereço https ou de uma imagem .png enviada do
+ * A foto vem de um endereço https ou de uma imagem (PNG, JPG ou WebP) enviada do
  * computador (`POST /api/auth/perfil/foto`, gravada na hora).
  * `comOpcaoDoPainel` mostra a caixa "Mostrar minha foto na página principal".
  */
@@ -41,8 +45,8 @@ export function FormularioDaConta({ comOpcaoDoPainel = false }) {
     const arquivo = evento.target.files?.[0];
     evento.target.value = ""; // permite escolher o mesmo arquivo de novo
     if (!arquivo) return;
-    if (!ehPng(arquivo)) {
-      setErros((atuais) => ({ ...atuais, arquivo: "Escolha uma imagem .png." }));
+    if (!ehImagemAceita(arquivo)) {
+      setErros((atuais) => ({ ...atuais, arquivo: "Escolha uma imagem PNG, JPG ou WebP." }));
       return;
     }
     if (arquivo.size > TAMANHO_MAXIMO_DA_FOTO) {
@@ -152,7 +156,7 @@ export function FormularioDaConta({ comOpcaoDoPainel = false }) {
               ref={seletorDeArquivo}
               id={idArquivo}
               type="file"
-              accept=".png,image/png"
+              accept={ACEITA_FOTO}
               className="sr-only"
               onChange={enviarFoto}
               aria-describedby={`${idArquivo}-dica${erros.arquivo ? ` ${idArquivo}-erro` : ""}`}
@@ -178,7 +182,7 @@ export function FormularioDaConta({ comOpcaoDoPainel = false }) {
                 </button>
               )}
             </div>
-            <p id={`${idArquivo}-dica`} className={estilos.itemSecundario}>Apenas imagens .png, até 2 MB.</p>
+            <p id={`${idArquivo}-dica`} className={estilos.itemSecundario}>PNG, JPG ou WebP, até 2 MB.</p>
             {erros.arquivo && <p id={`${idArquivo}-erro`} className={estilos.erroCampo}>{erros.arquivo}</p>}
           </div>
         </div>

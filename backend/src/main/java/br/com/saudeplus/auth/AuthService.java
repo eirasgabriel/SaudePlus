@@ -3,6 +3,8 @@ package br.com.saudeplus.auth;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Clock;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -51,8 +53,11 @@ public class AuthService {
     private final Auditoria auditoria;
     private final ArmazenamentoArquivos armazenamento;
 
-    /** Foto de perfil: só PNG, até 2 MB. */
+    /** Foto de perfil: PNG, JPEG ou WebP, até 2 MB. */
     static final long TAMANHO_MAXIMO_DA_FOTO = 2L * 1024 * 1024;
+
+    private static final Set<TipoDeArquivo> FORMATOS_DA_FOTO =
+            EnumSet.of(TipoDeArquivo.PNG, TipoDeArquivo.JPEG, TipoDeArquivo.WEBP);
 
     /** Endereço público de uma foto enviada (ver PublicoController#foto). */
     public static String urlDaFoto(String chave) {
@@ -138,14 +143,14 @@ public class AuthService {
 
     /**
      * Guarda a foto enviada do computador e passa a usá-la como foto de perfil.
-     * Só PNG (conferido pelos bytes, não pela extensão), até 2 MB. A foto
+     * PNG, JPEG ou WebP (conferido pelos bytes, não pela extensão), até 2 MB. A foto
      * anterior enviada por aqui é apagada depois que a troca é gravada.
      */
     @Transactional
     public UsuarioResposta enviarFoto(UUID usuarioId, MultipartFile arquivo) {
         Usuario usuario = buscar(usuarioId);
         if (arquivo == null || arquivo.isEmpty()) {
-            throw RequisicaoInvalidaException.noCampo("arquivo", "Escolha uma imagem .png.");
+            throw RequisicaoInvalidaException.noCampo("arquivo", "Escolha uma imagem PNG, JPG ou WebP.");
         }
         if (arquivo.getSize() > TAMANHO_MAXIMO_DA_FOTO) {
             throw RequisicaoInvalidaException.noCampo("arquivo", "A imagem deve ter até 2 MB.");
@@ -156,10 +161,11 @@ public class AuthService {
         } catch (IOException excecao) {
             throw new UncheckedIOException("Não foi possível ler o arquivo enviado.", excecao);
         }
-        if (TipoDeArquivo.detectar(conteudo).filter(tipo -> tipo == TipoDeArquivo.PNG).isEmpty()) {
-            throw RequisicaoInvalidaException.noCampo("arquivo", "Envie uma imagem .png.");
-        }
-        String chave = armazenamento.guardar(conteudo, TipoDeArquivo.PNG);
+        TipoDeArquivo tipo = TipoDeArquivo.detectar(conteudo)
+                .filter(FORMATOS_DA_FOTO::contains)
+                .orElseThrow(() -> RequisicaoInvalidaException.noCampo("arquivo",
+                        "Envie uma imagem PNG, JPG ou WebP."));
+        String chave = armazenamento.guardar(conteudo, tipo);
         // Se a transação falhar, o arquivo novo não fica órfão.
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override

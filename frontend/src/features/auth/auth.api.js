@@ -64,7 +64,7 @@ export function atualizarPerfil({ nomeCompleto, telefone, fotoUrl, exibirFotoNoP
 export const TAMANHO_MAXIMO_DA_FOTO = 2 * 1024 * 1024
 
 /**
- * POST /api/auth/perfil/foto — envia uma imagem .png do computador e a
+ * POST /api/auth/perfil/foto — envia uma imagem (PNG, JPG ou WebP) do computador e a
  * transforma na foto do perfil. Devolve o usuário atualizado.
  */
 export async function enviarFotoDePerfil(arquivo) {

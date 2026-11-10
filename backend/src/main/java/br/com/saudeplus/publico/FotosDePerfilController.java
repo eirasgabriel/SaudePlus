@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.saudeplus.arquivos.ArmazenamentoArquivos;
+import br.com.saudeplus.arquivos.TipoDeArquivo;
 import br.com.saudeplus.exception.RecursoNaoEncontradoException;
 import br.com.saudeplus.usuarios.UsuarioRepository;
 
@@ -27,7 +28,7 @@ import br.com.saudeplus.usuarios.UsuarioRepository;
 @RequestMapping("/api/publico/fotos")
 public class FotosDePerfilController {
 
-    private static final Pattern CHAVE = Pattern.compile("[0-9a-f-]{36}\\.png");
+    private static final Pattern CHAVE = Pattern.compile("[0-9a-f-]{36}\\.(png|jpg|webp)");
 
     private final UsuarioRepository usuarios;
     private final ArmazenamentoArquivos armazenamento;
@@ -48,8 +49,11 @@ public class FotosDePerfilController {
             throw new RecursoNaoEncontradoException("Foto não encontrada.");
         }
         // A chave muda a cada envio, então o conteúdo de uma chave nunca muda.
+        MediaType tipo = TipoDeArquivo.porExtensao(chave)
+                .map(t -> MediaType.parseMediaType(t.contentType()))
+                .orElse(MediaType.APPLICATION_OCTET_STREAM);
         return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_PNG)
+                .contentType(tipo)
                 .cacheControl(CacheControl.maxAge(Duration.ofDays(30)).cachePublic().immutable())
                 .header("X-Content-Type-Options", "nosniff")
                 .body(arquivo);

@@ -86,7 +86,7 @@ public class AuthController {
         return auth.atualizarPerfil(usuario.id(), requisicao);
     }
 
-    /** Foto de perfil enviada do computador: só PNG, até 2 MB (campo `arquivo`). */
+    /** Foto de perfil enviada do computador: PNG, JPEG ou WebP, até 2 MB (campo `arquivo`). */
     @PostMapping(path = "/perfil/foto", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public UsuarioResposta enviarFoto(@AuthenticationPrincipal UsuarioAutenticado usuario,
             @RequestPart(name = "arquivo", required = false) MultipartFile arquivo) {
