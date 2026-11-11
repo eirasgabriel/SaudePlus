@@ -44,14 +44,14 @@ function MiniaturaMapa() {
   return (
     <div className={estilos.mapa} aria-hidden="true">
       <svg viewBox="0 0 120 120" preserveAspectRatio="xMidYMid slice">
-        <rect width="120" height="120" fill="#FDE7EE" />
-        <path d="M-10 70 130 20M-10 110 130 60M30 -10 70 130M-10 30 130 100" stroke="#fff" strokeWidth="8" />
-        <path d="M-10 90 130 40" stroke="#fff" strokeWidth="4" />
+        <rect width="120" height="120" className={estilos.mapaFundo} />
+        <path d="M-10 70 130 20M-10 110 130 60M30 -10 70 130M-10 30 130 100" className={estilos.mapaRua} strokeWidth="8" />
+        <path d="M-10 90 130 40" className={estilos.mapaRua} strokeWidth="4" />
         <path
           d="M60 38c-8 0-14 5.9-14 13.4 0 10 14 22.6 14 22.6s14-12.6 14-22.6C74 43.9 68 38 60 38z"
-          fill="#F0436B"
+          className={estilos.mapaPino}
         />
-        <circle cx="60" cy="51" r="5" fill="#fff" />
+        <circle cx="60" cy="51" r="5" className={estilos.mapaPinoMiolo} />
       </svg>
     </div>
   );

@@ -4,6 +4,8 @@ import Icone from "../components/Icone";
 import Avatar from "../components/Avatar";
 import MenuPerfil from "../components/MenuPerfil/MenuPerfil.jsx";
 import { useAuth } from "../features/auth/auth.context.js";
+import { useTema } from "../tema/contextoDoTema.js";
+import { itemDoTema } from "../tema/itemDoTema.js";
 import { itensMenu, itensTopo, usuarioLogado } from "../services/dadosAdminNavegacao";
 import estilos from "./AdminLayout.module.css";
 
@@ -28,6 +30,7 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
   const idMenuConta = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}-menu-conta`;
   const navegar = useNavigate();
   const { sair } = useAuth();
+  const { tema, alternarTema } = useTema();
 
   const iconeDoMenu = (nome) =>
     function IconeDoMenu({ size, className }) {
@@ -37,6 +40,7 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
   const itensDaConta = [
     { rotulo: "Minha conta", icone: iconeDoMenu("usuario"), href: "/admin/configuracoes" },
     { rotulo: "Ajuda", icone: iconeDoMenu("interrogacao"), href: "/ajuda" },
+    itemDoTema(tema, alternarTema),
     {
       rotulo: "Sair",
       icone: iconeDoMenu("cadeadoAberto"),

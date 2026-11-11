@@ -5,15 +5,19 @@ import './styles/tokens.css'
 import './styles/tokens-admin.css'
 import './styles/global.css'
 import './styles/auth-base.css'
+import './styles/temaEscuro.css'
 import App from './app/App.jsx'
 import AuthProvider from './features/auth/AuthProvider.jsx'
+import ProvedorDeTema from './tema/ProvedorDeTema.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
+    <ProvedorDeTema>
+      <BrowserRouter>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </BrowserRouter>
+    </ProvedorDeTema>
   </StrictMode>,
 )

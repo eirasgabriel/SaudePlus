@@ -1,6 +1,9 @@
 import { useId, useRef, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import MenuPerfil from './MenuPerfil/MenuPerfil.jsx';
+import { useTema } from '../tema/contextoDoTema.js';
+import { ocupadosDe } from '../features/paciente/adaptadores.js';
+import { itemDoTema } from '../tema/itemDoTema.js';
 import { useAuth } from '../features/auth/auth.context.js';
 import ListaAgendamentos from './ListaAgendamentos';
 import ModalAgendamento from './ModalAgendamento';
@@ -325,6 +328,7 @@ export default function PacienteDashboard({
     setTermoBusca('');
   }
 
+  const { tema, alternarTema } = useTema();
   const itensDaConta = [
     {
       rotulo: 'Minha conta',
@@ -335,6 +339,7 @@ export default function PacienteDashboard({
       },
     },
     { rotulo: 'Ajuda', href: '/ajuda' },
+    itemDoTema(tema, alternarTema),
     {
       rotulo: 'Sair',
       href: '/login',
@@ -682,7 +687,7 @@ export default function PacienteDashboard({
                   <h2 id={ids.seguranca} className={estilos.faixaTitulo}>Seus dados estão seguros!</h2>
                   <p className={estilos.faixaTexto}>Seguimos todas as normas de privacidade e proteção de dados.</p>
                 </div>
-                <LinkSeta href="#" pequeno className={estilos.faixaLink}>Saiba mais</LinkSeta>
+                <LinkSeta para="/ajuda" pequeno className={estilos.faixaLink}>Saiba mais</LinkSeta>
                 <svg className={estilos.faixaSelo} viewBox="0 0 40 44" aria-hidden="true">
                   <defs>
                     <linearGradient id={ids.gradienteEscudo} x1="0" y1="0" x2="0" y2="1">
@@ -801,7 +806,7 @@ export default function PacienteDashboard({
         aberto={modalAberto}
         aoFechar={fecharAgendamento}
         aoConfirmar={confirmarAgendamento}
-        agendamentosExistentes={consultas}
+        ocupados={ocupadosDe(consultas)}
       />
     </div>
   );

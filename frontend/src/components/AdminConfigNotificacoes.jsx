@@ -13,6 +13,7 @@ import {
 } from "../services/dadosAdminConfiguracoes";
 import comum from "../styles/adminComum.module.css";
 import estilos from "../styles/adminConfig.module.css";
+import { avisarEmBreve } from "./AvailabilityNotice/emBreve.js";
 
 export default function AdminConfigNotificacoes() {
   const [canais, definirCanais] = useState(canaisNotificacao);
@@ -123,7 +124,7 @@ export default function AdminConfigNotificacoes() {
                 icone={m.icone}
                 titulo={m.titulo}
                 comSeta
-                aoClicar={() => {}}
+                aoClicar={() => avisarEmBreve(`Modelo: ${m.titulo}`)}
               />
             ))}
           </Lista>

@@ -10,7 +10,7 @@
   padding: 0;
 }
 
-.interruptorLigado { background: var(--color-navy-900); }
+.interruptorLigado { background: var(--color-fill-strong); }
 
 .bolinha {
   position: absolute;

@@ -1,13 +1,14 @@
 /* ==========================================================
-   Tema escuro da área do médico.
+   Tema escuro do site inteiro.
    Só redefine tokens: os componentes já usam var(--...). Vale para
-   tudo dentro do elemento com data-tema="escuro" (DashboardLayout).
+   tudo dentro do elemento com data-tema="escuro" (o <html>, pelo
+   ProvedorDeTema).
    Os tons de status (--tom-*) têm o valor claro como fallback em cada
    componente; aqui só ganham a versão escura.
    ========================================================== */
 /* Fundo da área do médico, um tom abaixo do padrão do site: os cartões
    brancos se destacam mais e a divisão entre eles fica clara. */
-[data-tema="claro"] {
+[data-area="medico"][data-tema="claro"] {
   --color-background: #E2ECF7;
 }
 
@@ -34,6 +35,8 @@
   --color-navy-900: #E1E8F4;
   --color-navy-800: #C7D4EA;
   --color-navy-700: #AFC0DE;
+
+  --color-fill-strong: #2B6CD4;
 
   --color-primary: #3B8BF0;
   --color-primary-hover: #5C9FF4;
@@ -91,7 +94,7 @@
   color: var(--color-text);
 }
 
-/* O fundo atrás da página acompanha enquanto a área do médico está aberta. */
-:root[data-tema-painel="escuro"] body {
+/* O fundo atrás da página (rolagem elástica) acompanha o tema. */
+:root[data-tema="escuro"] body {
   background: #070D19;
 }

@@ -22,12 +22,20 @@ const ACOES_POR_STATUS = {
 
 const CANCELAVEIS = new Set(["pendente", "confirmada"]);
 
+/* Só no dia da consulta: antes disso o paciente não chegou nem faltou. */
+const SO_NO_DIA = new Set(["aguardando", "em_andamento", "faltou"]);
+
+const hojeIso = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+
 /**
  * Botões para mover a consulta de status, com o cancelamento pedindo o
  * motivo (o paciente recebe o aviso). `aoMudar(consultaAtualizada)` roda
  * depois de cada mudança; `aoErrar(falha)` recebe a recusa do servidor.
  */
-export default function AcoesDaConsulta({ consulta, aoMudar, aoErrar }) {
+export default function AcoesDaConsulta({ consulta, data = consulta.data, aoMudar, aoErrar }) {
   const [enviando, setEnviando] = useState(false);
   const [cancelando, setCancelando] = useState(false);
   const [motivo, setMotivo] = useState("");
@@ -45,11 +53,19 @@ export default function AcoesDaConsulta({ consulta, aoMudar, aoErrar }) {
     }
   };
 
-  const acoes = ACOES_POR_STATUS[consulta.status] ?? [];
-  if (!acoes.length && !CANCELAVEIS.has(consulta.status)) return null;
+  const futura = Boolean(data) && data > hojeIso();
+  const todas = ACOES_POR_STATUS[consulta.status] ?? [];
+  const acoes = futura ? todas.filter((acao) => !SO_NO_DIA.has(acao.status)) : todas;
+  const esperandoODia = futura && acoes.length < todas.length;
+  if (!acoes.length && !CANCELAVEIS.has(consulta.status)) {
+    return esperandoODia ? <p className={estilos.dicaDoDia}>Chegada e atendimento ficam disponíveis no dia da consulta.</p> : null;
+  }
 
   return (
     <div className={estilos.botoes}>
+      {esperandoODia && (
+        <p className={estilos.dicaDoDia}>Chegada e atendimento ficam disponíveis no dia da consulta.</p>
+      )}
       {acoes.map((acao) => (
         <button
           key={acao.status}

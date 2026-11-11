@@ -48,6 +48,9 @@
   --color-text-soft: #4A5E86;
   --color-text-subtle: #6B7FA6;     /* placeholders: 4.6:1 */
   --color-text-on-dark: #FFFFFF;
+  /* Preenchimento forte de item selecionado (chip, página ativa, chave
+     ligada), sempre com texto branco. No escuro vira azul, não claro. */
+  --color-fill-strong: var(--color-navy-900);
   --color-handwriting: #EAF4FF;
 
   /* ---------- Casca (estrutura marinho) ---------- */

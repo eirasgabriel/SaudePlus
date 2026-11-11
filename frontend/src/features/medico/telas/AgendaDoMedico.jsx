@@ -94,6 +94,7 @@ function ConsultasDoDia({ retorno }) {
                   ) : (
                     <AcoesDaConsulta
                       consulta={consulta}
+                      data={data}
                       aoMudar={(atualizada) => {
                         retorno.sucesso(`Consulta de ${atualizada.paciente} atualizada.`);
                         agenda.recarregar();

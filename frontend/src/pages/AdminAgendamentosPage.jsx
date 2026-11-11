@@ -5,6 +5,7 @@ import Cartao from "../components/Cartao";
 import Etiqueta from "../components/Etiqueta";
 import Avatar from "../components/Avatar";
 import Calendario from "../components/Calendario";
+import DialogoConfirmacao from "../components/DialogoConfirmacao.jsx";
 import { CampoBusca, Seletor, Botao, Campo } from "../components/Controles";
 import {
   Tabela,
@@ -39,16 +40,17 @@ const COLUNAS = [
  * Ações da linha com a API: confirmar o que está pendente, registrar a
  * chegada do confirmado e cancelar enquanto a consulta não começou.
  */
-function acoesDoAgendamento(a, aoAlterarStatus) {
+function acoesDoAgendamento(a, aoAlterarStatus, aoPedirCancelamento, hojeIso) {
   const acoes = [];
   if (a.status === "pendente") {
     acoes.push({ icone: "checkCirculo", rotulo: "Confirmar", aoClicar: () => aoAlterarStatus(a, "confirmada") });
   }
-  if (a.status === "confirmada") {
+  /* Chegada só no dia: antes disso o paciente ainda não pode estar na recepção. */
+  if (a.status === "confirmada" && (!a.dataIso || a.dataIso <= hojeIso)) {
     acoes.push({ icone: "usuario", rotulo: "Registrar chegada", aoClicar: () => aoAlterarStatus(a, "aguardando") });
   }
   if (a.status === "pendente" || a.status === "confirmada") {
-    acoes.push({ icone: "alertaX", rotulo: "Cancelar", tom: "perigo", aoClicar: () => aoAlterarStatus(a, "cancelada") });
+    acoes.push({ icone: "alertaX", rotulo: "Cancelar", tom: "perigo", aoClicar: () => aoPedirCancelamento(a) });
   }
   return acoes;
 }
@@ -66,22 +68,24 @@ export default function AdminAgendamentosPage({
   diaSelecionado = 15,
   filtrosClinica = filtrosClinicaMock,
   filtrosProfissional = filtrosProfissionalMock,
-  periodoInicial = "2026-09-15",
   aviso = null,
   aoMudarMes,
   aoAlterarStatus,
+  aoNovoAgendamento,
 }) {
-  const [periodo, definirPeriodo] = useState(periodoInicial);
   const [hoje] = useState(() => new Date());
+  const hojeIso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
+  const [cancelando, definirCancelando] = useState(null);
 
   const tabela = useTabela({
     dados: agendamentos,
     porPagina: 7,
     camposBusca: ["paciente", "profissional", "especialidade", "cpf"],
-    valoresIniciais: { clinica: "todas", profissional: "todos" },
+    valoresIniciais: { clinica: "todas", profissional: "todos", data: "" },
     filtros: {
       clinica: (item, valor) => item.unidade === valor,
       profissional: (item, valor) => item.profissional === valor,
+      data: (item, valor) => item.dataIso === valor,
     },
   });
 
@@ -109,9 +113,15 @@ export default function AdminAgendamentosPage({
             <Calendario
               mesInicial={mesInicial}
               diaSelecionado={diaSelecionado}
+              dataSelecionada={tabela.valores.data || null}
               marcacoes={marcacoes}
               tipos={tiposCalendario}
               aoMudarMes={aoMudarMes}
+              aoSelecionarDia={(dia, referencia) => {
+                const iso = `${referencia.getFullYear()}-${String(referencia.getMonth() + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+                // Clicar de novo no dia marcado tira o filtro.
+                tabela.definirFiltro("data", tabela.valores.data === iso ? "" : iso);
+              }}
             />
           </Cartao>
 
@@ -132,15 +142,12 @@ export default function AdminAgendamentosPage({
               <Campo
                 rotulo="Data"
                 tipo="date"
-                valor={periodo}
-                aoMudar={definirPeriodo}
+                valor={tabela.valores.data}
+                aoMudar={(v) => tabela.definirFiltro("data", v)}
                 icone="calendario"
               />
-              <Botao icone="busca" blocoTotal onClick={() => tabela.definirPagina(1)}>
-                Aplicar filtros
-              </Botao>
               <Botao variante="secundario" blocoTotal onClick={tabela.limpar}>
-                Limpar
+                Limpar filtros
               </Botao>
             </div>
           </Cartao>
@@ -154,7 +161,9 @@ export default function AdminAgendamentosPage({
               aoMudar={tabela.aoBuscar}
               placeholder="Buscar paciente, profissional ou especialidade..."
             />
-            <Botao icone="mais">Novo agendamento</Botao>
+            {aoNovoAgendamento && (
+              <Botao icone="mais" onClick={aoNovoAgendamento}>Novo agendamento</Botao>
+            )}
           </div>
 
           <Cartao semPadding>
@@ -183,7 +192,7 @@ export default function AdminAgendamentosPage({
                       </td>
                       <td>
                         <CelulaIcone icone="localizacao">
-                          <span>
+                          <span style={{ minWidth: 150, display: "inline-block" }}>
                             <span style={{ fontWeight: 600, color: "var(--texto)" }}>
                               {a.unidade}
                             </span>
@@ -203,7 +212,7 @@ export default function AdminAgendamentosPage({
                         <AcoesLinha
                           acoes={
                             aoAlterarStatus
-                              ? acoesDoAgendamento(a, aoAlterarStatus)
+                              ? acoesDoAgendamento(a, aoAlterarStatus, definirCancelando, hojeIso)
                               : [
                                   { icone: "olho", rotulo: "Ver detalhes" },
                                   { icone: "lapis", rotulo: "Editar" },
@@ -228,6 +237,19 @@ export default function AdminAgendamentosPage({
           </Cartao>
         </div>
       </div>
+
+      <DialogoConfirmacao
+        aberto={Boolean(cancelando)}
+        aoFechar={() => definirCancelando(null)}
+        titulo="Cancelar agendamento"
+        mensagem={
+          cancelando
+            ? `Cancelar a consulta de ${cancelando.paciente} em ${cancelando.data} às ${cancelando.hora}? O paciente e o profissional são avisados, e não dá para desfazer.`
+            : ""
+        }
+        rotuloConfirmar="Sim, cancelar"
+        aoConfirmar={() => aoAlterarStatus(cancelando, "cancelada")}
+      />
     </>
   );
 }

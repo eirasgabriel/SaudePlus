@@ -122,6 +122,16 @@ export function buscarCalendario({ mes, sinal } = {}) {
   return http.get("/api/admin/agendamentos/calendario", { parametros: { mes }, sinal, autenticado });
 }
 
+/** Pacientes ativos para o "Novo agendamento" (id do usuário, nome, CPF, e-mail). */
+export function listarPacientesParaAgendar({ sinal } = {}) {
+  return http.get("/api/admin/agendamentos/pacientes", { sinal, autenticado });
+}
+
+/** A clínica marca uma consulta por um paciente; horário tomado responde 409. */
+export function criarAgendamento(dados, { sinal } = {}) {
+  return http.post("/api/admin/agendamentos", dados, { sinal, autenticado });
+}
+
 /** Confirmar, registrar chegada, cancelar...; transição inválida responde 422. */
 export function alterarStatusDoAgendamento(id, status, { motivo, sinal } = {}) {
   return http.patch(`/api/admin/agendamentos/${id}/status`, { status, motivo }, { sinal, autenticado });

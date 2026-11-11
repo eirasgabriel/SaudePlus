@@ -524,3 +524,14 @@
   font-size: 14px;
   color: var(--state-danger);
 }
+
+/* Aviso de prazo: substitui os botões quando a consulta está perto. */
+.prazo {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--state-pending, #8A5A00);
+  background: var(--state-pending-bg, #FFF4DD);
+  border-radius: 10px;
+}

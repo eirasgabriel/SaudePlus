@@ -14,6 +14,8 @@ import {
 } from "../services/dadosAdminConfiguracoes";
 import comum from "../styles/adminComum.module.css";
 import estilos from "../styles/adminConfig.module.css";
+import { avisarEmBreve } from "./AvailabilityNotice/emBreve.js";
+import { useTema } from "../tema/contextoDoTema.js";
 
 /**
  * Sem props, é o protótipo com os mocks. Com a API:
@@ -23,7 +25,9 @@ import estilos from "../styles/adminConfig.module.css";
  * Backup é do provedor do banco, então com a API o cartão só explica isso.
  */
 export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
-  const [form, definirForm] = useState(() => ({ ...configuracoesGerais, ...(valores ?? {}) }));
+  const { tema, definirTema } = useTema();
+  /* O tema mostrado é o que está em uso neste navegador. */
+  const [form, definirForm] = useState(() => ({ ...configuracoesGerais, ...(valores ?? {}), tema }));
   const [notificacoes, definirNotificacoes] = useState(() =>
     notificacoesSistema.map((n) => ({ ...n, ativo: valores?.notificacoes?.[n.id] ?? n.ativo })),
   );
@@ -133,7 +137,7 @@ export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
                   <span>Saúde</span>
                   <span>Plus</span>
                 </span>
-                <Botao variante="secundario" icone="upload">
+                <Botao variante="secundario" icone="upload" onClick={() => avisarEmBreve("Alterar logo")}>
                   Alterar logo
                 </Botao>
                 <span className={estilos.dicaArquivo}>
@@ -195,7 +199,10 @@ export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
                     className={`${estilos.tema} ${
                       form.tema === t.id ? estilos.temaAtivo : ""
                     }`}
-                    onClick={() => atualizar("tema", t.id)}
+                    onClick={() => {
+                      atualizar("tema", t.id);
+                      definirTema(t.id);
+                    }}
                     aria-pressed={form.tema === t.id}
                   >
                     <Icone nome={t.icone} tam={18} />
@@ -228,8 +235,8 @@ export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
               </div>
 
               <div className={estilos.backupBotoes}>
-                <Botao icone="nuvem">Fazer backup agora</Botao>
-                <Botao variante="secundario" icone="atualizar">
+                <Botao icone="nuvem" onClick={() => avisarEmBreve("Fazer backup agora")}>Fazer backup agora</Botao>
+                <Botao variante="secundario" icone="atualizar" onClick={() => avisarEmBreve("Restaurar backup")}>
                   Restaurar backup
                 </Botao>
               </div>
@@ -277,7 +284,12 @@ export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
               <p className={comum.avisoTexto}>
                 Entre em contato com o suporte técnico em caso de dúvidas ou problemas.
               </p>
-              <Botao variante="secundario" icone="email" style={{ marginTop: 10 }}>
+              <Botao
+                variante="secundario"
+                icone="email"
+                style={{ marginTop: 10 }}
+                onClick={() => window.location.assign("mailto:suporte@saudeplus.com.br?subject=Chamado%20SaúdePlus")}
+              >
                 Abrir chamado
               </Botao>
             </div>

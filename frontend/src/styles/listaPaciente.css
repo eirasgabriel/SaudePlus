@@ -79,7 +79,7 @@
   min-height: 80px;
   padding: 8px 0;
   border-radius: 6px;
-  background: var(--color-navy-900);
+  background: var(--color-fill-strong);
   color: #fff;
   font-variant-numeric: tabular-nums;
 }

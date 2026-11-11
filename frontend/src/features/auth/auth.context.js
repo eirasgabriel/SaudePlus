@@ -15,3 +15,11 @@ export function useAuth() {
   }
   return contexto
 }
+
+/**
+ * Igual a useAuth, mas fora do <AuthProvider> (telas públicas renderizadas
+ * sozinhas, como nos testes) devolve "ninguém logado" em vez de falhar.
+ */
+export function useAuthOpcional() {
+  return useContext(AuthContext) ?? { usuario: null, sair: () => {} }
+}

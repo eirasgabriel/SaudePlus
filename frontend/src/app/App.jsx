@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout.jsx'
 import AvailabilityNotice from '../components/AvailabilityNotice/AvailabilityNotice.jsx'
+import { EVENTO_EM_BREVE } from '../components/AvailabilityNotice/emBreve.js'
 import Button from '../components/Button/Button.jsx'
 import RotaProtegida from '../components/RotaProtegida.jsx'
 import SomenteVisitante from '../components/SomenteVisitante.jsx'
@@ -69,6 +70,16 @@ export default function App() {
     setNotice({ title, query })
     noticeRef.current.showModal()
   }
+
+  /* Telas internas (admin, paciente, médico) avisam por evento. */
+  useEffect(() => {
+    const aoAvisar = (evento) => {
+      setNotice({ title: evento.detail.titulo, query: evento.detail.detalhe })
+      noticeRef.current?.showModal()
+    }
+    window.addEventListener(EVENTO_EM_BREVE, aoAvisar)
+    return () => window.removeEventListener(EVENTO_EM_BREVE, aoAvisar)
+  }, [])
 
   return (
     <>

@@ -60,6 +60,8 @@ function descreverDiasDeAtendimento(profissional) {
   return `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`;
 }
 
+const SEM_OCUPADOS = [];
+
 const FORMULARIO_VAZIO = {
   especialidadeId: '',
   profissionalId: '',
@@ -117,6 +119,13 @@ export default function ModalAgendamento({
     ? 'Escolha uma nova data e um horário livre com o mesmo profissional.'
     : 'Escolha a especialidade, o profissional e o melhor horário para você.',
   rotuloConfirmar = fixo ? 'Confirmar nova data' : 'Confirmar agendamento',
+  /* Consultas que a pessoa já tem ({ inicio, fim } em ISO): os horários que
+     batem com elas nem aparecem, em vez de falhar só ao confirmar. */
+  ocupados = SEM_OCUPADOS,
+  /* Campo a mais no topo do formulário (o admin escolhe o paciente) e a
+     validação dele: devolve a mensagem de erro ou null. */
+  campoExtra = null,
+  validarExtra,
 }) {
   const prefixoId = `ma-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const ids = {
@@ -164,7 +173,14 @@ export default function ModalAgendamento({
   const especialidadeEscolhida = especialidades.find((item) => item.id === formulario.especialidadeId) ?? null;
   const profissionais = fixo ? [{ id: fixo.profissionalId, name: fixo.profissional }] : opcoes.profissionais;
   const profissional = profissionais.find((item) => item.id === formulario.profissionalId) ?? null;
-  const horarios = opcoes.horarios;
+  const horarios = useMemo(() => {
+    if (!formulario.data || ocupados.length === 0) return opcoes.horarios;
+    return opcoes.horarios.filter((livre) => {
+      const inicio = dataLocal(formulario.data, livre.horario);
+      const fim = new Date(inicio.getTime() + (livre.duracaoMin ?? 30) * 60000);
+      return !ocupados.some((o) => new Date(o.inicio) < fim && inicio < new Date(o.fim));
+    });
+  }, [opcoes.horarios, formulario.data, ocupados]);
   const podeVerHorarios = Boolean(formulario.profissionalId && formulario.data);
   const datasSugeridas = opcoes.datasSugeridas ?? [];
   const resumoPronto = Boolean(formulario.data && formulario.horario);
@@ -270,6 +286,11 @@ export default function ModalAgendamento({
     if (enviando) return;
 
     const novosErros = validar();
+    const erroExtra = validarExtra?.() ?? null;
+    if (erroExtra) {
+      setErroGeral(erroExtra);
+      if (Object.keys(novosErros).length === 0) return;
+    }
 
     if (Object.keys(novosErros).length > 0) {
       setErros(novosErros);
@@ -350,6 +371,8 @@ export default function ModalAgendamento({
               .
             </div>
           )}
+
+          {campoExtra}
 
           {/* Especialidade */}
           <div className={estilos.campo}>

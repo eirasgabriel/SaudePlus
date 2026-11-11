@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import CabecalhoPagina from "../components/CabecalhoPagina";
 import Abas from "../components/Abas";
@@ -37,6 +38,7 @@ const subtitulos = {
 /** `propsDasAbas`: props extras por aba (ex.: `{ usuarios: { aoSalvarPermissoes } }`). */
 export default function AdminConfiguracoesPage({ propsDasAbas = {}, aviso = null }) {
   const [parametros, definirParametros] = useSearchParams();
+  const [hoje] = useState(() => new Date());
   const aba = conteudos[parametros.get("aba")] ? parametros.get("aba") : "geral";
   const Conteudo = conteudos[aba];
 
@@ -50,7 +52,7 @@ export default function AdminConfiguracoesPage({ propsDasAbas = {}, aviso = null
         titulo="Configurações"
         subtitulo={subtitulos[aba]}
         icone="engrenagem"
-        data={new Date(2026, 8, 15)}
+        data={hoje}
       />
 
       {aviso}

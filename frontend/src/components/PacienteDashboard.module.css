@@ -602,12 +602,12 @@
   padding: 0 22px;
   border-radius: var(--radius-button);
   background: #fff;
-  color: var(--color-navy-900);
+  color: var(--shell);
   font-size: var(--fs-small);
   font-weight: var(--fw-bold);
   transition: background var(--duration) var(--ease);
 }
-.botaoAgendar:hover { background: var(--color-primary-light); }
+.botaoAgendar:hover { background: #EAF4FF; }
 .botaoAgendar:active { transform: translateY(1px); }
 
 .botaoAgendarIcone { width: 18px; height: 18px; stroke-width: 2.2; }
@@ -722,4 +722,220 @@
   .faixaSeguranca { flex-wrap: wrap; gap: var(--space-3); }
   .faixaLink { flex: 0 0 calc(100% - 46px); margin-left: 46px; }
   .faixaSelo { display: none; }
+}
+
+/* ---------- Busca aberta e sino de notificações ----------
+   Estas classes estavam no JSX sem regra correspondente (perdidas num
+   merge): o painel do sino abria sem posição nem fundo. */
+.menuTopoOculto {
+  display: none;
+}
+
+.faixaBusca {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-card);
+  background: var(--color-primary-light);
+  font-size: var(--fs-small);
+  color: var(--color-primary-dark);
+}
+
+.limparFaixa {
+  flex-shrink: 0;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.limparFaixa:hover {
+  color: var(--color-primary-hover);
+}
+
+.notificacoes {
+  position: relative;
+}
+
+@keyframes surgirPainel {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+.painelNotificacoes {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 60;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-float);
+  animation: surgirPainel 0.16s ease-out;
+}
+
+.painelCabecalhoNot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.painelTituloNot {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+}
+
+.marcarLidas {
+  padding: 0;
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.marcarLidas:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.listaNotificacoes {
+  max-height: 380px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.notItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 18px;
+  text-align: left;
+  font: inherit;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--duration) var(--ease);
+}
+
+.listaNotificacoes li:last-child .notItem {
+  border-bottom: 0;
+}
+
+.notItem:hover {
+  background: var(--color-surface-muted);
+}
+
+.notItemNaoLida {
+  box-shadow: inset 3px 0 0 var(--color-primary);
+  background: var(--color-surface-soft);
+}
+
+.notIcone {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.notIcone svg {
+  width: 19px;
+  height: 19px;
+}
+
+.notTexto {
+  flex: 1;
+  min-width: 0;
+}
+
+.notTitulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  line-height: 1.35;
+  color: var(--color-navy-950);
+}
+
+.notPonto {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.notResumo {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.notQuando {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--fs-xs);
+  color: var(--color-text-subtle);
+}
+
+.notVazio {
+  margin: 0;
+  padding: 24px 18px;
+  font-size: var(--fs-small);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.somenteLeitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .notificacoes {
+    position: static;
+  }
+
+  .painelNotificacoes {
+    top: calc(100% + 8px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+  }
+
+  .faixaBusca {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
+  }
 }
