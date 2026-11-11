@@ -1,0 +1,177 @@
+@startuml diagrama-de-casos-de-uso
+' Diagrama de casos de uso do SaúdePlus.
+' Levantado a partir dos controllers REST (backend) e das telas (frontend) em 11/11/2026.
+' Renderizar: extensão PlantUML do VS Code, plantuml.com ou `java -jar plantuml.jar`.
+
+!pragma layout smetana
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #FFFFFF
+  BorderColor #1F4E8C
+  ArrowColor #1F4E8C
+}
+skinparam rectangle {
+  BorderColor #8AA9D6
+  FontColor #1F4E8C
+}
+title SaúdePlus — Diagrama de Casos de Uso
+
+' ---------------------------------------------------------------- atores
+actor "Visitante" as Visitante
+actor "Usuário autenticado" as Autenticado
+actor "Paciente" as Paciente
+actor "Médico" as Medico
+actor "Clínica\n(conta da unidade)" as Clinica
+actor "Equipe administrativa\n(Gestor, Enfermeiro,\nRecepcionista, Agente)" as Equipe
+actor "Administrador" as Admin
+
+Autenticado <|-- Paciente
+Autenticado <|-- Medico
+Autenticado <|-- Clinica
+Autenticado <|-- Equipe
+Equipe <|-- Admin
+
+rectangle "Sistema SaúdePlus" {
+
+  package "Área pública" {
+    usecase "Buscar profissionais\n(especialidade, cidade, convênio)" as UC_Buscar
+    usecase "Ver perfil, avaliações\ne horários do profissional" as UC_Perfil
+    usecase "Consultar unidades\nde atendimento" as UC_Unidades
+    usecase "Cadastrar-se como paciente" as UC_Cadastro
+    usecase "Recuperar senha por link" as UC_Recuperar
+  }
+
+  package "Conta" {
+    usecase "Entrar no sistema" as UC_Login
+    usecase "Manter perfil e foto" as UC_MeuPerfil
+    usecase "Alterar a própria senha" as UC_Senha
+    usecase "Ver notificações\n(e marcar como lidas)" as UC_Notif
+  }
+
+  package "Área do paciente" {
+    usecase "Agendar consulta" as UC_Agendar
+    usecase "Escolher horário disponível" as UC_Horario
+    usecase "Cancelar consulta" as UC_Cancelar
+    usecase "Remarcar consulta" as UC_Remarcar
+    usecase "Ver consultas e histórico" as UC_Historico
+    usecase "Avaliar atendimento" as UC_Avaliar
+    usecase "Ver exames e baixar resultado" as UC_ExamesPac
+    usecase "Ver pagamentos" as UC_Pagamentos
+  }
+
+  package "Área do médico" {
+    usecase "Ver agenda do dia\ne resumo do painel" as UC_AgendaMed
+    usecase "Atualizar status da consulta" as UC_StatusCons
+    usecase "Registrar atendimento\n(resumo e desfecho)" as UC_Atender
+    usecase "Consultar pacientes\ne prontuário" as UC_Pacientes
+    usecase "Solicitar exame" as UC_SolicitarExame
+    usecase "Ver resultado de exame" as UC_ResultadoMed
+    usecase "Gerenciar disponibilidades\n(janelas de atendimento)" as UC_Disponib
+    usecase "Bloquear agenda" as UC_Bloqueio
+    usecase "Manter perfil profissional" as UC_PerfilMed
+  }
+
+  package "Área da clínica" {
+    usecase "Ver painel da unidade\n(agenda e indicadores)" as UC_PainelUnid
+    usecase "Vincular médico à unidade" as UC_Vincular
+    usecase "Desvincular médico da unidade" as UC_Desvincular
+  }
+
+  package "Administração (por módulo liberado ao perfil)" {
+    usecase "Ver dashboard geral" as UC_Dashboard
+    usecase "Gerenciar usuários\n(criar, editar, bloquear,\ninativar, excluir, convidar)" as UC_Usuarios
+    usecase "Gerenciar clínicas e\nacesso da unidade\n(e-mail e senha de login)" as UC_Clinicas
+    usecase "Gerenciar catálogos\n(especialidades, convênios,\ntipos de exame)" as UC_Catalogos
+    usecase "Gerenciar agendamentos\n(criar, mudar status, calendário)" as UC_AgAdmin
+    usecase "Ver painel de uma unidade" as UC_PainelUnidAdmin
+    usecase "Gerenciar fila de exames\n(agendar coleta, análise,\ncancelar)" as UC_FilaExames
+    usecase "Liberar resultado de exame" as UC_Liberar
+    usecase "Gerenciar financeiro\n(transações, pagar, estornar,\nformas de pagamento)" as UC_Financeiro
+    usecase "Gerar e exportar relatórios" as UC_Relatorios
+    usecase "Manter configurações gerais" as UC_Config
+  }
+
+  package "Somente administrador" {
+    usecase "Definir permissões\ndos perfis por módulo" as UC_Permissoes
+    usecase "Consultar auditoria\ne dados do sistema" as UC_Auditoria
+    usecase "Gerenciar contas\nde administrador" as UC_ContasAdmin
+  }
+}
+
+' ---------------------------------------------------------------- associações
+Visitante --> UC_Buscar
+Visitante --> UC_Perfil
+Visitante --> UC_Unidades
+Visitante --> UC_Cadastro
+Visitante --> UC_Recuperar
+Visitante --> UC_Login
+
+Autenticado --> UC_MeuPerfil
+Autenticado --> UC_Senha
+Autenticado --> UC_Notif
+
+Paciente --> UC_Agendar
+Paciente --> UC_Cancelar
+Paciente --> UC_Remarcar
+Paciente --> UC_Historico
+Paciente --> UC_Avaliar
+Paciente --> UC_ExamesPac
+Paciente --> UC_Pagamentos
+
+Medico --> UC_AgendaMed
+Medico --> UC_StatusCons
+Medico --> UC_Atender
+Medico --> UC_Pacientes
+Medico --> UC_SolicitarExame
+Medico --> UC_ResultadoMed
+Medico --> UC_Disponib
+Medico --> UC_Bloqueio
+Medico --> UC_PerfilMed
+
+Clinica --> UC_PainelUnid
+Clinica --> UC_Vincular
+Clinica --> UC_Desvincular
+
+Equipe --> UC_Dashboard
+Equipe --> UC_Usuarios
+Equipe --> UC_Clinicas
+Equipe --> UC_Catalogos
+Equipe --> UC_AgAdmin
+Equipe --> UC_PainelUnidAdmin
+Equipe --> UC_FilaExames
+Equipe --> UC_Financeiro
+Equipe --> UC_Relatorios
+Equipe --> UC_Config
+
+Admin --> UC_Permissoes
+Admin --> UC_Auditoria
+Admin --> UC_ContasAdmin
+
+' ---------------------------------------------------------------- include / extend
+UC_Agendar ..> UC_Horario : <<include>>
+UC_Remarcar ..> UC_Horario : <<include>>
+UC_Perfil ..> UC_Horario : <<extend>>\n(agendar a partir\ndo perfil)
+UC_Avaliar ..> UC_Historico : <<extend>>\n(consulta realizada)
+UC_Atender ..> UC_SolicitarExame : <<extend>>
+UC_FilaExames ..> UC_Liberar : <<extend>>
+UC_Usuarios ..> UC_ContasAdmin : <<extend>>\n(alvo é ADMIN)
+
+note right of UC_Usuarios
+  Excluir em dois passos: 1º inativa;
+  2º exclui de vez, guardando os dados
+  (LGPD). E-mail, CPF e CRM ficam livres
+  para novo cadastro.
+end note
+
+note right of UC_Agendar
+  A consulta nasce PENDENTE e segue:
+  PENDENTE → CONFIRMADA → AGUARDANDO
+  → EM_ANDAMENTO → REALIZADA.
+  Cancela em PENDENTE ou CONFIRMADA;
+  FALTOU só a partir de CONFIRMADA.
+end note
+
+@enduml

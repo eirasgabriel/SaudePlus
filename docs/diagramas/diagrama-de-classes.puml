@@ -1,0 +1,374 @@
+@startuml diagrama-de-classes
+' Diagrama de classes do domínio do SaúdePlus (back-end, entidades JPA).
+' Gerado a partir de backend/src/main/java/br/com/saudeplus em 11/11/2026.
+' Renderizar: extensão PlantUML do VS Code, plantuml.com ou `java -jar plantuml.jar`.
+
+!pragma layout smetana
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #1F4E8C
+  ArrowColor #1F4E8C
+}
+skinparam package {
+  BorderColor #8AA9D6
+  FontColor #1F4E8C
+}
+hide empty members
+title SaúdePlus — Diagrama de Classes (domínio)
+
+abstract class EntidadeComId <<MappedSuperclass>> {
+  # id : UUID
+}
+
+abstract class EntidadeBase <<MappedSuperclass>> {
+  - criadoEm : Instant
+  - atualizadoEm : Instant
+}
+
+note right of EntidadeComId
+  Todas as entidades herdam o id UUID.
+  Usuario e Agendamento passam por EntidadeBase
+  (carimbos de criação/atualização); as demais
+  estendem EntidadeComId diretamente.
+  Exceção: Configuracao, cuja chave é o próprio id.
+end note
+
+package "Contas e acesso" {
+  class Usuario {
+    - nomeCompleto : String
+    - email : String
+    - senhaHash : String
+    - telefone : String
+    - cpf : String
+    - papel : Papel
+    - status : StatusConta
+    - fotoUrl : String
+    - fotoChave : String
+    - exibirFotoNoPainel : boolean
+    - ultimoAcesso : Instant
+    + ativo() : boolean
+    + registrarAcesso(momento : Instant)
+    + trocarSenha(novoHash : String)
+    + alterarEmail(email : String)
+    + alterarStatus(status : StatusConta)
+    + alterarPapel(papel : Papel)
+    + atualizarPerfil(nome, telefone, fotoUrl)
+    + vincularClinica(unidade : Unidade)
+  }
+
+  class TokenRedefinicaoSenha {
+    - expiraEm : Instant
+    - usadoEm : Instant
+    - criadoEm : Instant
+  }
+
+  enum Papel {
+    PACIENTE
+    MEDICO
+    CLINICA
+    ADMIN
+    GESTOR
+    ENFERMEIRO
+    RECEPCIONISTA
+    AGENTE
+  }
+
+  enum StatusConta {
+    ATIVO
+    BLOQUEADO
+    INATIVO
+    EXCLUIDO
+  }
+}
+
+package "Pacientes e profissionais" {
+  class Paciente {
+    - dataNascimento : LocalDate
+    - sexo : String
+    - numeroCarteirinha : String
+    + informarNascimento(data : LocalDate)
+    + informarConvenio(convenioId, carteirinha)
+    + idadeEm(data : LocalDate) : Integer
+  }
+
+  class Medico {
+    - crm : String
+    - crmUf : String
+    - bio : String
+    - valorConsulta : BigDecimal
+    - notaMedia : BigDecimal
+    - totalAvaliacoes : int
+    - excluido : boolean
+    + atendeEm(e : Especialidade) : boolean
+    + alterarPerfil(crm, crmUf, bio, valorConsulta)
+    + definirEspecialidades(novas)
+    + definirUnidades(novas)
+    + unidadesAtivas() : List<Unidade>
+    + marcarExcluido()
+  }
+
+  class Especialidade {
+    - slug : String
+    - nome : String
+    - descricao : String
+  }
+
+  class Convenio {
+    - nome : String
+    - ativo : boolean
+  }
+
+  class Avaliacao {
+    - nota : short
+    - comentario : String
+    - criadoEm : Instant
+  }
+}
+
+package "Clínicas" {
+  class Unidade {
+    - nome : String
+    - endereco : String
+    - bairro : String
+    - cidade : String
+    - uf : String
+    - telefone : String
+    - horarioFuncionamento : String
+    - mapUrl : String
+    - cnpj : String
+    - email : String
+    - status : StatusUnidade
+    + alterarContato(cnpj, email)
+    + alterarStatus(status : StatusUnidade)
+    + ativa() : boolean
+  }
+
+  enum StatusUnidade {
+    ATIVA
+    MANUTENCAO
+    INATIVA
+  }
+}
+
+package "Agenda e atendimento" {
+  class Disponibilidade {
+    - diaSemana : short
+    - inicio : LocalTime
+    - fim : LocalTime
+    - duracaoMin : short
+    - modalidade : Modalidade
+    + sobrepoe(dia, inicio, fim) : boolean
+  }
+
+  class BloqueioAgenda {
+    - inicio : Instant
+    - fim : Instant
+    - motivo : String
+  }
+
+  class Agendamento {
+    - data : LocalDate
+    - horario : LocalTime
+    - duracaoMin : short
+    - tipo : TipoAtendimento
+    - modalidade : Modalidade
+    - status : StatusAgendamento
+    - motivo : String
+    - resumo : String
+    - desfecho : String
+    - motivoCancelamento : String
+    - versao : long
+    + mudarStatus(novo : StatusAgendamento)
+    + cancelar(quem : Usuario, motivo : String)
+    + remarcar(data, horario, unidade, modalidade)
+    + registrarAtendimento(resumo, desfecho)
+    + alteravel() : boolean
+  }
+
+  enum StatusAgendamento {
+    PENDENTE
+    CONFIRMADA
+    AGUARDANDO
+    EM_ANDAMENTO
+    REALIZADA
+    CANCELADA
+    FALTOU
+  }
+
+  enum TipoAtendimento {
+    CONSULTA
+    RETORNO
+    EXAME
+  }
+
+  enum Modalidade {
+    PRESENCIAL
+    ONLINE
+    DOMICILIAR
+  }
+}
+
+package "Exames" {
+  class Exame {
+    - dataHora : Instant
+    - prazo : LocalDate
+    - status : StatusExame
+    - resultadoPath : String
+    - resultadoLiberadoEm : Instant
+    + agendar(quando : Instant, onde : Unidade)
+    + iniciarAnalise()
+    + liberarResultado(arquivo, momento) : String
+    + cancelar()
+    + resultadoDisponivel() : boolean
+  }
+
+  class TipoExame {
+    - nome : String
+    - categoria : String
+    - preparo : String
+    - prazoResultadoDias : Short
+  }
+
+  enum StatusExame {
+    SOLICITADO
+    AGENDADO
+    EM_ANALISE
+    LIBERADO
+    CANCELADO
+  }
+}
+
+package "Financeiro" {
+  class Transacao {
+    - descricao : String
+    - forma : FormaPagamento
+    - valor : BigDecimal
+    - status : StatusTransacao
+    - origem : OrigemTransacao
+    - dataHora : Instant
+    - pagoEm : Instant
+    - estornadoEm : Instant
+    - versao : long
+    + pagar(forma : FormaPagamento, momento : Instant)
+    + estornar(momento : Instant)
+  }
+
+  enum FormaPagamento {
+    CREDITO
+    DEBITO
+    PIX
+    BOLETO
+    DINHEIRO
+    CONVENIO
+  }
+
+  enum StatusTransacao {
+    PENDENTE
+    PAGO
+    ESTORNADO
+  }
+
+  enum OrigemTransacao {
+    CONSULTA
+    MANUAL
+  }
+}
+
+package "Comunicação e sistema" {
+  class Notificacao {
+    - tipo : TipoNotificacao
+    - titulo : String
+    - detalhe : String
+    - lida : boolean
+    - criadaEm : Instant
+    + marcarComoLida()
+  }
+
+  enum TipoNotificacao {
+    RESULTADO
+    AGENDAMENTO
+    RETORNO
+    CANCELAMENTO
+    SISTEMA
+  }
+
+  class RegistroAtividade <<auditoria>> {
+    - acao : String
+    - entidade : String
+    - entidadeId : UUID
+    - detalhe : String
+    - ip : String
+    - criadoEm : Instant
+  }
+
+  class Configuracao {
+    - chave : String {id}
+    - valor : String
+    - atualizadoEm : Instant
+    + alterar(novoValor : String)
+  }
+}
+
+' ---------------------------------------------------------------- herança
+EntidadeComId <|-- EntidadeBase
+EntidadeBase <|-- Usuario
+EntidadeBase <|-- Agendamento
+
+' ---------------------------------------------------------------- contas
+Usuario "1" -- "0..1" Paciente : perfil de >
+Usuario "1" -- "0..1" Medico : perfil de >
+Usuario "0..1" -- "0..1" Unidade : conta CLINICA de >
+Usuario "1" *-- "0..*" Notificacao : recebe >
+Usuario "1" *-- "0..*" TokenRedefinicaoSenha
+RegistroAtividade "0..*" --> "0..1" Usuario : autor
+
+' ---------------------------------------------------------------- profissionais
+Medico "0..*" -- "1..*" Especialidade : atende >
+Medico "0..*" -- "0..*" Convenio : aceita >
+Medico "0..*" -- "0..*" Unidade : atende em >
+Paciente "0..*" --> "0..1" Convenio : possui >
+
+' ---------------------------------------------------------------- agenda
+Medico "1" *-- "0..*" Disponibilidade : abre >
+Disponibilidade "0..*" --> "1" Unidade : em >
+Medico "1" *-- "0..*" BloqueioAgenda : bloqueia >
+
+Agendamento "0..*" --> "1" Paciente
+Agendamento "0..*" --> "1" Medico
+Agendamento "0..*" --> "1" Unidade
+Agendamento "0..*" --> "1" Especialidade
+Agendamento "0..*" --> "0..1" Usuario : canceladoPor
+
+Avaliacao "0..1" --> "1" Agendamento : avalia >
+Avaliacao "0..*" --> "1" Paciente
+Avaliacao "0..*" --> "1" Medico
+
+' ---------------------------------------------------------------- exames e financeiro
+Exame "0..*" --> "1" Paciente
+Exame "0..*" --> "0..1" Medico : solicitante
+Exame "0..*" --> "1" TipoExame
+Exame "0..*" --> "0..1" Unidade : coleta em
+Exame "0..*" --> "0..1" Agendamento : origem
+
+Transacao "0..*" --> "1" Paciente
+Transacao "0..*" --> "0..1" Agendamento : cobra >
+
+' ---------------------------------------------------------------- enums
+Usuario ..> Papel
+Usuario ..> StatusConta
+Unidade ..> StatusUnidade
+Agendamento ..> StatusAgendamento
+Agendamento ..> TipoAtendimento
+Agendamento ..> Modalidade
+Disponibilidade ..> Modalidade
+Exame ..> StatusExame
+Transacao ..> FormaPagamento
+Transacao ..> StatusTransacao
+Transacao ..> OrigemTransacao
+Notificacao ..> TipoNotificacao
+
+@enduml

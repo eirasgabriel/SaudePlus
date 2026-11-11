@@ -180,6 +180,7 @@ SaudePlus/
 | --- | --- |
 | [docs/arquitetura.md](docs/arquitetura.md) | Organização do front-end e do back-end e integração entre eles |
 | [docs/banco-de-dados.md](docs/banco-de-dados.md) | Modelo de dados, diagrama, garantias do banco e evoluções previstas |
+| [docs/diagramas/](docs/diagramas/README.md) | Diagramas UML de classes e de casos de uso (PlantUML + prévia em Mermaid) |
 | [docs/api.md](docs/api.md) | Autenticação, busca pública, formato de erro e autorização |
 | [docs/api-area-paciente.md](docs/api-area-paciente.md) | Rotas `/api/paciente/*` |
 | [docs/api-painel-medico.md](docs/api-painel-medico.md) | Rotas `/api/medico/*`, status de consulta e cálculo de horários |

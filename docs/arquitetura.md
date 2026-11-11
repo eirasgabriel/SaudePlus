@@ -13,6 +13,9 @@ Em desenvolvimento, o Vite faz proxy de `/api` para a porta 8080, então o front
 não precisa de CORS nem de URL configurada. O contrato entre os dois está nos
 arquivos `docs/api*.md` (índice no [README](../README.md#documentação)).
 
+Os diagramas UML de classes (domínio) e de casos de uso (atores e funcionalidades)
+estão em [`docs/diagramas/`](diagramas/README.md).
+
 ## Back-end
 
 Pacotes por domínio em `backend/src/main/java/br/com/saudeplus/`. Dentro de
