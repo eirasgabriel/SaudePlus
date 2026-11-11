@@ -25,6 +25,7 @@ import br.com.saudeplus.exames.ExameRepository;
 import br.com.saudeplus.notificacoes.NotificacaoService;
 import br.com.saudeplus.notificacoes.dto.NotificacaoResposta;
 import br.com.saudeplus.security.UsuarioAutenticado;
+import br.com.saudeplus.usuarios.StatusConta;
 import br.com.saudeplus.usuarios.UsuarioRepository;
 
 /**
@@ -94,7 +95,7 @@ public class DashboardAdminService {
 
     private Metricas metricas(YearMonth atual, YearMonth anterior) {
         return new Metricas(
-                usuarios.count(),
+                usuarios.countByStatusNot(StatusConta.EXCLUIDO),
                 new Comparativo(novosUsuarios(atual), novosUsuarios(anterior)),
                 new Comparativo(agendamentosNoMes(atual), agendamentosNoMes(anterior)),
                 unidades.countByStatus(StatusUnidade.ATIVA),

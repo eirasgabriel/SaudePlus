@@ -7,7 +7,9 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface DisponibilidadeRepository extends JpaRepository<Disponibilidade, UUID> {
 
@@ -26,4 +28,9 @@ public interface DisponibilidadeRepository extends JpaRepository<Disponibilidade
     List<Disponibilidade> findByMedicoIdOrderByDiaSemanaAscInicioAsc(UUID medicoId);
 
     Optional<Disponibilidade> findByIdAndMedicoId(UUID id, UUID medicoId);
+
+    /** Janelas do médico numa unidade: somem quando o vínculo com ela termina. */
+    @Modifying(flushAutomatically = true)
+    @Query("delete from Disponibilidade d where d.medico.id = :medicoId and d.unidade.id = :unidadeId")
+    int deleteByMedicoIdAndUnidadeId(@Param("medicoId") UUID medicoId, @Param("unidadeId") UUID unidadeId);
 }

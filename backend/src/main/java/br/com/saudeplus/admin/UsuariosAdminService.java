@@ -122,7 +122,7 @@ public class UsuariosAdminService {
     public Metricas metricas() {
         YearMonth mes = Periodos.mesAtual(relogio);
         return new Metricas(
-                usuarios.count(),
+                usuarios.countByStatusNot(StatusConta.EXCLUIDO),
                 usuarios.countByStatus(StatusConta.ATIVO),
                 usuarios.countByStatus(StatusConta.BLOQUEADO),
                 usuarios.countByStatus(StatusConta.INATIVO),
@@ -135,6 +135,9 @@ public class UsuariosAdminService {
 
     @Transactional
     public UsuarioAdminResposta criar(UsuarioAutenticado ator, CriarUsuario requisicao) {
+        if (requisicao.papel() == Papel.CLINICA) {
+            throw RequisicaoInvalidaException.noCampo("papel", "Configure o acesso pelo cadastro da clínica.");
+        }
         exigirPodeGerir(ator, requisicao.papel());
         String email = Usuario.normalizarEmail(requisicao.email());
         if (usuarios.existsByEmail(email)) {
@@ -179,6 +182,9 @@ public class UsuariosAdminService {
         exigirPodeGerir(ator, usuario.getPapel());
         exigirPodeGerir(ator, requisicao.papel());
         if (requisicao.papel() != usuario.getPapel()) {
+            if (requisicao.papel() == Papel.CLINICA || usuario.getPapel() == Papel.CLINICA) {
+                throw RequisicaoInvalidaException.noCampo("papel", "O perfil da clínica não pode ser convertido.");
+            }
             if (usuario.getId().equals(ator.id())) {
                 throw new RegraDeNegocioException("Você não pode mudar o seu próprio perfil de acesso.");
             }
@@ -214,8 +220,37 @@ public class UsuariosAdminService {
         if (usuario.getId().equals(ator.id())) {
             throw new RegraDeNegocioException("Você não pode alterar o status da sua própria conta.");
         }
+        if (status == StatusConta.EXCLUIDO) {
+            throw new RegraDeNegocioException("Para excluir a conta, use a exclusão.");
+        }
         usuario.alterarStatus(status);
         auditoria.registrar("usuario.status", "usuario", id, Map.of("status", status.chave()));
+        return resposta(usuario);
+    }
+
+    /**
+     * Exclusão em dois passos, pelo mesmo botão:
+     * 1. conta ativa ou bloqueada fica `inativo` (ainda pode ser reativada);
+     * 2. conta já inativa fica `excluido`: some da administração, não entra e
+     *    não volta. Nada é apagado: cadastro, consultas, exames e cobranças
+     *    ficam guardados (LGPD art. 16, I; prontuário por 20 anos). E-mail, CPF
+     *    e CRM ficam livres para a pessoa se cadastrar de novo.
+     */
+    @Transactional
+    public UsuarioAdminResposta excluir(UsuarioAutenticado ator, UUID id) {
+        Usuario usuario = buscar(id);
+        exigirPodeGerir(ator, usuario.getPapel());
+        if (usuario.getId().equals(ator.id())) {
+            throw new RegraDeNegocioException("Você não pode excluir a sua própria conta.");
+        }
+        if (usuario.getStatus() != StatusConta.INATIVO) {
+            usuario.alterarStatus(StatusConta.INATIVO);
+            auditoria.registrar("usuario.status", "usuario", id, Map.of("status", StatusConta.INATIVO.chave()));
+        } else {
+            usuario.alterarStatus(StatusConta.EXCLUIDO);
+            medicos.findByUsuarioId(id).ifPresent(Medico::marcarExcluido);
+            auditoria.registrar("usuario.excluir", "usuario", id, Map.of("papel", usuario.getPapel().name()));
+        }
         return resposta(usuario);
     }
 
@@ -277,12 +312,16 @@ public class UsuariosAdminService {
     }
 
     private Usuario buscar(UUID id) {
-        return usuarios.findById(id).orElseThrow(() -> RecursoNaoEncontradoException.de("Usuário", id.toString()));
+        // Conta excluída não é mais gerida: para a administração, ela não existe.
+        return usuarios.findById(id)
+                .filter(usuario -> usuario.getStatus() != StatusConta.EXCLUIDO)
+                .orElseThrow(() -> RecursoNaoEncontradoException.de("Usuário", id.toString()));
     }
 
     private static Specification<Usuario> filtro(String termo, Papel papel, StatusConta status) {
         return (usuario, consulta, cb) -> {
             List<Predicate> regras = new ArrayList<>();
+            regras.add(cb.notEqual(usuario.get("status"), StatusConta.EXCLUIDO));
             if (termo != null && !termo.isBlank()) {
                 String padrao = "%" + termo.strip().toLowerCase(Locale.ROOT).replace("%", "").replace("_", "") + "%";
                 regras.add(cb.or(

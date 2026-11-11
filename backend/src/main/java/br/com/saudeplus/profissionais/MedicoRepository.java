@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -16,7 +17,7 @@ public interface MedicoRepository extends JpaRepository<Medico, UUID>, JpaSpecif
 
     Optional<Medico> findByUsuarioId(UUID usuarioId);
 
-    boolean existsByCrmAndCrmUf(String crm, String crmUf);
+    boolean existsByCrmAndCrmUfAndExcluidoFalse(String crm, String crmUf);
 
     @EntityGraph(attributePaths = "usuario")
     List<Medico> findByUsuarioIdIn(Collection<UUID> usuarioIds);
@@ -42,6 +43,19 @@ public interface MedicoRepository extends JpaRepository<Medico, UUID>, JpaSpecif
                    total_avaliacoes = total_avaliacoes + 1
              where id = :id""", nativeQuery = true)
     int registrarAvaliacao(@Param("id") UUID id, @Param("nota") int nota);
+
+    /** Corpo clínico de uma unidade, com a conta de cada médico. */
+    @Query("select m from Medico m join fetch m.usuario join m.unidades u where u.id = :unidadeId")
+    List<Medico> vinculadosA(@Param("unidadeId") UUID unidadeId);
+
+    /** Médicos de conta ativa, fora da unidade, cujo nome ou CRM contém o padrão (já minúsculo). */
+    @Query("""
+            select m from Medico m join fetch m.usuario usr
+            where usr.status = br.com.saudeplus.usuarios.StatusConta.ATIVO
+              and (lower(usr.nomeCompleto) like :padrao or lower(m.crm) like :padrao)
+              and not exists (select 1 from Medico m2 join m2.unidades u2 where m2 = m and u2.id = :unidadeId)
+            order by usr.nomeCompleto""")
+    List<Medico> disponiveisPara(@Param("unidadeId") UUID unidadeId, @Param("padrao") String padrao, Pageable pagina);
 
     /** Quantos médicos estão vinculados a cada unidade. */
     @Query("select u.id, count(distinct m) from Medico m join m.unidades u group by u.id")

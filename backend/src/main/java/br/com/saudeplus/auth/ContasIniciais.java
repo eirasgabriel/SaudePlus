@@ -109,7 +109,7 @@ class ContasIniciais implements ApplicationRunner {
             return;
         }
         Medico medico = new Medico(usuario, perfil.crm(), perfil.crmUf());
-        if (medicos.existsByCrmAndCrmUf(medico.getCrm(), medico.getCrmUf())) {
+        if (medicos.existsByCrmAndCrmUfAndExcluidoFalse(medico.getCrm(), medico.getCrmUf())) {
             log.warn("CRM {}/{} já pertence a outro médico; o perfil profissional de {} não foi criado.",
                     medico.getCrm(), medico.getCrmUf(), usuario.getEmail());
             return;

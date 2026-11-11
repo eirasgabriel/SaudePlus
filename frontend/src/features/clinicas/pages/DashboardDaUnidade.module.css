@@ -1,0 +1,242 @@
+/* Dashboard da unidade clínica: mesma grade dos painéis do médico
+   (DashboardMedico) e da equipe (AdminDashboardPage). Coluna principal com a
+   faixa de boas-vindas no topo e a coluna direita de 340px ao lado dela. */
+
+.grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: var(--space-5);
+  max-width: calc(1440px - 2 * var(--space-8));
+}
+
+.conteudo,
+.trilha,
+.painel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.resumo {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.dupla {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-5);
+}
+
+/* ---------- unidade e data ---------- */
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-4);
+}
+
+.campo {
+  display: flex;
+  flex: 0 1 260px;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--color-navy-950);
+}
+
+.campo select,
+.campo input {
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 12px;
+  font: inherit;
+  font-weight: var(--fw-regular);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-button);
+}
+
+.campo select:disabled {
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+}
+
+/* ---------- agenda: linhas do AgendaList do médico, sem o chevron ---------- */
+.itemSemLink {
+  grid-template-columns: 4px 52px minmax(0, 1fr) auto;
+}
+
+.itemSemLink[data-status='cancelada'] time,
+.itemSemLink[data-status='cancelada'] strong,
+.itemSemLink[data-status='faltou'] time,
+.itemSemLink[data-status='faltou'] strong {
+  text-decoration: line-through;
+}
+
+/* ---------- listas simples (profissionais, especialidades) ---------- */
+.lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  font-size: var(--fs-small);
+  border-bottom: 1px solid var(--color-border);
+  overflow-wrap: anywhere;
+}
+
+.linha:last-child {
+  border-bottom: 0;
+}
+
+.pessoa {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pessoa strong {
+  font-weight: var(--fw-semibold);
+  color: var(--color-navy-950);
+}
+
+.pessoa span,
+.numero {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+}
+
+.numero {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- dados da unidade ---------- */
+.dados {
+  margin: var(--space-3) 0 0;
+}
+
+.dados > div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 10px 0;
+  font-size: var(--fs-small);
+  border-top: 1px solid var(--color-border);
+}
+
+.dados dt {
+  color: var(--color-text-muted);
+}
+
+.dados dd {
+  margin: 0;
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ---------- estados e links ---------- */
+.vazio,
+.aviso {
+  padding: var(--space-4) 0;
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+}
+
+.aviso {
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  font: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary-dark);
+  text-align: left;
+  overflow-wrap: anywhere;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Minha conta (AreaDaClinica) ---------- */
+.conta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 480px;
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+}
+
+.conta label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.conta input {
+  min-height: 44px;
+  padding: 8px 12px;
+  font: inherit;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-button);
+}
+
+/* ---------- responsivo (mesmos cortes do painel do médico e da equipe) ---------- */
+@media (max-width: 1400px) {
+  .grade { grid-template-columns: minmax(0, 1fr) 300px; gap: var(--space-4); }
+  .conteudo,
+  .trilha,
+  .resumo,
+  .dupla { gap: var(--space-4); }
+}
+
+@media (max-width: 1200px) {
+  .grade { grid-template-columns: minmax(0, 1fr); }
+  .resumo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .trilha {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 900px) {
+  .dupla { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .resumo { grid-template-columns: minmax(0, 1fr); }
+  .campo { flex: 1 1 100%; }
+}

@@ -15,6 +15,7 @@ import ModalUnidade from "./components/ModalUnidade.jsx";
 export function useEdicaoDeUsuarios({ especialidades = [], unidades = [], podeCriarAdmin, aoConcluir }) {
   const [modal, setModal] = useState(null); // { usuario } — `usuario` nulo = nova conta
   const [excluindo, setExcluindo] = useState(null);
+  const excluindoDeVez = excluindo?.status === "inativo";
 
   const salvar = async (dados) => {
     if (modal.usuario) {
@@ -40,16 +41,22 @@ export function useEdicaoDeUsuarios({ especialidades = [], unidades = [], podeCr
       <DialogoConfirmacao
         aberto={Boolean(excluindo)}
         aoFechar={() => setExcluindo(null)}
-        titulo="Excluir usuário"
+        titulo={excluindoDeVez ? "Excluir usuário permanentemente" : "Inativar usuário"}
         mensagem={
-          excluindo
-            ? `${excluindo.nome} deixa de entrar no sistema. O histórico (consultas, exames, cobranças) é mantido.`
-            : ""
+          !excluindo
+            ? ""
+            : excluindoDeVez
+            ? `A conta de ${excluindo.nome} sai do sistema de vez e não poderá ser reativada. Cadastro e histórico (consultas, exames, cobranças) ficam guardados, como exige a LGPD.`
+            : `${excluindo.nome} fica inativo e deixa de entrar no sistema. Para excluir de vez, use a exclusão de novo com a conta inativa.`
         }
-        rotuloConfirmar="Excluir"
+        rotuloConfirmar={excluindoDeVez ? "Excluir permanentemente" : "Inativar"}
         aoConfirmar={async () => {
           await api.excluirUsuario(excluindo.id);
-          aoConcluir(`Conta de ${excluindo.nome} excluída (inativa).`);
+          aoConcluir(
+            excluindoDeVez
+              ? `Conta de ${excluindo.nome} excluída permanentemente.`
+              : `Conta de ${excluindo.nome} inativada. Use a exclusão de novo para excluir de vez.`,
+          );
         }}
       />
     </>
@@ -80,7 +87,13 @@ export function useEdicaoDeUnidades({ aoConcluir }) {
 
   const elementos = (
     <>
-      <ModalUnidade aberto={Boolean(modal)} unidade={modal?.unidade ?? null} aoFechar={() => setModal(null)} aoSalvar={salvar} />
+      <ModalUnidade
+        aberto={Boolean(modal)}
+        unidade={modal?.unidade ?? null}
+        focar={modal?.focar}
+        aoFechar={() => setModal(null)}
+        aoSalvar={salvar}
+      />
       <DialogoConfirmacao
         aberto={Boolean(excluindo)}
         aoFechar={() => setExcluindo(null)}
@@ -101,7 +114,8 @@ export function useEdicaoDeUnidades({ aoConcluir }) {
 
   return {
     nova: () => setModal({ unidade: null }),
-    editar: (unidade) => setModal({ unidade }),
+    /** `opcoes.focar`: campo que abre com o foco (ex.: "emailLogin", pelo e-mail da tabela). */
+    editar: (unidade, opcoes = {}) => setModal({ unidade, focar: opcoes.focar }),
     excluir: setExcluindo,
     elementos,
   };

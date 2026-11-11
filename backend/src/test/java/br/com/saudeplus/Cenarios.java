@@ -94,7 +94,12 @@ public class Cenarios {
     /** Agendamento de 30 min, presencial, levado pelas transições reais até `status`. */
     public Agendamento agendamento(Medico medico, Paciente paciente, LocalDate data, String horario,
             StatusAgendamento status) {
-        Unidade unidade = unidades.findById(UNIDADE_CENTRO).orElseThrow();
+        return agendamento(medico, paciente, data, horario, status, UNIDADE_CENTRO);
+    }
+
+    public Agendamento agendamento(Medico medico, Paciente paciente, LocalDate data, String horario,
+            StatusAgendamento status, UUID unidadeId) {
+        Unidade unidade = unidades.findById(unidadeId).orElseThrow();
         Agendamento agendamento = new Agendamento(paciente, medico, unidade,
                 especialidades.findBySlug("clinico-geral").orElseThrow(), data, LocalTime.parse(horario), 30,
                 TipoAtendimento.CONSULTA, Modalidade.PRESENCIAL, "Consulta de teste");

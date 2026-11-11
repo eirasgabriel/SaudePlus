@@ -45,6 +45,7 @@ class AcessoAoAdmin implements AuthorizationManager<RequestAuthorizationContext>
             return new AuthorizationDecision(false);
         }
         String caminho = contexto.getRequest().getRequestURI();
+        if (usuario.papel() == Papel.CLINICA) return new AuthorizationDecision(false);
         if (caminho.equals(ROTAS_PESSOAIS) || caminho.startsWith(ROTAS_PESSOAIS + "/")) {
             return new AuthorizationDecision(EQUIPE.contains(usuario.papel()));
         }

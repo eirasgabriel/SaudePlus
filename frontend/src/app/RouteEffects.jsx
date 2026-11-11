@@ -2,6 +2,13 @@ import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
 const titles = {
+  '/clinica': 'Minha unidade clínica',
+  '/clinica/medicos': 'Médicos da unidade',
+  '/clinica/conta': 'Conta da clínica',
+  '/paciente': 'Meu painel',
+  '/paciente/consultas': 'Minhas consultas',
+  '/paciente/exames': 'Meus exames',
+  '/admin/unidade': 'Dashboard da Unidade Clínica',
   '/': 'Sua saúde em primeiro lugar',
   '/especialidades': 'Especialidades',
   '/buscar': 'Buscar profissionais',

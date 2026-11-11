@@ -19,6 +19,8 @@ const ignorarErro = () => {};
  * como lidas" limpa a lista; "Ver todas" leva à tela de notificações.
  *
  * `naoLidas`: lista já filtrada, ou `null` quando a tela não carregou a lista.
+ * `marcarUma`/`marcarTodas`: chamadas da API (padrão: as do médico; o admin
+ * passa as dele). `aoSincronizar` roda depois que a API confirma.
  */
 export default function MenuNotificacoes({
   id,
@@ -28,6 +30,9 @@ export default function MenuNotificacoes({
   naoLidas,
   aoMarcarComoLidas,
   aoVerTodas,
+  marcarUma = marcarNotificacaoComoLida,
+  marcarTodas = marcarTodasComoLidas,
+  aoSincronizar,
 }) {
   const caixa = useRef(null);
   /* Guardado em ref: o pai passa uma função nova a cada render, e ela não
@@ -69,12 +74,12 @@ export default function MenuNotificacoes({
 
   const lerUma = (notificacaoId) => {
     aoMarcarComoLidas([notificacaoId]);
-    marcarNotificacaoComoLida(notificacaoId).catch(ignorarErro);
+    marcarUma(notificacaoId).then(() => aoSincronizar?.(), ignorarErro);
   };
 
   const lerTodas = () => {
     aoMarcarComoLidas(lista.map(({ id: notificacaoId }) => notificacaoId));
-    marcarTodasComoLidas().catch(ignorarErro);
+    marcarTodas().then(() => aoSincronizar?.(), ignorarErro);
   };
 
   return (

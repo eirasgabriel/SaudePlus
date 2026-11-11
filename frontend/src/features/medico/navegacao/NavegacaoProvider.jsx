@@ -63,8 +63,9 @@ export function NavegacaoProvider({ children }) {
   );
 
   /**
-   * Aviso para algo que não está em `rotas.js` — o rodapé, por exemplo, é
-   * compartilhado com as outras telas e não conhece os destinos do médico.
+   * Aviso para algo que não está em `rotas.js` (um componente compartilhado
+   * que não conhece os destinos do médico). O painel não tem mais rodapé,
+   * que era o único a usar isto.
    */
   const avisarEmBreve = useCallback((titulo, detalhe) => {
     setAviso({ title: titulo, query: detalhe ?? "" });

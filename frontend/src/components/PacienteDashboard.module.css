@@ -6,14 +6,13 @@
    2. Casca e grade
    3. Cabeçalho
    4. Menu lateral
-   5. Boas-vindas
+   5. Boas-vindas (WelcomeBanner do painel do médico)
    6. Atalhos
    7. Painéis e links
-   8. Faixa de segurança
-   9. Agende sua consulta
-   10. Acesso rápido
-   11. Unidade
-   12. Responsividade
+   8. Agende sua consulta
+   9. Acesso rápido
+   10. Unidade (UnitCard do painel do médico)
+   11. Responsividade
 */
 
 /* 1. Tokens (apelidos de tokens.css) e reset escopado */
@@ -109,9 +108,9 @@
   isolation: isolate;
   flex: 1;
   display: grid;
-  grid-template-columns: var(--lateral-w) minmax(0, 1fr) 360px;
+  grid-template-columns: var(--lateral-w) minmax(0, 1fr) 340px;
   align-items: start;
-  gap: var(--space-6);
+  gap: var(--space-5);
   padding-right: var(--space-8);
   padding-bottom: var(--space-10);
 }
@@ -128,6 +127,9 @@
   background: var(--color-background);
   border-top-left-radius: var(--radius-shed);
 }
+
+/* Mesmo respiro do painel do médico: 32px da curva até o conteúdo. */
+.conteudo { margin-left: calc(var(--space-8) - var(--space-5)); }
 
 .conteudo,
 .painelDireito {
@@ -350,98 +352,53 @@
   margin-top: auto;
   padding: var(--space-4) var(--space-3) 0;
   border-top: 1px solid var(--shell-line);
-  color: var(--shell-text-muted);
 }
 .iconeCuidado { width: 24px; height: 24px; color: var(--color-accent); }
 .textoCuidado {
   margin-top: var(--space-3);
-  font-size: 13px;
-  font-weight: var(--fw-semibold);
-  line-height: 1.45;
-}
-.arteCuidado { display: none; }
-
-/* 5. Boas-vindas */
-.boasVindas {
-  position: relative;
-  overflow: hidden;
-  min-height: 200px;
-  padding: var(--space-8);
-  border-radius: var(--radius-card);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
-
-.boasVindasConteudo {
-  position: relative;
-  z-index: 1;
-  max-width: 560px;
-}
-
-.boasVindasTitulo {
-  font-size: 34px;
-  font-weight: var(--fw-bold);
-  line-height: 1.1;
-  letter-spacing: var(--tracking-tight);
-  color: var(--navy);
-}
-
-.boasVindasSubtitulo {
-  margin-top: 6px;
-  font-size: var(--fs-lead);
-  color: var(--muted);
-}
-
-.aviso {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  margin-top: var(--space-6);
-  padding: 12px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-button);
-  background: var(--color-surface-muted);
   font-size: var(--fs-small);
-  line-height: 1.5;
-  color: var(--color-text-strong);
+  font-weight: var(--fw-bold);
+  line-height: 1.4;
+  color: #fff;
 }
 
-.iconeAviso { width: 28px; height: 28px; color: var(--primary); stroke-width: 1.8; flex: none; }
+/* 5. Boas-vindas: estilo no próprio WelcomeBanner. */
 
-/* O visual decorativo saía como um avatar de 60px (regra de img da
-   .area-paciente); o cartão de boas-vindas fica só com o texto. */
-.boasVindasVisual { display: none; }
-.boasVindasVisual svg,
-.boasVindasVisual img {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: bottom right;
-}
-
-/* 6. Atalhos: parede de ladrilhos com junta de 1px */
+/* 6. Atalhos: cartões soltos, no formato dos cartões de resumo do médico */
 .gradeAtalhos {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1px;
-  background: var(--color-border);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  overflow: hidden;
+  gap: var(--space-4);
 }
 
 .cardAtalho {
+  position: relative;
   display: flex;
   flex-direction: column;
-  padding: var(--space-5);
+  min-height: 156px;
+  padding: var(--space-5) var(--space-5) calc(var(--space-5) + 28px);
   background: var(--surface);
-  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  transition: border-color var(--duration) var(--ease);
 }
-.cardAtalho:hover { background: var(--shell); }
-.cardAtalho:hover .tituloAtalho { color: #fff; }
+.cardAtalho:hover { border-color: var(--color-border-hover); }
+.cardAtalho:has(.linkAtalho:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.iconeAtalho {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-button);
+}
+.iconeAtalho svg { width: 22px; height: 22px; stroke-width: 1.9; }
+
+.tituloAtalho { color: #fff; }
 .cardAtalho:hover .descricaoAtalho { color: var(--shell-text-muted); }
 .cardAtalho:hover .iconeAtalho { background: var(--shell-raised); color: var(--color-accent); }
 .cardAtalho:hover .linkSeta { color: var(--color-accent); }
@@ -471,7 +428,30 @@
   color: var(--muted);
 }
 
-.linkAtalho { align-self: flex-start; margin-top: var(--space-4); }
+/* O link cobre o cartão inteiro (::after); a seta fica no canto, como nos
+   cartões de resumo do médico. */
+.linkAtalho {
+  color: var(--color-text-subtle);
+  transition: color var(--duration) var(--ease);
+}
+.linkAtalho svg {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+  transition: transform var(--duration) var(--ease);
+}
+.linkAtalho::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-card);
+}
+.linkAtalho:focus-visible { outline: none; }
+.cardAtalho:hover .linkAtalho { color: var(--color-primary); }
+.cardAtalho:hover .linkAtalho svg { transform: translateX(3px); }
 
 .azul .iconeAtalho,
 .verde .iconeAtalho,
@@ -495,10 +475,10 @@
   border-bottom: 1px solid var(--border);
 }
 
-.painelIcone { width: 22px; height: 22px; color: var(--primary); }
+.painelIcone { width: 20px; height: 20px; color: var(--primary); }
 
 .painelTitulo {
-  font-size: var(--fs-card-title);
+  font-size: 17px;
   font-weight: var(--fw-bold);
   color: var(--navy);
 }
@@ -536,58 +516,45 @@
 
 .metaIcone { width: 15px; height: 15px; color: var(--primary); }
 
-/* 8. Faixa de segurança */
-.faixaSeguranca {
-  display: flex;
-  align-items: center;
-  gap: var(--space-5);
-  padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  background: var(--surface);
-}
-
-.faixaIcone { width: 32px; height: 32px; color: var(--primary); stroke-width: 1.7; flex: none; }
-
-.faixaCorpo { flex: 1; min-width: 0; }
-
-.faixaTitulo {
-  font-size: var(--fs-small);
-  font-weight: var(--fw-bold);
-  color: var(--navy);
-}
-
-.faixaTexto {
-  margin-top: 2px;
-  font-size: var(--fs-xs);
-  color: var(--muted);
-}
-
-.faixaSelo { flex-shrink: 0; width: 36px; height: 40px; }
-
-/* 9. Agende sua consulta: a peça marinho do painel */
+/* 8. Agende sua consulta: a peça marinho do painel */
 .agendar {
   position: relative;
   overflow: hidden;
-  padding: var(--space-6);
+  padding: var(--space-5);
   border-radius: var(--radius-card) var(--radius-shed) var(--radius-card) var(--radius-card);
   color: #fff;
   background: var(--shell);
 }
 .agendar :focus-visible { outline-color: var(--color-accent); }
 
-.agendarIcone { width: 28px; height: 28px; stroke-width: 1.8; color: var(--color-accent); }
+.agendarCabecalho {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.agendarIcone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  color: var(--color-accent);
+  background: var(--shell-raised);
+  border: 1px solid var(--shell-line);
+  border-radius: var(--radius-button);
+}
+.agendarIcone svg { width: 20px; height: 20px; }
 
 .agendarTitulo {
-  margin-top: var(--space-4);
-  font-size: 22px;
+  font-size: var(--fs-card-title);
   font-weight: var(--fw-bold);
-  letter-spacing: var(--tracking-tight);
 }
 
 .agendarTexto {
-  max-width: 34ch;
-  margin-top: 6px;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--shell-line);
   font-size: var(--fs-small);
   line-height: 1.5;
   color: var(--shell-text-muted);
@@ -612,10 +579,7 @@
 
 .botaoAgendarIcone { width: 18px; height: 18px; stroke-width: 2.2; }
 
-/* A arte decorativa sai: o canto curvo já é a assinatura da peça. */
-.agendarArte { display: none; }
-
-/* 10. Acesso rápido */
+/* 9. Acesso rápido */
 .acessoLista { margin-bottom: -8px; }
 
 .acessoLink {
@@ -638,23 +602,12 @@
 .acessoLink:hover .acessoIcone,
 .acessoLink:hover .acessoSeta { color: var(--color-primary-dark); }
 
-/* 11. Unidade */
-.unidade {
+/* 10. Unidade */
+.unidadeVazia {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-4);
+  flex-direction: column;
+  gap: 6px;
 }
-
-.unidadeMapa {
-  flex-shrink: 0;
-  width: 56px;
-  height: 120px;
-  overflow: hidden;
-  border-radius: var(--radius-button);
-}
-.unidadeMapa svg { display: block; width: 100%; height: 100%; }
-
-.unidadeInfo { min-width: 0; }
 
 .unidadeNome {
   display: block;
@@ -663,20 +616,13 @@
   color: var(--navy);
 }
 
-.unidadeDetalhes {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 8px;
-  font-style: normal;
-}
-
-.unidadeLink { margin-top: var(--space-3); }
-
-/* 12. Responsividade */
+/* 11. Responsividade */
 @media (max-width: 1400px) {
-  .grade { grid-template-columns: var(--lateral-w) minmax(0, 1fr) 320px; gap: var(--space-5); padding-right: var(--space-6); }
-  .boasVindasVisual { width: 240px; }
+  .grade { grid-template-columns: var(--lateral-w) minmax(0, 1fr) 300px; gap: var(--space-4); padding-right: var(--space-6); }
+  .conteudo { margin-left: calc(var(--space-6) - var(--space-4)); }
+  .conteudo,
+  .painelDireito,
+  .gradeAtalhos { gap: var(--space-4); }
 }
 
 @media (max-width: 1200px) {
@@ -696,6 +642,7 @@
   .menuTopo { display: flex; order: 3; width: 100%; min-height: 48px; overflow-x: auto; scrollbar-width: none; }
 
   .grade { grid-template-columns: minmax(0, 1fr); padding: 0 var(--page-gutter) var(--space-8); }
+  .conteudo { margin-left: 0; }
   .grade::before { left: 0; border-radius: var(--radius-shed) var(--radius-shed) 0 0; }
   .painelDireito { grid-column: auto; }
   .menuLateral { display: none; }
@@ -712,16 +659,10 @@
   .divisor { display: none; }
   .acoes { gap: 2px; }
 
-  .boasVindas { min-height: 0; padding: var(--space-5); }
-  .boasVindasTitulo { font-size: 26px; }
-  .boasVindasSubtitulo { font-size: var(--fs-body); }
-  .boasVindasVisual { display: none; }
+  .cardAtalho { min-height: 0; padding: var(--space-4) var(--space-4) calc(var(--space-4) + 28px); }
 
   .painel { padding: var(--space-4); }
 
-  .faixaSeguranca { flex-wrap: wrap; gap: var(--space-3); }
-  .faixaLink { flex: 0 0 calc(100% - 46px); margin-left: 46px; }
-  .faixaSelo { display: none; }
 }
 
 /* ---------- Busca aberta e sino de notificações ----------

@@ -9,6 +9,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.FetchType;
+import br.com.saudeplus.clinicas.Unidade;
 
 /**
  * Conta de acesso: quem entra no sistema e com qual papel. Os dados de cada
@@ -27,6 +31,19 @@ public class Usuario extends EntidadeBase {
 
     @Column(name = "senha_hash", nullable = false, length = 100)
     private String senhaHash;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "unidade_id", unique = true)
+    private Unidade unidade;
+
+    public Unidade getUnidade() { return unidade; }
+
+    public void vincularClinica(Unidade unidade) {
+        if (papel != Papel.CLINICA) throw new IllegalStateException("A conta precisa ser de clínica.");
+        this.unidade = unidade;
+    }
+
+    public void alterarEmail(String email) { this.email = normalizarEmail(email); }
 
     @Column(length = 20)
     private String telefone;

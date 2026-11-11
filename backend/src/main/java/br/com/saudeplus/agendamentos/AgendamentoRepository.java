@@ -91,6 +91,10 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, UUID>,
 
     boolean existsByMedicoIdAndPacienteId(UUID medicoId, UUID pacienteId);
 
+    /** Há consulta do médico nesta unidade a partir da data, nos status informados? */
+    boolean existsByMedicoIdAndUnidadeIdAndDataGreaterThanEqualAndStatusIn(UUID medicoId, UUID unidadeId,
+            LocalDate data, Collection<StatusAgendamento> status);
+
     /** Todos os agendamentos de alguns pacientes com o médico (última consulta de cada um). */
     List<Agendamento> findByMedicoIdAndPacienteIdIn(UUID medicoId, Collection<UUID> pacienteIds);
 

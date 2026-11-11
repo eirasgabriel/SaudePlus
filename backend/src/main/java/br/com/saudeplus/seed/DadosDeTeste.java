@@ -116,7 +116,7 @@ class DadosDeTeste implements ApplicationRunner {
             log.info("Médico {} já existe; pulado.", email);
             return false;
         }
-        if (medicos.existsByCrmAndCrmUf(dados.crm(), dados.crmUf())) {
+        if (medicos.existsByCrmAndCrmUfAndExcluidoFalse(dados.crm(), dados.crmUf())) {
             log.warn("CRM {}/{} já pertence a outro médico; {} pulado.", dados.crm(), dados.crmUf(), email);
             return false;
         }

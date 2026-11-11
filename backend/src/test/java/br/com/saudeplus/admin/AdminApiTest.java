@@ -6,6 +6,9 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -38,12 +41,14 @@ import org.springframework.web.context.WebApplicationContext;
 import br.com.saudeplus.Cenarios;
 import br.com.saudeplus.TesteDeIntegracao;
 import br.com.saudeplus.agendamentos.Agendamento;
+import br.com.saudeplus.agendamentos.AgendamentoRepository;
 import br.com.saudeplus.agendamentos.StatusAgendamento;
 import br.com.saudeplus.notificacoes.NotificacaoService;
 import br.com.saudeplus.notificacoes.TipoNotificacao;
 import br.com.saudeplus.pacientes.Paciente;
 import br.com.saudeplus.profissionais.Medico;
 import br.com.saudeplus.usuarios.Papel;
+import br.com.saudeplus.usuarios.UsuarioRepository;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -66,6 +71,10 @@ class AdminApiTest {
     private Clock relogio;
     @Autowired
     private NotificacaoService notificador;
+    @Autowired
+    private UsuarioRepository usuarios;
+    @Autowired
+    private AgendamentoRepository agendamentos;
 
     private MockMvc mvc;
     private Cenarios cenarios;
@@ -213,17 +222,91 @@ class AdminApiTest {
         }
 
         @Test
-        @DisplayName("excluir é lógico: a conta fica inativa e para de entrar; ninguém exclui a si mesmo")
+        @DisplayName("excluir em dois passos: primeiro inativa, depois exclui guardando os dados")
         void excluir() throws Exception {
             var alvo = cenarios.usuario("Pessoa Excluível", Papel.RECEPCIONISTA);
             String tokenDoAlvo = cenarios.bearer(alvo);
-            como(admin, delete("/api/admin/usuarios/{id}", alvo.getId())).andExpect(status().isNoContent());
+
+            // 1º clique: a conta fica inativa e para de entrar, mas ainda é gerida.
+            como(admin, delete("/api/admin/usuarios/{id}", alvo.getId()))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("inativo"));
             como(admin, get("/api/admin/usuarios/{id}", alvo.getId())).andExpect(jsonPath("$.status").value("inativo"));
+            como(tokenDoAlvo, get("/api/auth/perfil")).andExpect(status().isUnauthorized());
+
+            // 2º clique: excluída. Some da administração, mas a linha fica no banco.
+            como(admin, delete("/api/admin/usuarios/{id}", alvo.getId()))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("excluido"));
+            como(admin, get("/api/admin/usuarios/{id}", alvo.getId())).andExpect(status().isNotFound());
+            como(admin, delete("/api/admin/usuarios/{id}", alvo.getId())).andExpect(status().isNotFound());
+            como(admin, json(patch("/api/admin/usuarios/{id}/status", alvo.getId()), "{\"status\":\"ativo\"}"))
+                    .andExpect(status().isNotFound());
+            como(admin, get("/api/admin/usuarios").param("q", alvo.getEmail()))
+                    .andExpect(jsonPath("$.conteudo", hasSize(0)));
+            assertTrue(usuarios.findById(alvo.getId()).isPresent(), "a conta excluída continua guardada");
             como(tokenDoAlvo, get("/api/auth/perfil")).andExpect(status().isUnauthorized());
 
             como(admin, delete("/api/admin/usuarios/{id}", adminId)).andExpect(status().isUnprocessableContent());
             como(equipe(Papel.GESTOR), delete("/api/admin/usuarios/{id}", adminId)).andExpect(status().isForbidden());
-            mvc.perform(delete("/api/admin/usuarios/{id}", alvo.getId())).andExpect(status().isUnauthorized());
+            mvc.perform(delete("/api/admin/usuarios/{id}", adminId)).andExpect(status().isUnauthorized());
+        }
+
+        @Test
+        @DisplayName("paciente com consultas pode ser excluído: o histórico fica guardado")
+        void excluirComHistorico() throws Exception {
+            Medico medico = cenarios.medico();
+            Paciente paciente = cenarios.paciente("Paciente Com Histórico", LocalDate.of(1985, 5, 5));
+            Agendamento consulta = cenarios.agendamento(medico, paciente, LocalDate.now(relogio).plusDays(3), "09:00",
+                    StatusAgendamento.PENDENTE);
+            UUID id = paciente.getUsuario().getId();
+            como(admin, delete("/api/admin/usuarios/{id}", id)).andExpect(jsonPath("$.status").value("inativo"));
+            como(admin, delete("/api/admin/usuarios/{id}", id)).andExpect(jsonPath("$.status").value("excluido"));
+            como(admin, json(patch("/api/admin/usuarios/{id}/status", medico.getUsuario().getId()),
+                    "{\"status\":\"excluido\"}")).andExpect(status().isUnprocessableContent());
+            assertTrue(agendamentos.findById(consulta.getId()).isPresent(), "a consulta continua guardada");
+        }
+
+        @Test
+        @DisplayName("e-mail, CPF e CRM de conta excluída ficam livres para um novo cadastro")
+        void recadastroDepoisDeExcluir() throws Exception {
+            String email = email();
+            String crm = "%012d".formatted(Math.floorMod(UUID.randomUUID().getLeastSignificantBits(), 1_000_000_000_000L));
+            String corpo = """
+                    {"nomeCompleto":"Dr. Recadastro","email":"%s","cpf":"526.018.159-06","papel":"MEDICO",
+                     "medico":{"crm":"%s","crmUf":"RJ","especialidadeIds":["%s"],"unidadeIds":["%s"]}}"""
+                    .formatted(email, crm, clinicoGeral, Cenarios.UNIDADE_CENTRO);
+            String criada = como(admin, json(post("/api/admin/usuarios"), corpo))
+                    .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+            UUID antiga = UUID.fromString(json.readTree(criada).get("id").asString());
+
+            // Enquanto a conta não foi excluída (mesmo inativa), e-mail, CPF e CRM seguem ocupados.
+            como(admin, delete("/api/admin/usuarios/{id}", antiga)).andExpect(jsonPath("$.status").value("inativo"));
+            como(admin, json(post("/api/admin/usuarios"), corpo)).andExpect(status().isConflict());
+
+            como(admin, delete("/api/admin/usuarios/{id}", antiga)).andExpect(jsonPath("$.status").value("excluido"));
+            String nova = como(admin, json(post("/api/admin/usuarios"), corpo))
+                    .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+            UUID novaId = UUID.fromString(json.readTree(nova).get("id").asString());
+            assertNotEquals(antiga, novaId, "é uma conta nova");
+            assertTrue(usuarios.findById(antiga).isPresent(), "a conta excluída continua guardada");
+            assertEquals(novaId, usuarios.findByEmail(email).orElseThrow().getId(), "o e-mail aponta para a conta nova");
+        }
+
+        @Test
+        @DisplayName("paciente excluído se cadastra de novo pelo site com o mesmo e-mail")
+        void pacienteSeRecadastra() throws Exception {
+            Paciente paciente = cenarios.paciente("Paciente Que Volta", LocalDate.of(1992, 2, 2));
+            UUID id = paciente.getUsuario().getId();
+            String email = paciente.getUsuario().getEmail();
+            String cadastro = """
+                    {"nomeCompleto":"Paciente Que Volta","email":"%s","senha":"senhaNova123","telefone":"(22) 99999-0000","aceiteTermos":true}"""
+                    .formatted(email);
+            mvc.perform(json(post("/api/auth/cadastro"), cadastro)).andExpect(status().isConflict());
+
+            como(admin, delete("/api/admin/usuarios/{id}", id)).andExpect(status().isOk());
+            como(admin, delete("/api/admin/usuarios/{id}", id)).andExpect(jsonPath("$.status").value("excluido"));
+            mvc.perform(json(post("/api/auth/cadastro"), cadastro)).andExpect(status().isCreated());
+            mvc.perform(json(post("/api/auth/login"), """
+                    {"email":"%s","senha":"senhaNova123"}""".formatted(email))).andExpect(status().isOk());
         }
 
         @Test
@@ -328,7 +411,8 @@ class AdminApiTest {
         void unidade() throws Exception {
             String nome = "UBS Teste " + UUID.randomUUID().toString().substring(0, 6);
             String corpo = como(admin, json(post("/api/admin/unidades"), """
-                    {"nome":"%s","endereco":"Rua Nova, 10","bairro":"Centro","cidade":"Araruama","uf":"rj"}""".formatted(nome)))
+                    {"nome":"%s","endereco":"Rua Nova, 10","bairro":"Centro","cidade":"Araruama","uf":"rj",
+                     "emailLogin":"%s@teste.com","senhaLogin":"senhaTeste123"}""".formatted(nome, UUID.randomUUID())))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.uf").value("RJ"))
                     .andExpect(jsonPath("$.status").value("ativa"))
@@ -348,7 +432,7 @@ class AdminApiTest {
         void cnpjEEmail() throws Exception {
             String corpo = """
                     {"nome":"UBS Com CNPJ","endereco":"Rua A, 1","cidade":"Araruama","uf":"RJ",
-                     "cnpj":"%s","email":"%s"}""";
+                     "cnpj":"%s","email":"%s","emailLogin":"cnpj-acesso@teste.com","senhaLogin":"senhaTeste123"}""";
             String criada = como(admin, json(post("/api/admin/unidades"), corpo.formatted("11222333000181", "UBS@Teste.com")))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.cnpj").value("11.222.333/0001-81"))
@@ -374,7 +458,7 @@ class AdminApiTest {
         @DisplayName("excluir unidade a deixa inativa; quem não tem o módulo recebe 403")
         void excluirUnidade() throws Exception {
             String corpo = como(admin, json(post("/api/admin/unidades"),
-                    "{\"nome\":\"UBS Excluível\",\"endereco\":\"Rua B, 2\",\"cidade\":\"Araruama\",\"uf\":\"RJ\"}"))
+                    "{\"nome\":\"UBS Excluível\",\"endereco\":\"Rua B, 2\",\"cidade\":\"Araruama\",\"uf\":\"RJ\",\"emailLogin\":\"excluir-acesso@teste.com\",\"senhaLogin\":\"senhaTeste123\"}"))
                     .andReturn().getResponse().getContentAsString();
             String id = json.readTree(corpo).get("id").asString();
 
@@ -494,7 +578,7 @@ class AdminApiTest {
             como(admin, get("/api/admin/sistema"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.banco").value(startsWith("PostgreSQL")))
-                    .andExpect(jsonPath("$.ultimaMigracao.versao").value("8"))
+                    .andExpect(jsonPath("$.ultimaMigracao.versao").value("10"))
                     .andExpect(jsonPath("$.noArDesde").isString());
             como(equipe(Papel.GESTOR), get("/api/admin/sistema")).andExpect(status().isForbidden());
         }

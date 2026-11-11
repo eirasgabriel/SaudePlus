@@ -59,6 +59,7 @@ public class SecurityConfig {
                         // ADMIN, ou equipe com o módulo liberado na matriz de permissões.
                         .requestMatchers("/api/admin/**").access(acessoAoAdmin)
                         .requestMatchers("/api/medico/**").hasRole("MEDICO")
+                        .requestMatchers("/api/clinica/**").hasRole("CLINICA")
                         .requestMatchers("/api/paciente/**").hasRole("PACIENTE")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(servidor -> servidor

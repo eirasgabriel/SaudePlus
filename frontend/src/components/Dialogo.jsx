@@ -26,7 +26,10 @@ export default function Dialogo({ aberto, aoFechar, titulo, descricao, largura =
     if (!aberto) return undefined;
     const anterior = document.activeElement;
     const foco = window.setTimeout(() => {
-      const primeiro = caixa.current?.querySelector("input, select, textarea, button:not([data-fechar])");
+      // Um campo marcado com `data-foco-inicial` tem prioridade (ex.: editar só o e-mail).
+      const primeiro =
+        caixa.current?.querySelector("[data-foco-inicial]") ??
+        caixa.current?.querySelector("input, select, textarea, button:not([data-fechar])");
       (primeiro ?? caixa.current)?.focus();
     }, 0);
     const aoTeclar = (evento) => {

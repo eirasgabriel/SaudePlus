@@ -115,6 +115,7 @@ public class SistemaAdminController {
             case RECEPCIONISTA -> "Recepcionista";
             case AGENTE -> "Agente comunitário";
             case ADMIN -> "Administrador";
+            case CLINICA -> "Unidade Clínica";
             case PACIENTE -> "Paciente";
         };
     }

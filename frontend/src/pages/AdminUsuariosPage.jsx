@@ -20,6 +20,7 @@ import {
   filtrosStatus,
   filtrosPerfil,
   filtrosUnidade,
+  rotuloDaExclusao,
 } from "../services/dadosAdminUsuarios";
 import comum from "../styles/adminComum.module.css";
 
@@ -156,8 +157,8 @@ export default function AdminUsuariosPage({
                               aoClicar: () => aoAlternarBloqueio(u),
                             }
                           : { icone: "maisOpcoes", rotulo: "Mais opções", tom: "neutra" },
-                        ...(aoExcluir && u.status !== "inativo" && u.id !== idDaPropriaConta
-                          ? [{ icone: "lixeira", rotulo: "Excluir", tom: "perigo", aoClicar: () => aoExcluir(u) }]
+                        ...(aoExcluir && u.id !== idDaPropriaConta
+                          ? [{ icone: "lixeira", rotulo: rotuloDaExclusao(u.status), tom: "perigo", aoClicar: () => aoExcluir(u) }]
                           : []),
                       ].filter(Boolean)}
                     />

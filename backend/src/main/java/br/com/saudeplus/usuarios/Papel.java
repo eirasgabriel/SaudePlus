@@ -11,6 +11,7 @@ public enum Papel {
     PACIENTE,
     MEDICO,
     ADMIN,
+    CLINICA,
     GESTOR,
     ENFERMEIRO,
     RECEPCIONISTA,

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useOutlet, useOutletContext, useSearchParams } from "react-router-dom";
+import { useAuth } from "../../auth/auth.context.js";
 
 import PacienteDashboard from "../../../components/PacienteDashboard";
 import ConsultasPage from "../../../pages/ConsultasPage";
@@ -50,10 +51,15 @@ const carregarUnidades = ({ sinal }) => http.get("/api/publico/unidades", { sina
 
 export function PainelDoPaciente() {
   const navegar = useNavigate();
+  const { usuario } = useAuth();
+  const { pathname } = useLocation();
   const painel = useDadosDaApi(carregarPainel);
   const { dados, recarregar } = painel;
   // O sino lista as notificações; se elas falharem, o painel abre com o sino vazio.
   const notificacoes = useDadosDaApi(carregarNotificacoes);
+  const [reservaConcluida, setReservaConcluida] = useState(0);
+  const subpagina = useOutlet({ recarregarPainel: recarregar, reservaConcluida });
+  const conteudo = pathname.replace(/\/$/, "") === "/paciente" ? null : subpagina;
 
   const confirmar = async (escolha) => {
     await reservarConsulta({
@@ -64,6 +70,7 @@ export function PainelDoPaciente() {
       modalidade: escolha.modalidade,
     });
     recarregar();
+    setReservaConcluida((versao) => versao + 1);
     navegar("/paciente/consultas", {
       state: {
         aviso: `Consulta com ${escolha.profissional} agendada para ${descrever(escolha.data, escolha.horario)}. Ela fica pendente até a clínica confirmar.`,
@@ -72,17 +79,20 @@ export function PainelDoPaciente() {
   };
 
   return (
-    <PortaoDaApi estados={painel} carregando="Carregando seu painel…">
-      {() => (
         <PacienteDashboard
-          paciente={paraPaciente(dados.paciente)}
-          consultas={dados.proximasConsultas.map(paraConsulta)}
-          unidade={paraUnidade(dados.unidade)}
+          paciente={dados ? paraPaciente(dados.paciente) : {
+            name: usuario?.nomeCompleto ?? "Paciente", role: "Paciente", avatarUrl: usuario?.fotoUrl ?? null,
+          }}
+          consultas={dados?.proximasConsultas.map(paraConsulta) ?? []}
+          unidade={paraUnidade(dados?.unidade)}
+          carregandoUnidade={painel.origem === "carregando"}
+          avisoUnidade={painel.origem === "erro" ? "Não foi possível carregar os dados da unidade. Você pode continuar consultando seus agendamentos e exames." : null}
           notificacoes={(notificacoes.dados ?? []).map(paraNotificacao)}
           onConfirmar={confirmar}
+          conteudo={conteudo ?? (painel.origem !== "api" ? (
+            <PortaoDaApi estados={painel} carregando="Carregando seu painel…" />
+          ) : null)}
         />
-      )}
-    </PortaoDaApi>
   );
 }
 
@@ -129,7 +139,14 @@ function usePedidoDeAgendamento(ativo) {
 }
 
 export function ConsultasDoPaciente() {
+  const contexto = useOutletContext();
+  // Reservar pela coluna direita atualiza a lista mesmo já estando em Consultas.
+  return <ListaDeConsultasDoPaciente key={contexto?.reservaConcluida ?? 0} />;
+}
+
+function ListaDeConsultasDoPaciente() {
   const location = useLocation();
+  const contexto = useOutletContext();
   const consultas = useDadosDaApi(carregarConsultas);
   const { origem, dados, recarregar } = consultas;
   const [remarcando, setRemarcando] = useState(null);
@@ -146,6 +163,7 @@ export function ConsultasDoPaciente() {
     });
     setAviso(`Consulta com ${escolha.profissional} agendada para ${descrever(escolha.data, escolha.horario)}. Ela fica pendente até a clínica confirmar.`);
     recarregar();
+    contexto?.recarregarPainel?.();
   };
 
   const cancelar = useCallback(
@@ -153,8 +171,9 @@ export function ConsultasDoPaciente() {
       await cancelarConsulta(consulta.id);
       setAviso("Consulta cancelada.");
       recarregar();
+      contexto?.recarregarPainel?.();
     },
-    [recarregar],
+    [recarregar, contexto],
   );
 
   const confirmarRemarcacao = async (escolha) => {
@@ -165,6 +184,7 @@ export function ConsultasDoPaciente() {
     });
     setAviso(`Consulta remarcada para ${descrever(escolha.data, escolha.horario)}. Ela volta a ficar pendente até a clínica confirmar.`);
     recarregar();
+    contexto?.recarregarPainel?.();
   };
 
   return (
@@ -172,6 +192,7 @@ export function ConsultasDoPaciente() {
       <PortaoDaApi estados={consultas} carregando="Carregando suas consultas…" voltar={VOLTAR_AO_PAINEL}>
         {() => (
           <ConsultasPage
+            noPainel
             consultas={dados.map(paraConsulta)}
             aviso={<AvisoDeSucesso>{aviso}</AvisoDeSucesso>}
             aoCancelar={cancelar}
@@ -210,6 +231,7 @@ export function ExamesDoPaciente() {
     <PortaoDaApi estados={exames} carregando="Carregando seus exames…" voltar={VOLTAR_AO_PAINEL}>
       {() => (
         <ExamesPage
+          noPainel
           exames={exames.dados.map(paraExame)}
           aoBaixarResultado={(exame) => baixarResultadoDoExame(exame.id)}
         />

@@ -5,6 +5,7 @@ export const ROTA_INICIAL_POR_ROLE = {
   PACIENTE: '/paciente',
   MEDICO: '/medico',
   ADMIN: '/admin',
+  CLINICA: '/clinica',
   // Equipe da clínica: entra no admin e vê só os módulos liberados na matriz de permissões.
   GESTOR: '/admin',
   ENFERMEIRO: '/admin',
@@ -17,6 +18,7 @@ export const ROTULO_POR_ROLE = {
   PACIENTE: 'Paciente',
   MEDICO: 'Profissional de saude',
   ADMIN: 'Administracao',
+  CLINICA: 'Unidade Clínica',
   GESTOR: 'Gestao',
   ENFERMEIRO: 'Enfermagem',
   RECEPCIONISTA: 'Recepcao',

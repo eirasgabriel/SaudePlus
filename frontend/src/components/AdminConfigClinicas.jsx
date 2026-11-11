@@ -216,8 +216,13 @@ export default function AdminConfigClinicas({
             </div>
             <div className={estilos.campoDetalhe}>
               <Icone nome="email" tam={15} className={estilos.campoIcone} />
-              <span className={estilos.campoRotulo}>E-mail</span>
+              <span className={estilos.campoRotulo}>E-mail de contato</span>
               <span className={estilos.campoValor}>{selecionada.email || "Não informado"}</span>
+            </div>
+            <div className={estilos.campoDetalhe}>
+              <Icone nome="cadeado" tam={15} className={estilos.campoIcone} />
+              <span className={estilos.campoRotulo}>E-mail de acesso</span>
+              <span className={estilos.campoValor}>{selecionada.emailLogin || "Sem acesso cadastrado"}</span>
             </div>
             <div className={estilos.campoDetalhe}>
               <Icone nome="relogio" tam={15} className={estilos.campoIcone} />

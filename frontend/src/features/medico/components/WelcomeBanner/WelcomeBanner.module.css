@@ -24,6 +24,8 @@
   pointer-events: none;
 }
 
+.semVisual { grid-template-columns: minmax(0, 1fr); padding-bottom: var(--space-8); }
+
 .texto {
   position: relative;
   align-self: center;
@@ -117,6 +119,8 @@
     width: 112px;
     height: 112px;
   }
+
+  .semVisual { grid-template-columns: minmax(0, 1fr); }
 }
 
 @media (max-width: 768px) {

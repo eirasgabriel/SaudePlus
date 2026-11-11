@@ -103,6 +103,8 @@ export function paraClinica(u) {
     endereco: u.bairro ? `${u.endereco} – ${u.bairro}` : u.endereco,
     municipio: `${u.cidade} - ${u.uf}`,
     telefone: u.telefone ?? "—",
+    emailLogin: u.emailLogin ?? "",
+    email: u.email ?? "",
     status: u.status,
   };
 }
@@ -118,6 +120,7 @@ export function paraUnidadeDaConfiguracao(u) {
     bairro: [u.bairro, `${u.cidade}/${u.uf}`].filter(Boolean).join(" - "),
     telefone: u.telefone ?? "—",
     email: u.email ?? "",
+    emailLogin: u.emailLogin ?? "",
     funcionamento: [u.horarioFuncionamento || "Horário não informado"],
     status: u.status,
     vinculadas: [],

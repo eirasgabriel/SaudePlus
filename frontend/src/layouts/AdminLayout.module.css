@@ -144,6 +144,8 @@
 }
 
 /* Âncora do MenuPerfil. */
+.ancora { position: relative; }
+
 .perfilCaixa {
   position: relative;
   margin-left: var(--space-2);
@@ -239,27 +241,15 @@
   border-top: 1px solid var(--shell-line);
 }
 
-.promoOnda,
-.promoCoracao { display: none; }
-
-.promoIcone {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-button);
-  display: grid;
-  place-items: center;
-  background: var(--shell-raised);
-  color: var(--color-accent);
-  margin-bottom: var(--space-3);
-}
+.promoIcone { display: block; color: var(--color-accent); }
 
 .promoTexto {
-  font-size: 13px;
-  font-weight: var(--fw-semibold);
+  margin-top: var(--space-3);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
   line-height: 1.4;
-  color: var(--shell-text-muted);
+  color: #fff;
 }
-.promoTexto br { display: none; }
 
 /* =========================================================
    Área de trabalho

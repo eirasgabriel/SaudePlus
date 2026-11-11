@@ -51,6 +51,9 @@ import {
 } from '../features/admin/pages/AdminConectado.jsx'
 import ExamesDoAdmin from '../features/admin/pages/ExamesDoAdmin.jsx'
 import AdminSuportePage from '../pages/AdminSuportePage.jsx'
+import DashboardDaUnidade from '../features/clinicas/pages/DashboardDaUnidade.jsx'
+import { LayoutDaClinica, ContaDaClinica } from '../features/clinicas/pages/AreaDaClinica.jsx'
+import MedicosDaClinica from '../features/clinicas/pages/MedicosDaClinica.jsx'
 import RouteEffects from './RouteEffects.jsx'
 import styles from './App.module.css'
 
@@ -127,9 +130,11 @@ export default function App() {
             </RotaProtegida>
           }
         >
-          <Route index element={<PainelDoPaciente />} />
-          <Route path="consultas" element={<ConsultasDoPaciente />} />
-          <Route path="exames" element={<ExamesDoPaciente />} />
+          <Route element={<PainelDoPaciente />}>
+            <Route index element={null} />
+            <Route path="consultas" element={<ConsultasDoPaciente />} />
+            <Route path="exames" element={<ExamesDoPaciente />} />
+          </Route>
           <Route path="historico" element={<HistoricoDoPaciente />} />
           <Route path="clinicas" element={<ClinicasDoPaciente />} />
           <Route path="perfil" element={<MinhasInformacoes />} />
@@ -150,6 +155,11 @@ export default function App() {
           <Route path="notificacoes" element={<NotificacoesDoMedico />} />
           <Route path="conta" element={<ContaDoMedico />} />
         </Route>
+        <Route path="/clinica" element={<RotaProtegida permitir={['CLINICA']}><LayoutDaClinica /></RotaProtegida>}>
+          <Route index element={<DashboardDaUnidade acessoClinica />} />
+          <Route path="medicos" element={<MedicosDaClinica />} />
+          <Route path="conta" element={<ContaDaClinica />} />
+        </Route>
         <Route
           path="/admin"
           element={
@@ -160,6 +170,7 @@ export default function App() {
           }
         >
           <Route index element={<DashboardDoAdmin />} />
+          <Route path="unidade" element={<DashboardDaUnidade />} />
           <Route path="usuarios" element={<UsuariosDoAdmin />} />
           <Route path="clinicas" element={<ClinicasDoAdmin />} />
           <Route path="agendamentos" element={<AgendamentosDoAdmin />} />

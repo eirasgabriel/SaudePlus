@@ -13,6 +13,11 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.dao.DataIntegrityViolationException;
+import br.com.saudeplus.usuarios.Usuario;
+import br.com.saudeplus.usuarios.UsuarioRepository;
+import br.com.saudeplus.usuarios.Papel;
 
 import br.com.saudeplus.admin.dto.CadastrosAdminResposta.ConvenioAdmin;
 import br.com.saudeplus.admin.dto.CadastrosAdminResposta.EspecialidadeAdmin;
@@ -57,10 +62,12 @@ public class CadastrosAdminService {
     private final TipoExameRepository tiposDeExame;
     private final Auditoria auditoria;
     private final Clock relogio;
+    private final UsuarioRepository usuarios;
+    private final PasswordEncoder codificador;
 
     public CadastrosAdminService(UnidadeRepository unidades, MedicoRepository medicos, AgendamentoRepository agendamentos,
             EspecialidadeRepository especialidades, ConvenioRepository convenios, TipoExameRepository tiposDeExame,
-            Auditoria auditoria, Clock relogio) {
+            Auditoria auditoria, Clock relogio, UsuarioRepository usuarios, PasswordEncoder codificador) {
         this.unidades = unidades;
         this.medicos = medicos;
         this.agendamentos = agendamentos;
@@ -69,6 +76,8 @@ public class CadastrosAdminService {
         this.tiposDeExame = tiposDeExame;
         this.auditoria = auditoria;
         this.relogio = relogio;
+        this.usuarios = usuarios;
+        this.codificador = codificador;
     }
 
     // ------------------------------------------------------------------ unidades
@@ -76,6 +85,8 @@ public class CadastrosAdminService {
     /** Todas as unidades (inclusive fora de operação), com especialidades, médicos e movimento do mês. */
     @Transactional(readOnly = true)
     public List<UnidadeAdmin> unidades() {
+        Map<UUID, String> emailsLogin = usuarios.findAllByPapel(Papel.CLINICA).stream()
+                .collect(Collectors.toMap(u -> u.getUnidade().getId(), Usuario::getEmail));
         Map<UUID, List<String>> especialidadesPorUnidade = medicos.especialidadesPorUnidade().stream()
                 .collect(Collectors.groupingBy(linha -> (UUID) linha[0], Collectors.collectingAndThen(
                         Collectors.mapping(linha -> (String) linha[1], Collectors.toCollection(TreeSet::new)),
@@ -87,7 +98,8 @@ public class CadastrosAdminService {
                 .collect(Collectors.toMap(linha -> (UUID) linha[0], linha -> (Long) linha[1]));
         return unidades.findAllByOrderByNome().stream()
                 .map(u -> UnidadeAdmin.de(u, especialidadesPorUnidade.getOrDefault(u.getId(), List.of()),
-                        medicosPorUnidade.getOrDefault(u.getId(), 0L), movimento.getOrDefault(u.getId(), 0L)))
+                        medicosPorUnidade.getOrDefault(u.getId(), 0L), movimento.getOrDefault(u.getId(), 0L))
+                        .comEmailLogin(emailsLogin.get(u.getId())))
                 .toList();
     }
 
@@ -107,8 +119,9 @@ public class CadastrosAdminService {
                 dados.uf(), dados.telefone(), dados.horarioFuncionamento(), dados.mapUrl());
         unidade.alterarContato(cnpj, dados.email());
         unidades.save(unidade);
+        Usuario conta = salvarAcesso(unidade, dados, true);
         auditoria.registrar("unidade.criar", "unidade", unidade.getId(), Map.of("nome", unidade.getNome()));
-        return UnidadeAdmin.de(unidade, List.of(), 0, 0);
+        return UnidadeAdmin.de(unidade, List.of(), 0, 0).comEmailLogin(conta.getEmail());
     }
 
     @Transactional
@@ -121,6 +134,7 @@ public class CadastrosAdminService {
         unidade.alterar(dados.nome(), dados.endereco(), dados.bairro(), dados.cidade(), dados.uf(), dados.telefone(),
                 dados.horarioFuncionamento(), dados.mapUrl());
         unidade.alterarContato(cnpj, dados.email());
+        salvarAcesso(unidade, dados, false);
         auditoria.registrar("unidade.alterar", "unidade", id, Map.of("nome", unidade.getNome()));
         return resumo(unidade);
     }
@@ -151,6 +165,51 @@ public class CadastrosAdminService {
         unidade.alterarStatus(status);
         auditoria.registrar("unidade.status", "unidade", id, Map.of("status", status.chave()));
         return resumo(unidade);
+    }
+
+    @Transactional(readOnly = true)
+    public UnidadeAdmin buscarUnidade(UUID id) {
+        return resumo(unidade(id));
+    }
+
+    /** Conta e unidade são salvas na mesma transação; a senha nunca volta na resposta. */
+    private Usuario salvarAcesso(Unidade unidade, SalvarUnidade dados, boolean nova) {
+        Usuario conta = usuarios.findByUnidadeId(unidade.getId()).orElse(null);
+        String email = dados.emailLogin();
+        String senha = dados.senhaLogin();
+        boolean temEmail = email != null && !email.isBlank();
+        boolean temSenha = senha != null && !senha.isEmpty();
+        if (!nova && conta == null && !temEmail && !temSenha) return null;
+        if (conta == null && !temEmail) {
+            throw RequisicaoInvalidaException.noCampo("emailLogin", "Informe o e-mail de login da clínica.");
+        }
+        if (conta == null && !temSenha) {
+            throw RequisicaoInvalidaException.noCampo("senhaLogin", "Defina a senha de acesso da clínica.");
+        }
+        if (temSenha && (senha.length() < 8 || senha.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72)) {
+            throw RequisicaoInvalidaException.noCampo("senhaLogin", "Use pelo menos 8 caracteres e no máximo 72 bytes.");
+        }
+        if (temEmail) {
+            email = Usuario.normalizarEmail(email);
+            Usuario existente = usuarios.findByEmail(email).orElse(null);
+            if (existente != null && (conta == null || !existente.getId().equals(conta.getId()))) {
+                throw RequisicaoInvalidaException.noCampo("emailLogin", "Já existe uma conta com este e-mail.");
+            }
+        }
+        if (conta == null) {
+            conta = new Usuario(unidade.getNome(), email, codificador.encode(senha), unidade.getTelefone(), Papel.CLINICA);
+            conta.vincularClinica(unidade);
+        } else {
+            if (temEmail) conta.alterarEmail(email);
+            if (temSenha) conta.trocarSenha(codificador.encode(senha));
+            conta.alterarCadastro(unidade.getNome(), unidade.getTelefone(), null);
+        }
+        try {
+            usuarios.saveAndFlush(conta);
+        } catch (DataIntegrityViolationException falha) {
+            throw new ConflitoException("Não foi possível salvar o acesso: e-mail ou unidade já vinculados.");
+        }
+        return conta;
     }
 
     private UnidadeAdmin resumo(Unidade unidade) {

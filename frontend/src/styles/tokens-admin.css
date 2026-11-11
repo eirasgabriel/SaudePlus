@@ -51,7 +51,7 @@
 
   /* --- Layout --- */
   --sidebar-w: 240px;
-  --header-h: 64px;
+  --header-h: 72px; /* mesma altura do cabeçalho do painel do médico */
   --transicao: var(--duration) var(--ease);
 }
 

@@ -87,7 +87,9 @@ public final class RequisicoesAdmin {
             @Size(max = 500, message = "Até 500 caracteres") @Pattern(regexp = "(https://\\S+)?", message = "Use um endereço https") String mapUrl,
             /** Com ou sem pontuação; os dígitos verificadores são conferidos. */
             String cnpj,
-            @Email(message = "Informe um e-mail válido") @Size(max = 180, message = "Até 180 caracteres") String email) {
+            @Email(message = "Informe um e-mail válido") @Size(max = 180, message = "Até 180 caracteres") String email,
+            @Email(message = "Informe um e-mail de login válido") @Size(max = 180, message = "Até 180 caracteres") String emailLogin,
+            @Size(max = 72, message = "Até 72 caracteres") String senhaLogin) {
     }
 
     public record AlterarStatusDaUnidade(@NotNull(message = "Informe o status") StatusUnidade status) {

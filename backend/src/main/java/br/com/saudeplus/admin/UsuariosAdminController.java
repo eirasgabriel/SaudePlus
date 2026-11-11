@@ -76,13 +76,14 @@ public class UsuariosAdminController {
     }
 
     /**
-     * Exclusão lógica: a conta fica inativa e não entra mais. Consultas,
-     * exames e cobranças continuam ligados a ela (prontuário se guarda por 20 anos).
+     * Exclusão em dois passos: conta ativa ou bloqueada fica inativa; conta já
+     * inativa fica excluída (some da administração e não entra mais, mas
+     * cadastro e histórico ficam guardados, como pede a LGPD). Devolve a conta
+     * com o novo status.
      */
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void excluir(@AuthenticationPrincipal UsuarioAutenticado ator, @PathVariable UUID id) {
-        usuarios.alterarStatus(ator, id, StatusConta.INATIVO);
+    public UsuarioAdminResposta excluir(@AuthenticationPrincipal UsuarioAutenticado ator, @PathVariable UUID id) {
+        return usuarios.excluir(ator, id);
     }
 
     @PostMapping("/{id}/convite")

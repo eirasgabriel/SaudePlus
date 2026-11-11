@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import Icone from "../components/Icone";
 import Avatar from "../components/Avatar";
 import MenuPerfil from "../components/MenuPerfil/MenuPerfil.jsx";
+import MenuNotificacoes from "../features/medico/layouts/MenuNotificacoes.jsx";
 import { useAuth } from "../features/auth/auth.context.js";
 import { useTema } from "../tema/contextoDoTema.js";
 import { itemDoTema } from "../tema/itemDoTema.js";
@@ -19,7 +20,25 @@ import estilos from "./AdminLayout.module.css";
  * Sem a lista (mocks), o menu mostra tudo. "Suporte" não é módulo e aparece sempre;
  * um item com `modulo` (ex.: Exames) segue o módulo que o protege.
  */
-export default function AdminLayout({ usuario = usuarioLogado, modulos = null, contexto }) {
+/**
+ * `notificacoesDoSino`: `{ lista, marcarUma, marcarTodas, aoMudar }`. Sem a
+ * lista, o sino mostra só o contador de `usuario.naoLidas`.
+ * `acessoClinica`: a mesma casca para a conta da unidade clínica (/clinica),
+ * com menu próprio e sem o sino.
+ */
+export default function AdminLayout({
+  usuario = usuarioLogado,
+  modulos = null,
+  contexto,
+  notificacoesDoSino,
+  acessoClinica = false,
+}) {
+  const inicio = acessoClinica ? '/clinica' : '/admin';
+  const menuClinica = [
+    { id: 'painel', rotulo: 'Minha unidade', icone: 'clinica', para: '/clinica' },
+    { id: 'medicos', rotulo: 'Médicos', icone: 'estetoscopio', para: '/clinica/medicos' },
+    { id: 'conta', rotulo: 'Minha conta', icone: 'usuario', para: '/clinica/conta' },
+  ];
   const visivel = (item) => modulos == null || item.id === "suporte" || modulos.includes(item.modulo ?? item.id);
 
   /* Menu da conta, o mesmo componente do painel do médico. Antes o botão do
@@ -29,6 +48,17 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
   const botaoConta = useRef(null);
   const idMenuConta = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}-menu-conta`;
   const navegar = useNavigate();
+
+  /* Sino: o mesmo menu suspenso do painel do médico. Lidas nesta sessão somem
+     do menu e do contador na hora, sem esperar a lista recarregar. */
+  const [sinoAberto, setSinoAberto] = useState(false);
+  const botaoSino = useRef(null);
+  const idMenuNotificacoes = `${idMenuConta}-notificacoes`;
+  const [lidasAgora, setLidasAgora] = useState(() => new Set());
+  const listaDoSino = notificacoesDoSino?.lista;
+  const naoLidas = listaDoSino?.filter(({ id, lida }) => !lida && !lidasAgora.has(id)) ?? null;
+  const totalNaoLidas = naoLidas ? naoLidas.length : usuario.naoLidas;
+
   const { sair } = useAuth();
   const { tema, alternarTema } = useTema();
 
@@ -38,7 +68,7 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
     };
 
   const itensDaConta = [
-    { rotulo: "Minha conta", icone: iconeDoMenu("usuario"), href: "/admin/configuracoes" },
+    { rotulo: "Minha conta", icone: iconeDoMenu("usuario"), href: acessoClinica ? '/clinica/conta' : '/admin/configuracoes' },
     { rotulo: "Ajuda", icone: iconeDoMenu("interrogacao"), href: "/ajuda" },
     itemDoTema(tema, alternarTema),
     {
@@ -68,7 +98,7 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
   return (
     <div className={estilos.app}>
       <header className={estilos.topbar}>
-        <NavLink to="/admin" className={estilos.marca} aria-label="SaúdePlus — início">
+        <NavLink to={inicio} className={estilos.marca} aria-label="SaúdePlus — início">
           <span className={estilos.marcaNome}>
             <span>Saúde</span>
             <span>Plus</span>
@@ -79,11 +109,11 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
         </NavLink>
 
         <nav className={estilos.nav} aria-label="Navegação principal">
-          {itensTopo.filter(visivel).map((item) => (
+          {(acessoClinica ? menuClinica : itensTopo.filter(visivel)).map((item) => (
             <NavLink
               key={item.id}
               to={item.para}
-              end={item.para === "/admin"}
+              end={item.para === inicio}
               className={classeTopo}
             >
               <Icone nome={item.icone} tam={17} />
@@ -93,21 +123,50 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
         </nav>
 
         <div className={estilos.acoes}>
-          <button type="button" className={estilos.iconeBtn} aria-label="Buscar">
+          {!acessoClinica && <button type="button" className={estilos.iconeBtn} aria-label="Buscar">
             <Icone nome="busca" tam={20} />
-          </button>
+          </button>}
 
-          <button
-            type="button"
-            className={estilos.iconeBtn}
-            aria-label={`Notificações: ${usuario.naoLidas} não lidas`}
-            onClick={() => navegar("/admin/notificacoes")}
-          >
-            <Icone nome="sino" tam={20} />
-            {usuario.naoLidas > 0 && (
-              <span className={estilos.badge}>{usuario.naoLidas}</span>
-            )}
-          </button>
+          {!acessoClinica && (
+            <div className={estilos.ancora}>
+              <button
+                type="button"
+                ref={botaoSino}
+                className={estilos.iconeBtn}
+                aria-haspopup="true"
+                aria-expanded={sinoAberto}
+                aria-controls={idMenuNotificacoes}
+                aria-label={totalNaoLidas > 0 ? `Notificações, ${totalNaoLidas} não lidas` : "Notificações"}
+                onClick={() => {
+                  setContaAberta(false);
+                  setSinoAberto((aberto) => !aberto);
+                }}
+              >
+                <Icone nome="sino" tam={20} />
+                {totalNaoLidas > 0 && (
+                  <span className={estilos.badge} aria-hidden="true">
+                    {totalNaoLidas > 9 ? "9+" : totalNaoLidas}
+                  </span>
+                )}
+              </button>
+
+              <MenuNotificacoes
+                id={idMenuNotificacoes}
+                aberto={sinoAberto}
+                aoFechar={() => setSinoAberto(false)}
+                botaoDeOrigem={botaoSino}
+                naoLidas={naoLidas}
+                aoMarcarComoLidas={(ids) => setLidasAgora((anteriores) => new Set([...anteriores, ...ids]))}
+                aoVerTodas={() => {
+                  setSinoAberto(false);
+                  navegar("/admin/notificacoes");
+                }}
+                marcarUma={notificacoesDoSino?.marcarUma}
+                marcarTodas={notificacoesDoSino?.marcarTodas}
+                aoSincronizar={notificacoesDoSino?.aoMudar}
+              />
+            </div>
+          )}
 
           <div className={estilos.perfilCaixa}>
             <button
@@ -118,7 +177,10 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
               aria-expanded={contaAberta}
               aria-controls={idMenuConta}
               aria-label={`Menu da conta de ${usuario.nome}`}
-              onClick={() => setContaAberta((aberta) => !aberta)}
+              onClick={() => {
+                setSinoAberto(false);
+                setContaAberta((aberta) => !aberta);
+              }}
             >
             <Avatar nome={usuario.nome} foto={usuario.foto} cor="var(--azul)" tam={40} />
             <span className={estilos.perfilTexto}>
@@ -142,11 +204,11 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
       <div className={estilos.corpo}>
         <aside className={estilos.sidebar}>
           <nav className={estilos.menu} aria-label="Menu administrativo">
-            {itensMenu.filter(visivel).map((item) => (
+            {(acessoClinica ? menuClinica : itensMenu.filter(visivel)).map((item) => (
               <NavLink
                 key={item.id}
                 to={item.para}
-                end={item.para === "/admin"}
+                end={item.para === inicio}
                 className={classeLateral}
                 title={item.rotulo}
               >
@@ -156,38 +218,10 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
             ))}
           </nav>
 
+          {/* Mensagem no pé do menu, no mesmo formato do painel do médico. */}
           <div className={estilos.promo}>
-            <svg
-              className={estilos.promoOnda}
-              viewBox="0 0 220 90"
-              preserveAspectRatio="none"
-              height="90"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M0 42c34-22 62 12 96-4s58-26 124-10v62H0z"
-                fill="#ffffff"
-                opacity=".55"
-              />
-              <path
-                d="M0 62c40-18 66 8 102-6s62-18 118-2v46H0z"
-                fill="#ffffff"
-                opacity=".45"
-              />
-            </svg>
-
-            <div className={estilos.promoIcone}>
-              <Icone nome="escudo" tam={23} />
-            </div>
-            <p className={estilos.promoTexto}>
-              Juntos por
-              <br />
-              uma saúde melhor
-              <br />
-              em Saquarema!
-            </p>
-            <Icone nome="coracao" tam={32} className={estilos.promoCoracao} />
+            <Icone nome="escudo" tam={24} className={estilos.promoIcone} />
+            <p className={estilos.promoTexto}>Juntos por uma saúde melhor em Saquarema!</p>
           </div>
         </aside>
 

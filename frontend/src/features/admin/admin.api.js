@@ -49,7 +49,11 @@ export function reenviarConvite(id, { sinal } = {}) {
   return http.post(`/api/admin/usuarios/${id}/convite`, undefined, { sinal, autenticado });
 }
 
-/** Exclusão lógica: a conta fica inativa. Ninguém exclui a si mesmo (422). */
+/**
+ * Exclusão em dois passos: conta ativa/bloqueada fica inativa; conta inativa
+ * é excluída (some do sistema, dados guardados). Devolve a conta com o novo
+ * status. Ninguém exclui a si mesmo (422).
+ */
 export function excluirUsuario(id, { sinal } = {}) {
   return http.remover(`/api/admin/usuarios/${id}`, { sinal, autenticado });
 }

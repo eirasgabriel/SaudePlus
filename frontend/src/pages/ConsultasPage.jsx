@@ -208,7 +208,7 @@ function CartaoConsulta({ consulta, passada = false, aoCancelar, aoRemarcar }) {
  * `aviso` aparece acima da lista (ex.: dados de demonstração);
  * `aoCancelar`/`aoRemarcar` ligam as ações dos cartões.
  */
-export default function ConsultasPage({ consultas = mockAppointments, aviso = null, aoCancelar, aoRemarcar }) {
+export default function ConsultasPage({ consultas = mockAppointments, aviso = null, aoCancelar, aoRemarcar, noPainel = false }) {
   // Instante fixado na montagem: Date.now() direto no render é impuro.
   const [agora] = useState(() => Date.now());
 
@@ -230,14 +230,14 @@ export default function ConsultasPage({ consultas = mockAppointments, aviso = nu
   }, [consultas, agora]);
 
   return (
-    <div className={estilos.pagina}>
+    <div className={`${estilos.pagina} ${noPainel ? estilos.noPainel : ''}`}>
       <div className={estilos.conteudo}>
-        <Link to="/paciente" className={estilos.voltar}>
+        {!noPainel && <Link to="/paciente" className={estilos.voltar}>
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M19.5 12h-15M11 5.5 4.5 12l6.5 6.5" />
           </svg>
           Voltar ao painel
-        </Link>
+        </Link>}
 
         <header className={estilos.cabecalho}>
           <span className={estilos.icone} aria-hidden="true">

@@ -28,6 +28,7 @@ const COLUNAS = [
   "Endereço",
   "Município",
   "Telefone",
+  "E-mail",
   "Status",
   "Ações",
 ];
@@ -124,6 +125,9 @@ export default function AdminClinicasPage({
                   <td>{c.municipio}</td>
                   <td>{c.telefone}</td>
                   <td>
+                    <EmailDaClinica clinica={c} aoEditar={aoEditar && (() => aoEditar(c, { focar: "emailLogin" }))} />
+                  </td>
+                  <td>
                     <Etiqueta variante={status.variante} comPonto>
                       {status.rotulo}
                     </Etiqueta>
@@ -162,4 +166,26 @@ export default function AdminClinicasPage({
       </Cartao>
     </>
   );
+}
+
+/**
+ * E-mail de acesso da clínica (o login da conta CLINICA) e, abaixo, o de
+ * contato quando for outro. Com a API, clicar abre a edição já no campo do
+ * e-mail de login.
+ */
+function EmailDaClinica({ clinica, aoEditar }) {
+  const login = clinica.emailLogin || "Sem acesso cadastrado";
+  const contato = clinica.email && clinica.email !== clinica.emailLogin ? `Contato: ${clinica.email}` : null;
+  const principal = aoEditar ? (
+    <button
+      type="button"
+      onClick={aoEditar}
+      title="Editar e-mail"
+      aria-label={`Editar e-mail de ${clinica.nome}: ${login}`}
+      style={{ padding: 0, font: "inherit", color: "inherit", background: "none", border: 0, cursor: "pointer", textAlign: "left", overflowWrap: "anywhere" }}
+    >
+      {login}
+    </button>
+  ) : login;
+  return <CelulaDupla principal={principal} secundario={contato} />;
 }

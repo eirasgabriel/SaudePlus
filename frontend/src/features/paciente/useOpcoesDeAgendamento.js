@@ -17,12 +17,18 @@ import { buscarHorariosLivres } from "./paciente.api.js";
 export function useOpcoesDeAgendamento({ aberto, especialidadeId, profissionalId, data, versao = 0 }) {
   const [catalogo, setCatalogo] = useState({ origem: "carregando", especialidades: [] });
   const [medicos, setMedicos] = useState({ chave: null, lista: [] });
-  const [horarios, setHorarios] = useState({ chave: null, lista: [] });
+  const [horarios, setHorarios] = useState({ chave: null, lista: [], erro: null });
+  // Sobe no "Tentar de novo" dos horários, para refazer só essa busca.
+  const [tentativa, setTentativa] = useState(0);
 
   const especialidades = catalogo.especialidades;
   const especialidade = especialidades.find((item) => item.id === especialidadeId) ?? null;
   const chaveMedicos = especialidade ? especialidade.slug : null;
-  const chaveHorarios = profissionalId && data ? `${profissionalId}|${data}|${versao}` : null;
+  const listaDeMedicos = medicos.chave === chaveMedicos ? medicos.lista : [];
+  // Sem janela de disponibilidade (modalidades vazias na busca), não há o que buscar.
+  // Médico fora da lista (remarcação, pedido vindo do perfil) segue buscando.
+  const semAgenda = listaDeMedicos.find((m) => m.id === profissionalId)?.semAgenda === true;
+  const chaveHorarios = profissionalId && data && !semAgenda ? `${profissionalId}|${data}|${versao}|${tentativa}` : null;
 
   // Depois de uma falha, volta a "carregando" e o efeito abaixo busca de novo.
   const tentarDeNovo = useCallback(() => setCatalogo({ origem: "carregando", especialidades: [] }), []);
@@ -51,7 +57,15 @@ export function useOpcoesDeAgendamento({ aberto, especialidadeId, profissionalId
     buscarProfissionais({ especialidade: [chaveMedicos], tamanho: 50, ordem: "nome" }, { sinal: controle.signal })
       .then((pagina) => {
         if (!controle.signal.aborted) {
-          setMedicos({ chave: chaveMedicos, lista: pagina.conteudo.map((p) => ({ id: p.id, name: p.nome })) });
+          setMedicos({
+            chave: chaveMedicos,
+            lista: pagina.conteudo.map((p) => ({
+              id: p.id,
+              name: p.nome,
+              // A busca deriva as modalidades das disponibilidades do médico.
+              semAgenda: Array.isArray(p.modalidades) && p.modalidades.length === 0,
+            })),
+          });
         }
       })
       .catch(() => {
@@ -59,6 +73,8 @@ export function useOpcoesDeAgendamento({ aberto, especialidadeId, profissionalId
       });
     return () => controle.abort();
   }, [chaveMedicos]);
+
+  const tentarHorariosDeNovo = useCallback(() => setTentativa((n) => n + 1), []);
 
   useEffect(() => {
     if (!chaveHorarios) return undefined;
@@ -72,10 +88,11 @@ export function useOpcoesDeAgendamento({ aberto, especialidadeId, profissionalId
         livres.forEach((livre) => {
           if (!vistos.has(livre.horario)) vistos.set(livre.horario, livre);
         });
-        setHorarios({ chave: chaveHorarios, lista: [...vistos.values()] });
+        setHorarios({ chave: chaveHorarios, lista: [...vistos.values()], erro: null });
       })
-      .catch(() => {
-        if (!controle.signal.aborted) setHorarios({ chave: chaveHorarios, lista: [] });
+      .catch((erro) => {
+        // Falha não é "dia sem vagas": a tela mostra o erro e permite tentar de novo.
+        if (!controle.signal.aborted) setHorarios({ chave: chaveHorarios, lista: [], erro });
       });
     return () => controle.abort();
   }, [chaveHorarios]);
@@ -84,8 +101,11 @@ export function useOpcoesDeAgendamento({ aberto, especialidadeId, profissionalId
     origem: catalogo.origem,
     tentarDeNovo,
     especialidades,
-    profissionais: medicos.chave === chaveMedicos ? medicos.lista : [],
+    profissionais: listaDeMedicos,
     horarios: horarios.chave === chaveHorarios ? horarios.lista : [],
     carregandoHorarios: Boolean(chaveHorarios) && horarios.chave !== chaveHorarios,
+    erroHorarios: horarios.chave === chaveHorarios ? horarios.erro : null,
+    tentarHorariosDeNovo,
+    semAgenda,
   };
 }

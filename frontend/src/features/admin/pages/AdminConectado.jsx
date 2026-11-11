@@ -78,23 +78,34 @@ export function LayoutDoAdmin() {
   const { usuario } = useAuth();
   const { pathname } = useLocation();
   const { origem, dados } = useDadosDaApi(carregarModulos);
-  // `pathname` na dependência: trocar de página relê o contador.
-  const carregarContagem = useCallback(
-    ({ sinal }) => api.contarNotificacoesNaoLidas({ sinal }),
+  // `pathname` na dependência: trocar de página relê as notificações do sino.
+  const carregarNotificacoes = useCallback(
+    ({ sinal }) => api.listarNotificacoes({ sinal }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [pathname],
   );
-  const contagem = useDadosDaApi(carregarContagem);
-  const contexto = useMemo(() => ({ recarregarNaoLidas: contagem.recarregar }), [contagem.recarregar]);
+  const notificacoes = useDadosDaApi(carregarNotificacoes);
+  const recarregarNaoLidas = notificacoes.recarregar;
+  const contexto = useMemo(() => ({ recarregarNaoLidas }), [recarregarNaoLidas]);
+  const notificacoesDoSino = useMemo(
+    () => ({
+      lista: notificacoes.origem === "api" ? notificacoes.dados : null,
+      marcarUma: api.marcarNotificacaoComoLida,
+      marcarTodas: api.marcarTodasComoLidas,
+      aoMudar: recarregarNaoLidas,
+    }),
+    [notificacoes.origem, notificacoes.dados, recarregarNaoLidas],
+  );
   return (
     <AdminLayout
       modulos={origem === "api" ? dados : null}
       contexto={contexto}
+      notificacoesDoSino={notificacoesDoSino}
       usuario={{
         nome: usuario?.nomeCompleto ?? "Administração",
         cargo: ROTULO_DO_PAPEL[usuario?.role] ?? "Equipe",
         foto: enderecoDaApi(usuario?.fotoUrl),
-        naoLidas: contagem.origem === "api" ? contagem.dados.total : 0,
+        naoLidas: 0,
       }}
     />
   );
@@ -220,7 +231,7 @@ export function ClinicasDoAdmin() {
               filtrosEspecialidade={opcoesDe(clinicas, "especialidade", "Todas", "todas")}
               filtrosMunicipio={opcoesDe(clinicas, "municipio", "Todos")}
               aoNovaClinica={edicao.nova}
-              aoEditar={(linha) => edicao.editar(daApi(linha))}
+              aoEditar={(linha, opcoes) => edicao.editar(daApi(linha), opcoes)}
               aoExcluir={(linha) => edicao.excluir(daApi(linha))}
               aviso={retorno.aviso}
             />

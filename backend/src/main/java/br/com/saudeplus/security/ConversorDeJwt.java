@@ -40,6 +40,10 @@ class ConversorDeJwt implements Converter<Jwt, AbstractAuthenticationToken> {
         if (!usuario.ativo()) {
             throw new DisabledException("Conta desativada.");
         }
+        if (usuario.getPapel() == br.com.saudeplus.usuarios.Papel.CLINICA &&
+                !usuarios.existsByIdAndUnidadeStatus(usuario.getId(), br.com.saudeplus.clinicas.StatusUnidade.ATIVA)) {
+            throw new DisabledException("A unidade clínica está desativada.");
+        }
         return new Autenticacao(UsuarioAutenticado.de(usuario), jwt);
     }
 

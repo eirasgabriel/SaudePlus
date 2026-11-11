@@ -197,3 +197,10 @@ export const filtrosUnidade = [
   { valor: "jacone", rotulo: "Unidade Jaconé" },
   { valor: "itauna", rotulo: "Unidade Itaúna" },
 ];
+
+/**
+ * A lixeira exclui em dois passos: conta ativa ou bloqueada fica inativa;
+ * conta já inativa é excluída de vez (some do sistema, dados guardados pela LGPD).
+ */
+export const rotuloDaExclusao = (status) =>
+  status === "inativo" ? "Excluir permanentemente" : "Excluir (inativar conta)";

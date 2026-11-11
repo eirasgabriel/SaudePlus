@@ -61,6 +61,10 @@ public class Medico extends EntidadeComId {
     @Column(name = "total_avaliacoes", nullable = false)
     private int totalAvaliacoes;
 
+    /** A conta foi excluída: o perfil fica guardado, mas o CRM fica livre. */
+    @Column(nullable = false)
+    private boolean excluido;
+
     @ManyToMany
     @JoinTable(name = "medico_especialidades",
             joinColumns = @JoinColumn(name = "medico_id"),
@@ -126,6 +130,10 @@ public class Medico extends EntidadeComId {
         unidades.add(unidade);
     }
 
+    public void removerUnidade(Unidade unidade) {
+        unidades.remove(unidade);
+    }
+
     /** Especialidades em ordem alfabética, para a resposta não mudar de uma chamada para outra. */
     public List<Especialidade> especialidadesOrdenadas() {
         return especialidades.stream().sorted(Comparator.comparing(Especialidade::getNome)).toList();
@@ -138,6 +146,15 @@ public class Medico extends EntidadeComId {
     /** Só as unidades em funcionamento: as demais não aparecem para o paciente. */
     public List<Unidade> unidadesAtivas() {
         return unidades.stream().filter(Unidade::ativa).sorted(Comparator.comparing(Unidade::getNome)).toList();
+    }
+
+    /** Junto com a exclusão da conta: libera o CRM para um novo cadastro. */
+    public void marcarExcluido() {
+        this.excluido = true;
+    }
+
+    public boolean isExcluido() {
+        return excluido;
     }
 
     public Usuario getUsuario() {

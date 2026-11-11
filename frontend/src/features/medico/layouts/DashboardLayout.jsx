@@ -1,6 +1,4 @@
-import Footer from "../../../components/Footer/Footer.jsx";
 import { cx } from "../../../utils/cx.js";
-import { useNavegacao } from "../navegacao/useNavegacao.js";
 import { useTema } from "../../../tema/contextoDoTema.js";
 import DashboardHeader from "./DashboardHeader.jsx";
 import DashboardSidebar from "./DashboardSidebar.jsx";
@@ -14,9 +12,8 @@ import styles from "./DashboardLayout.module.css";
  * O `<main id="conteudo" tabIndex={-1}>` repete o contrato do MainLayout
  * institucional, para que o link de pular funcione igual nas duas áreas.
  *
- * O rodapé é o componente compartilhado `components/Footer` — o mesmo das
- * outras telas. Fica fora da grade de três colunas, atravessando a largura
- * inteira, e recebe o tratamento dos links ainda sem página.
+ * Sem rodapé: os painéis (médico, paciente e equipe) terminam na área de
+ * trabalho, sem o rodapé institucional do site público.
  */
 export default function DashboardLayout({
   medico,
@@ -27,7 +24,6 @@ export default function DashboardLayout({
   aside,
   children,
 }) {
-  const { avisarEmBreve } = useNavegacao();
   const { tema, alternarTema } = useTema();
 
   return (
@@ -59,11 +55,6 @@ export default function DashboardLayout({
           </div>
         </div>
       </div>
-
-      <Footer
-        className={styles.rodape}
-        aoClicarReservado={({ rotulo, href }) => avisarEmBreve(rotulo, href)}
-      />
     </div>
   );
 }

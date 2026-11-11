@@ -26,3 +26,6 @@ backend/dados/
 # Memoria local de analise do projeto e orientacao para agentes
 /.project-memory/
 /AGENTS.md
+
+/.claude
+/.impeccable

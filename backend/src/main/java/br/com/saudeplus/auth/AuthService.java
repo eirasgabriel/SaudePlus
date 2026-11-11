@@ -96,6 +96,10 @@ public class AuthService {
             throw new AcessoProibidoException("Sua conta está desativada. Procure o suporte.");
         }
         usuario.registrarAcesso(relogio.instant());
+        if (usuario.getPapel() == Papel.CLINICA &&
+                !usuarios.existsByIdAndUnidadeStatus(usuario.getId(), br.com.saudeplus.clinicas.StatusUnidade.ATIVA)) {
+            throw new AcessoProibidoException("A unidade clínica está desativada. Procure a administração.");
+        }
         auditoria.registrar(usuario.getId(), "login", "usuario", usuario.getId(), null);
         return autenticar(usuario);
     }

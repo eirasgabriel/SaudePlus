@@ -6,6 +6,7 @@ import Avatar from "./Avatar";
 import { CampoBusca, Seletor, Botao } from "./Controles";
 import { Tabela, CelulaDupla, AcoesLinha, RodapeTabela } from "./Tabela";
 import useTabela from "../services/useTabela";
+import { rotuloDaExclusao } from "../services/dadosAdminUsuarios";
 import {
   papeis,
   usuariosSistema,
@@ -151,9 +152,7 @@ export default function AdminConfigUsuarios({
                     <AcoesLinha
                       acoes={[
                         { icone: "lapis", rotulo: "Editar", aoClicar: aoEditar && (() => aoEditar(u)) },
-                        ...(u.status !== "inativo"
-                          ? [{ icone: "lixeira", rotulo: "Excluir", tom: "perigo", aoClicar: aoExcluir && (() => aoExcluir(u)) }]
-                          : []),
+                        { icone: "lixeira", rotulo: rotuloDaExclusao(u.status), tom: "perigo", aoClicar: aoExcluir && (() => aoExcluir(u)) },
                       ]}
                     />
                   </td>

@@ -23,13 +23,18 @@ public final class CadastrosAdminResposta {
      */
     public record UnidadeAdmin(UUID id, String nome, String endereco, String bairro, String cidade, String uf,
             String telefone, String horarioFuncionamento, String mapUrl, String cnpj, String email, StatusUnidade status,
-            List<String> especialidades, long medicos, long agendamentosNoMes) {
+            List<String> especialidades, long medicos, long agendamentosNoMes, String emailLogin) {
+
+        public UnidadeAdmin comEmailLogin(String emailLogin) {
+            return new UnidadeAdmin(id, nome, endereco, bairro, cidade, uf, telefone, horarioFuncionamento,
+                    mapUrl, cnpj, email, status, especialidades, medicos, agendamentosNoMes, emailLogin);
+        }
 
         public static UnidadeAdmin de(Unidade unidade, List<String> especialidades, long medicos, long agendamentosNoMes) {
             return new UnidadeAdmin(unidade.getId(), unidade.getNome(), unidade.getEndereco(), unidade.getBairro(),
                     unidade.getCidade(), unidade.getUf(), unidade.getTelefone(), unidade.getHorarioFuncionamento(),
                     unidade.getMapUrl(), unidade.getCnpj(), unidade.getEmail(), unidade.getStatus(), especialidades, medicos,
-                    agendamentosNoMes);
+                    agendamentosNoMes, null);
         }
     }
 

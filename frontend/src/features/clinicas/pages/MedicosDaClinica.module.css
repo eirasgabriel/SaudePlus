@@ -1,0 +1,30 @@
+.pagina { display: flex; flex-direction: column; gap: var(--space-5); min-width: 0; }
+.identidade { display: flex; align-items: flex-start; gap: 12px; color: var(--color-navy-950); }
+.identidade svg { flex-shrink: 0; margin-top: 2px; color: var(--color-primary); }
+.identidade h1 { font-size: 22px; line-height: 1.25; }
+.identidade p { margin-top: 4px; color: var(--color-text-muted); font-size: 14px; max-width: 64ch; }
+.grade { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); align-items: start; gap: var(--space-5); }
+.lista { list-style: none; margin: 0; padding: 0; }
+.lista > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 0; border-top: 1px solid var(--color-border); }
+.lista > li:first-child { border-top: 0; }
+.medico { display: flex; align-items: center; gap: 12px; flex: 1 1 220px; min-width: 0; }
+.dados { display: flex; flex-direction: column; gap: 3px; min-width: 0; overflow-wrap: anywhere; }
+.dados strong { font-size: 15px; color: var(--color-navy-950); }
+.dados span { color: var(--color-text-muted); font-size: 13px; }
+.dados .situacao { color: var(--state-pending); font-weight: 600; }
+.busca { display: flex; flex-direction: column; gap: 6px; padding-bottom: 12px; }
+.busca label { font-size: 13px; font-weight: 600; }
+.campo { display: flex; gap: 8px; }
+.campo input { flex: 1; min-width: 0; min-height: 44px; padding: 8px 12px; border: 1px solid var(--color-border-strong); border-radius: 8px; color: var(--color-text); background: var(--color-surface); font: inherit; }
+.dica { color: var(--color-text-muted); font-size: 12px; }
+.primario, .secundario { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 16px; border-radius: 8px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.primario { color: #fff; background: var(--color-primary); border: 1px solid var(--color-primary); }
+.primario:hover:not(:disabled) { background: var(--color-primary-dark); }
+.secundario { color: var(--color-primary-dark); background: var(--color-surface); border: 1px solid var(--color-border-strong); }
+.secundario:hover { border-color: var(--color-primary-dark); }
+.primario:disabled { opacity: 0.6; cursor: not-allowed; }
+.aviso { padding: 12px 16px; border-radius: 8px; background: var(--state-success-bg); color: var(--color-navy-950); font-size: 14px; }
+.erro { padding: 8px 0; color: var(--state-danger); font-size: 14px; }
+.vazio { padding: 20px 0; color: var(--color-text-muted); font-size: 14px; }
+@media (max-width: 1100px) { .grade { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 480px) { .campo { flex-direction: column; } .lista > li > button { width: 100%; } .identidade h1 { font-size: 19px; } }

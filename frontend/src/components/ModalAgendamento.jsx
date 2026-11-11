@@ -412,7 +412,7 @@ export default function ModalAgendamento({
                 {especialidadeEscolhida ? 'Selecione o profissional' : 'Escolha a especialidade primeiro'}
               </option>
               {profissionais.map((item) => (
-                <option key={item.id} value={item.id}>{item.name}</option>
+                <option key={item.id} value={item.id}>{item.semAgenda ? `${item.name} (sem agenda aberta)` : item.name}</option>
               ))}
             </select>
             {profissional && descreverDiasDeAtendimento(profissional) && (
@@ -475,6 +475,17 @@ export default function ModalAgendamento({
               <p className={estilos.aviso} id={ids.horario} tabIndex={-1}>
                 Os horários livres aparecem depois que você escolhe o profissional e a data.
               </p>
+            ) : opcoes.semAgenda ? (
+              <p className={estilos.aviso} id={ids.horario} tabIndex={-1} aria-live="polite">
+                Este profissional ainda não abriu agenda para agendamento online. Escolha outro profissional.
+              </p>
+            ) : opcoes.erroHorarios ? (
+              <div className={estilos.aviso} id={ids.horario} tabIndex={-1}>
+                <p role="alert">Não foi possível carregar os horários livres.</p>
+                <button type="button" className={estilos.botaoSecundario} onClick={opcoes.tentarHorariosDeNovo}>
+                  Tentar de novo
+                </button>
+              </div>
             ) : opcoes.carregandoHorarios ? (
               <p className={estilos.aviso} id={ids.horario} tabIndex={-1} aria-live="polite">
                 Buscando horários livres…

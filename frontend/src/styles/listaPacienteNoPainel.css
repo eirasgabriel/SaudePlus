@@ -1,0 +1,8 @@
+/* As listas compartilham a área central da dashboard e seu espaçamento. */
+.pagina.noPainel { min-height: 0; background: transparent; }
+.pagina.noPainel::before { content: none; }
+.pagina.noPainel > .conteudo { width: 100%; max-width: none; margin: 0; padding: 0; }
+.noPainel .cabecalho { margin: 0; align-items: center; gap: var(--space-4); }
+.noPainel .titulo { font-size: 28px; }
+.noPainel .subtitulo { font-size: 15px; }
+.noPainel .secao { margin-top: var(--space-6); }

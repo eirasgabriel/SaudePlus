@@ -1,78 +1,69 @@
-import { useState } from "react";
-
-import CabecalhoPagina from "../../../components/CabecalhoPagina";
-import Cartao from "../../../components/Cartao";
-import { Botao } from "../../../components/Controles";
-import ItemLista, { Lista } from "../../../components/ItemLista";
-import PortaoDaApi from "../../../components/PortaoDaApi/PortaoDaApi.jsx";
+import { CabecalhoDaTela, CartaoDaTela, ConteudoCarregado } from "../../../components/Telas.jsx";
+import { useRetorno } from "../../../components/useRetorno.jsx";
+import estilos from "../../../styles/telas.module.css";
 import { useDadosDaApi } from "../../paciente/useDadosDaApi.js";
 import * as api from "../admin.api.js";
-import AvisoDoAdmin from "../components/AvisoDoAdmin.jsx";
 
 const carregar = ({ sinal }) => api.listarNotificacoes({ sinal });
 
 /**
- * Notificações de quem está logado (o sino do cabeçalho). `aoMudar` avisa o
- * layout para reler o contador depois de marcar como lida.
+ * Notificações de quem está logado (o sino do cabeçalho), no mesmo formato
+ * das telas do paciente e do médico. `aoMudar` avisa o layout para reler o
+ * contador depois de marcar como lida.
  */
 export default function NotificacoesDoAdmin({ aoMudar }) {
-  const [hoje] = useState(() => new Date());
-  const estado = useDadosDaApi(carregar);
-  const { dados, recarregar } = estado;
-  const [falha, setFalha] = useState(null);
-  const naoLidas = dados?.filter((n) => !n.lida).length ?? 0;
+  const notificacoes = useDadosDaApi(carregar);
+  const retorno = useRetorno();
+  const naoLidas = notificacoes.dados?.filter((n) => !n.lida).length ?? 0;
 
   const agir = async (acao) => {
     try {
       await acao();
-      setFalha(null);
-      recarregar();
+      notificacoes.recarregar();
       aoMudar?.();
-    } catch (motivo) {
-      setFalha(motivo.message);
+    } catch (falha) {
+      retorno.erro(falha);
     }
   };
 
   return (
     <>
-      <CabecalhoPagina
-        titulo="Notificações"
-        subtitulo={naoLidas ? `${naoLidas} não lida(s).` : "Tudo em dia."}
-        icone="sino"
-        data={hoje}
-      />
-      {falha && <AvisoDoAdmin tom="erro">{falha}</AvisoDoAdmin>}
-      <PortaoDaApi estados={estado} carregando="Carregando as notificações…">
-        {() => (
-      <Cartao
-        titulo="Suas notificações"
-        icone="sino"
-        extra={naoLidas > 0 && <Botao variante="secundario" icone="check" onClick={() => agir(() => api.marcarTodasComoLidas())}>Marcar todas como lidas</Botao>}
-      >
-        {dados?.length ? (
-          <Lista>
-            {dados.map((n) => (
-              <ItemLista
-                key={n.id}
-                icone={n.lida ? "sino" : "alerta"}
-                titulo={n.titulo}
-                descricao={[n.detalhe, n.quando].filter(Boolean).join(" · ")}
-                direita={
-                  !n.lida && (
-                    <Botao variante="secundario" onClick={() => agir(() => api.marcarNotificacaoComoLida(n.id))}>
+      <CabecalhoDaTela titulo="Notificações" subtitulo={naoLidas ? `${naoLidas} não lida(s).` : "Tudo em dia."}>
+        {naoLidas > 0 && (
+          <button type="button" className={estilos.botaoSecundario} onClick={() => agir(() => api.marcarTodasComoLidas())}>
+            Marcar todas como lidas
+          </button>
+        )}
+      </CabecalhoDaTela>
+      {retorno.aviso}
+      <CartaoDaTela>
+        <ConteudoCarregado estado={notificacoes} carregando="Carregando notificações…">
+          {notificacoes.dados?.length ? (
+            <ul className={estilos.lista}>
+              {notificacoes.dados.map((n) => (
+                <li key={n.id} className={`${estilos.item} ${n.lida ? "" : estilos.naoLida}`}>
+                  <div className={estilos.itemTexto}>
+                    <span className={estilos.itemPrincipal}>{n.titulo}</span>
+                    {n.detalhe && <span>{n.detalhe}</span>}
+                    <span className={estilos.itemSecundario}>{n.quando}</span>
+                  </div>
+                  {!n.lida && (
+                    <button
+                      type="button"
+                      className={estilos.botaoSecundario}
+                      onClick={() => agir(() => api.marcarNotificacaoComoLida(n.id))}
+                    >
                       Marcar como lida
-                    </Botao>
-                  )
-                }
-              />
-            ))}
-          </Lista>
-        ) : (
-          <p>Nenhuma notificação.</p>
-        )}
-      </Cartao>
-        )}
-      </PortaoDaApi>
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className={estilos.vazio}>Nenhuma notificação.</p>
+          )}
+        </ConteudoCarregado>
+      </CartaoDaTela>
     </>
   );
 }

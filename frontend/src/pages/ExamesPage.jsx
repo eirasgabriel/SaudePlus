@@ -209,7 +209,7 @@ function CartaoExame({ exame, aoBaixarResultado }) {
     */
 
 /** `aoBaixarResultado(exame)` liga o botão de resultado dos exames liberados (arquivo protegido). */
-export default function ExamesPage({ exames = mockExams, aoBaixarResultado }) {
+export default function ExamesPage({ exames = mockExams, aoBaixarResultado, noPainel = false }) {
   const { liberados, emAndamento } = useMemo(() => {
     const ordenados = [...exames].sort(
       (a, b) => paraData(b.dateTime) - paraData(a.dateTime)
@@ -222,14 +222,14 @@ export default function ExamesPage({ exames = mockExams, aoBaixarResultado }) {
   }, [exames]);
 
   return (
-    <div className={estilos.pagina}>
+    <div className={`${estilos.pagina} ${noPainel ? estilos.noPainel : ''}`}>
       <div className={estilos.conteudo}>
-        <Link to="/paciente" className={estilos.voltar}>
+        {!noPainel && <Link to="/paciente" className={estilos.voltar}>
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M19.5 12h-15M11 5.5 4.5 12l6.5 6.5" />
           </svg>
           Voltar ao painel
-        </Link>
+        </Link>}
 
         <header className={estilos.cabecalho}>
           <span className={estilos.icone} aria-hidden="true">
