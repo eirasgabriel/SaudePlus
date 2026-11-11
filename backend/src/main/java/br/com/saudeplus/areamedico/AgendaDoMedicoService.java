@@ -141,7 +141,7 @@ public class AgendaDoMedicoService {
             agendamento.cancelar(usuarios.getReferenceById(usuario.id()), motivo);
             eventos.publishEvent(new AgendamentoCancelado(agendamento.getId()));
         } else {
-            agendamento.mudarStatus(requisicao.status());
+            agendamento.mudarStatus(requisicao.status(), LocalDate.now(relogio));
             if (requisicao.status() == StatusAgendamento.CONFIRMADA) {
                 eventos.publishEvent(new AgendamentoConfirmado(agendamento.getId()));
             }

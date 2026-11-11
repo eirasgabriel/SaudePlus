@@ -16,9 +16,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.UUID;
+import java.time.temporal.TemporalAdjusters;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -492,7 +494,7 @@ class AdminApiTest {
             como(admin, get("/api/admin/sistema"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.banco").value(startsWith("PostgreSQL")))
-                    .andExpect(jsonPath("$.ultimaMigracao.versao").value("7"))
+                    .andExpect(jsonPath("$.ultimaMigracao.versao").value("8"))
                     .andExpect(jsonPath("$.noArDesde").isString());
             como(equipe(Papel.GESTOR), get("/api/admin/sistema")).andExpect(status().isForbidden());
         }
@@ -521,6 +523,40 @@ class AdminApiTest {
                     .andExpect(jsonPath("$.dias['%d'].consultas".formatted(dia.getDayOfMonth())).isNumber());
             como(recepcao, get("/api/admin/agendamentos/metricas").param("de", dia.toString()).param("ate", dia.toString()))
                     .andExpect(jsonPath("$.porStatus.confirmada").isNumber());
+        }
+
+        @Test
+        @DisplayName("recepção marca consulta por um paciente; horário tomado dá 409")
+        void novoAgendamento() throws Exception {
+            Medico medico = cenarios.medico();
+            cenarios.janela(medico, DayOfWeek.MONDAY, "08:00", "10:00", 30);
+            Paciente paciente = cenarios.paciente("Lia Marcada Pela Clinica", null);
+            LocalDate segunda = LocalDate.now(relogio).plusDays(7).with(TemporalAdjusters.nextOrSame(DayOfWeek.MONDAY));
+            String recepcao = equipe(Papel.RECEPCIONISTA);
+            String especialidade = null;
+            for (var item : json.readTree(mvc.perform(get("/api/publico/especialidades")).andReturn().getResponse()
+                    .getContentAsString())) {
+                if ("clinico-geral".equals(item.get("slug").asString())) {
+                    especialidade = item.get("id").asString();
+                }
+            }
+
+            como(recepcao, get("/api/admin/agendamentos/pacientes"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$[*].usuarioId", hasItem(paciente.getUsuario().getId().toString())));
+
+            String corpo = """
+                    {"pacienteUsuarioId":"%s","medicoId":"%s","especialidadeId":"%s","data":"%s","horario":"08:30"}"""
+                    .formatted(paciente.getUsuario().getId(), medico.getId(), especialidade, segunda);
+            como(recepcao, json(post("/api/admin/agendamentos"), corpo))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.status").value("pendente"))
+                    .andExpect(jsonPath("$.horario").value("08:30"));
+            como(recepcao, json(post("/api/admin/agendamentos"), corpo))
+                    .andExpect(status().isConflict());
+            como(recepcao, json(post("/api/admin/agendamentos"), "{}"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.campos.pacienteUsuarioId").exists());
         }
 
         @Test

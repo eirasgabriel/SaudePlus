@@ -195,10 +195,9 @@ SaudePlus/
 
 Ainda não implementado:
 
-- Envio real de e-mails (atualmente o conteúdo é registrado no log do servidor).
+- Envio de e-mails depende de um servidor SMTP configurado (`SPRING_MAIL_*`); sem ele, o conteúdo é registrado no log.
 - Integração com gateway de pagamento.
 - Login com Google e Apple.
-- Tela de suporte.
 - Integração com calendário pessoal.
 - Aplicativo mobile.
 

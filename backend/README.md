@@ -46,7 +46,11 @@ $env:SERVER_PORT = '8081'
 | `DB_URL` | `jdbc:postgresql://localhost:5432/saudeplus` | URL JDBC do banco |
 | `DB_USUARIO` / `DB_SENHA` | `saudeplus` / `saudeplus` | credenciais do banco |
 | `SERVER_PORT` | `8080` | porta HTTP |
-| `FRONT_URL` | `http://localhost:5173` | base dos links enviados por e-mail |
+| `FRONT_URL` | `http://localhost:5173` | base dos links enviados por e-mail (em produção, o endereço do site) |
+| `SPRING_MAIL_HOST` | — | servidor SMTP; sem ele nenhum e-mail sai (em dev, o e-mail vai para o log) |
+| `SPRING_MAIL_PORT` | — | porta SMTP (geralmente `587`) |
+| `SPRING_MAIL_USERNAME` / `SPRING_MAIL_PASSWORD` | — | credenciais SMTP (no Gmail, uma senha de app) |
+| `SAUDEPLUS_EMAIL_REMETENTE` | o usuário SMTP | endereço que aparece como remetente |
 | `ARQUIVOS_DIR` | `./dados/arquivos` | pasta dos resultados de exame (em produção, um volume persistente) |
 | `JWT_SEGREDO` | segredo público de desenvolvimento | chave HS256 do token (≥ 32 bytes) |
 | `SEED_ENABLED` | `true` em dev, `false` nos demais | liga as contas iniciais e os dados de teste |

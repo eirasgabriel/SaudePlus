@@ -116,6 +116,19 @@ public class Agendamento extends EntidadeBase {
         status = novo;
     }
 
+    /**
+     * Igual a {@link #mudarStatus(StatusAgendamento)}, mas recusa registrar a
+     * chegada ou iniciar o atendimento antes do dia da consulta (422).
+     */
+    public void mudarStatus(StatusAgendamento novo, LocalDate hoje) {
+        boolean presencial = novo == StatusAgendamento.AGUARDANDO || novo == StatusAgendamento.EM_ANDAMENTO;
+        if (presencial && novo != status && data.isAfter(hoje)) {
+            throw new RegraDeNegocioException(
+                    "A chegada e o início do atendimento só podem ser registrados no dia da consulta.");
+        }
+        mudarStatus(novo);
+    }
+
     public void cancelar(Usuario quem, String motivoDoCancelamento) {
         mudarStatus(StatusAgendamento.CANCELADA);
         canceladoPor = quem;

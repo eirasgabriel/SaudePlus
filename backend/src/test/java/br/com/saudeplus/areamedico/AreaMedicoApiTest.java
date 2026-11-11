@@ -182,9 +182,20 @@ class AreaMedicoApiTest {
     class Andamento {
 
         @Test
+        @DisplayName("chegada e início só no dia da consulta (422 antes)")
+        void chegadaAntesDoDia() throws Exception {
+            Agendamento consulta = cenarios.agendamento(medico, ana, dia, "08:00", StatusAgendamento.CONFIRMADA);
+            chamar(json(patch("/api/medico/agendamentos/{id}/status", consulta.getId()), "{\"status\":\"aguardando\"}"))
+                    .andExpect(status().isUnprocessableContent())
+                    .andExpect(jsonPath("$.mensagem").value(
+                            "A chegada e o início do atendimento só podem ser registrados no dia da consulta."));
+        }
+
+        @Test
         @DisplayName("segue as transições permitidas e recusa atalho com 422")
         void transicoes() throws Exception {
-            Agendamento consulta = cenarios.agendamento(medico, ana, dia, "08:00", StatusAgendamento.CONFIRMADA);
+            Agendamento consulta = cenarios.agendamento(medico, ana, LocalDate.now(relogio), "08:00",
+                    StatusAgendamento.CONFIRMADA);
             chamar(json(patch("/api/medico/agendamentos/{id}/status", consulta.getId()), "{\"status\":\"aguardando\"}"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.status").value("aguardando"));

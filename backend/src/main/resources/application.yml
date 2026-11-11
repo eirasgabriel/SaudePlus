@@ -17,6 +17,16 @@ spring:
   docker:
     compose:
       enabled: false
+  # SMTP: sem SPRING_MAIL_HOST no ambiente, nenhum e-mail sai (dev: vai para o log).
+  # Configure SPRING_MAIL_HOST, SPRING_MAIL_PORT, SPRING_MAIL_USERNAME e
+  # SPRING_MAIL_PASSWORD (ex.: Gmail com senha de app, Brevo, SendGrid).
+  mail:
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
   jackson:
     time-zone: UTC
   servlet:

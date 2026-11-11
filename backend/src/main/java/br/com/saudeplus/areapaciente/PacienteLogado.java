@@ -20,6 +20,14 @@ class PacienteLogado {
         this.pacientes = pacientes;
     }
 
+    java.util.Optional<Paciente> porUsuario(java.util.UUID usuarioId) {
+        return pacientes.findByUsuarioId(usuarioId);
+    }
+
+    java.util.List<Paciente> ativosPorNome() {
+        return pacientes.ativosPorNome();
+    }
+
     Paciente de(UsuarioAutenticado usuario) {
         return pacientes.findByUsuarioId(usuario.id())
                 .orElseThrow(() -> new AcessoProibidoException("Seu cadastro de paciente não foi encontrado."));

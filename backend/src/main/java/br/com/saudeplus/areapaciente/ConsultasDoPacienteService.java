@@ -160,7 +160,41 @@ public class ConsultasDoPacienteService {
 
     @Transactional
     public ConsultaDoPacienteResposta reservar(UsuarioAutenticado usuario, Reservar requisicao) {
-        Paciente paciente = pacienteLogado.de(usuario);
+        return reservar(pacienteLogado.de(usuario), requisicao);
+    }
+
+    /**
+     * A clínica marca a consulta por um paciente (tela Agendamentos do admin).
+     * `usuarioDoPaciente` é o id do usuário com papel PACIENTE. Mesmas regras
+     * do agendamento feito pelo próprio paciente.
+     */
+    @Transactional
+    public ConsultaDoPacienteResposta reservarPelaClinica(UUID usuarioDoPaciente, Reservar requisicao) {
+        Paciente paciente = pacienteLogado.porUsuario(usuarioDoPaciente)
+                .orElseThrow(() -> RecursoNaoEncontradoException.de("Paciente", usuarioDoPaciente.toString()));
+        try {
+            return reservar(paciente, requisicao);
+        } catch (ConflitoException conflito) {
+            if (conflito.getMessage().startsWith("Você já tem")) {
+                throw new ConflitoException("O paciente já tem uma consulta nesse horário.");
+            }
+            throw conflito;
+        }
+    }
+
+    /** Pacientes ativos para o seletor do agendamento feito pela clínica. */
+    @Transactional(readOnly = true)
+    public List<PacienteParaAgendar> pacientesParaAgendar() {
+        return pacienteLogado.ativosPorNome().stream()
+                .map(p -> new PacienteParaAgendar(p.getUsuario().getId(), p.getUsuario().getNomeCompleto(),
+                        p.getUsuario().getCpf(), p.getUsuario().getEmail()))
+                .toList();
+    }
+
+    public record PacienteParaAgendar(UUID usuarioId, String nome, String cpf, String email) {
+    }
+
+    private ConsultaDoPacienteResposta reservar(Paciente paciente, Reservar requisicao) {
         Medico medico = medicos.findComUsuarioById(requisicao.medicoId())
                 .filter(m -> m.getUsuario().ativo())
                 .orElseThrow(() -> RecursoNaoEncontradoException.de("Profissional", requisicao.medicoId().toString()));

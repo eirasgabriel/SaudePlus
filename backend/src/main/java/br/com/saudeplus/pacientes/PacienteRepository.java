@@ -32,4 +32,11 @@ public interface PacienteRepository extends JpaRepository<Paciente, UUID> {
             where lower(u.nomeCompleto) like :padrao
               and exists (select 1 from Agendamento a where a.paciente = p and a.medico.id = :medicoId)""")
     Page<Paciente> atendidosPeloMedico(UUID medicoId, String padrao, Pageable pagina);
+
+    /** Pacientes com conta ativa, por nome, para a clínica escolher ao agendar. */
+    @Query("""
+            select p from Paciente p join fetch p.usuario u
+            where u.status = br.com.saudeplus.usuarios.StatusConta.ATIVO
+            order by u.nomeCompleto""")
+    List<Paciente> ativosPorNome();
 }
