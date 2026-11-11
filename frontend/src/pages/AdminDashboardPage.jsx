@@ -186,7 +186,7 @@ export default function AdminDashboardPage({
         <Cartao
           titulo="Notificações do sistema"
           icone="sino"
-          acao={{ rotulo: "Ver todas", href: "#" }}
+          acao={{ rotulo: "Ver todas", href: "/admin/notificacoes" }}
         >
           <div className={estilos.lista}>
             {notificacoes.map((n) => (

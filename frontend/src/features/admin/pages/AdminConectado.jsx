@@ -16,6 +16,7 @@ import AvisoDoAdmin from "../components/AvisoDoAdmin.jsx";
 import DialogoAuditoria from "../components/DialogoAuditoria.jsx";
 import ModalConvenios from "../components/ModalConvenios.jsx";
 import ModalFormasPagamento from "../components/ModalFormasPagamento.jsx";
+import ModalNovoAgendamento from "../components/ModalNovoAgendamento.jsx";
 import * as api from "../admin.api.js";
 import { useEdicaoDeUnidades, useEdicaoDeUsuarios } from "../useEdicaoDeCadastros.jsx";
 import NotificacoesDoAdmin from "./NotificacoesDoAdmin.jsx";
@@ -171,6 +172,7 @@ export function UsuariosDoAdmin() {
         <>
           <AdminUsuariosPage
             usuarios={dados.pagina.conteudo.map(paraUsuario)}
+            idDaPropriaConta={usuario?.id ?? null}
             metricas={metricasDeUsuarios(modelosUsuarios, dados.metricas)}
             aviso={retorno.aviso}
             aoNovoUsuario={edicao.novo}
@@ -253,6 +255,16 @@ export function AgendamentosDoAdmin() {
 
   const lista = useDadosDaApi(carregarLista);
   const calendario = useDadosDaApi(carregarCalendario);
+  const [novo, definirNovo] = useState(false);
+
+  const agendou = (paciente, escolha) => {
+    const [ano, mesDoAno, dia] = escolha.data.split("-");
+    retorno.sucesso(
+      `Consulta de ${paciente?.nome ?? "paciente"} com ${escolha.profissional} marcada para ${dia}/${mesDoAno}/${ano} às ${escolha.horario}.`,
+    );
+    lista.recarregar();
+    calendario.recarregar();
+  };
 
   const alterarStatus = async (a, status) => {
     try {
@@ -271,6 +283,8 @@ export function AgendamentosDoAdmin() {
       {() => {
         const agendamentos = lista.dados.pagina.conteudo.map(paraAgendamento);
         return (
+          <>
+          <ModalNovoAgendamento aberto={novo} aoFechar={() => definirNovo(false)} aoAgendar={agendou} />
           <AdminAgendamentosPage
             agendamentos={agendamentos}
             metricas={metricasDeAgendamentos(modelosAgendamentos, lista.dados.metricas)}
@@ -280,11 +294,12 @@ export function AgendamentosDoAdmin() {
             marcacoes={calendario.origem === "api" && calendario.dados ? paraMarcacoes(calendario.dados) : {}}
             mesInicial={new Date(hoje.getFullYear(), hoje.getMonth(), 1)}
             diaSelecionado={hoje.getDate()}
-            periodoInicial={`${mesDe(hoje)}-${String(hoje.getDate()).padStart(2, "0")}`}
             aviso={retorno.aviso}
             aoMudarMes={(data) => definirMes(mesDe(data))}
             aoAlterarStatus={alterarStatus}
+            aoNovoAgendamento={() => definirNovo(true)}
           />
+          </>
         );
       }}
     </PortaoDaApi>

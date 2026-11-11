@@ -31,15 +31,26 @@ const porId = (lista) => Object.fromEntries(lista.map((item) => [item.id, item])
 describe('paciente', () => {
   test('consulta leva os ids que as ações usam', () => {
     const c = paciente.paraConsulta({
-      id: 'a1', inicio: '2026-10-01T10:00:00', status: 'confirmada', podeAlterar: true,
-      unidade: { nome: 'Clínica Centro', endereco: 'Rua A, 1' },
+      id: 'a1', inicio: '2026-10-01T10:00:00', fim: '2026-10-01T10:30:00', status: 'confirmada', podeAlterar: true,
+      unidade: { nome: 'Clínica Centro', endereco: 'Rua A, 1', telefone: '(22) 2655-1234' },
       especialidade: { id: 'e1', nome: 'Cardiologia' }, medico: { id: 'm1', nome: 'Dr. X' },
     })
     assert.deepEqual(c, {
-      id: 'a1', dateTime: '2026-10-01T10:00:00', clinic: 'Clínica Centro', address: 'Rua A, 1',
-      specialty: 'Cardiologia', professional: 'Dr. X', status: 'confirmada', podeAlterar: true,
+      id: 'a1', dateTime: '2026-10-01T10:00:00', fim: '2026-10-01T10:30:00', clinic: 'Clínica Centro',
+      address: 'Rua A, 1', phone: '(22) 2655-1234', specialty: 'Cardiologia', professional: 'Dr. X', status: 'confirmada', podeAlterar: true,
       medicoId: 'm1', especialidadeId: 'e1',
     })
+  })
+
+  test('ocupados: só consultas ativas, sem a que está sendo remarcada', () => {
+    const consultas = [
+      { id: 'a', dateTime: '2026-10-01T10:00:00', fim: '2026-10-01T10:30:00', status: 'confirmada' },
+      { id: 'b', dateTime: '2026-10-01T11:00:00', fim: '2026-10-01T11:30:00', status: 'cancelada' },
+      { id: 'c', dateTime: '2026-10-01T12:00:00', fim: '2026-10-01T12:30:00', status: 'pendente' },
+    ]
+    assert.deepEqual(paciente.ocupadosDe(consultas, 'c'), [
+      { inicio: '2026-10-01T10:00:00', fim: '2026-10-01T10:30:00' },
+    ])
   })
 
   test('unidade ausente vira null; campos opcionais viram vazio', () => {

@@ -20,6 +20,9 @@ export default function Calendario({
   tipos = [],
   aoSelecionarDia,
   aoMudarMes,
+  /* Modo controlado: "AAAA-MM-DD" do dia marcado, ou null para nenhum.
+     Sem a prop, o calendário guarda a seleção sozinho (só o número do dia). */
+  dataSelecionada,
 }) {
   const [referencia, definirReferencia] = useState(
     new Date(mesInicial.getFullYear(), mesInicial.getMonth(), 1)
@@ -107,7 +110,10 @@ export default function Calendario({
 
         {celulas.map((celula, i) => {
           const marcas = celula.doMes ? marcacoes[celula.dia] || [] : [];
-          const ativo = celula.doMes && celula.dia === selecionado;
+          const iso = `${referencia.getFullYear()}-${String(referencia.getMonth() + 1).padStart(2, "0")}-${String(celula.dia).padStart(2, "0")}`;
+          const ativo =
+            celula.doMes &&
+            (dataSelecionada === undefined ? celula.dia === selecionado : dataSelecionada === iso);
 
           return (
             <button
@@ -118,6 +124,7 @@ export default function Calendario({
               }`}
               onClick={() => celula.doMes && selecionar(celula.dia)}
               aria-current={ativo ? "date" : undefined}
+              aria-pressed={dataSelecionada === undefined ? undefined : ativo}
             >
               {celula.dia}
               <span className={estilos.marcadores} aria-hidden="true">

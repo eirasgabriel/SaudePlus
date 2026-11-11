@@ -10,7 +10,7 @@ import ModalAgendamento from "../../../components/ModalAgendamento";
 import PortaoDaApi from "../../../components/PortaoDaApi/PortaoDaApi.jsx";
 import AvisoDeSucesso from "../components/AvisoDeSucesso.jsx";
 import { useDadosDaApi } from "../useDadosDaApi.js";
-import { paraAtendimento, paraConsulta, paraExame, paraNotificacao, paraPaciente, paraUnidade } from "../adaptadores.js";
+import { ocupadosDe, paraAtendimento, paraConsulta, paraExame, paraNotificacao, paraPaciente, paraUnidade } from "../adaptadores.js";
 import {
   avaliarConsulta,
   baixarResultadoDoExame,
@@ -183,6 +183,7 @@ export function ConsultasDoPaciente() {
         aberto={Boolean(remarcando)}
         aoFechar={() => setRemarcando(null)}
         aoConfirmar={confirmarRemarcacao}
+        ocupados={ocupadosDe((dados ?? []).map(paraConsulta), remarcando?.id)}
         fixo={
           remarcando && {
             especialidadeId: remarcando.especialidadeId,
@@ -197,6 +198,7 @@ export function ConsultasDoPaciente() {
         aoFechar={pedido.encerrar}
         aoConfirmar={confirmarAgendamento}
         inicial={pedido.inicial}
+        ocupados={ocupadosDe((dados ?? []).map(paraConsulta))}
       />
     </>
   );
@@ -239,7 +241,7 @@ export function ClinicasDoPaciente() {
   const unidades = useDadosDaApi(carregarUnidades);
   return (
     <PortaoDaApi estados={unidades} carregando="Carregando as clínicas…" voltar={VOLTAR_AO_PAINEL}>
-      {() => <ClinicasPage unidades={unidades.dados.map(paraUnidadePublica)} />}
+      {() => <ClinicasPage clinicas={unidades.dados.map(paraUnidadePublica)} />}
     </PortaoDaApi>
   );
 }

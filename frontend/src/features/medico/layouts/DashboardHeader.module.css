@@ -137,7 +137,7 @@
   font: inherit;
   font-size: var(--fs-small);
   color: var(--color-text);
-  background: #fff;
+  background: var(--color-surface);
   border: 0;
   border-radius: var(--radius-button);
   opacity: 0;

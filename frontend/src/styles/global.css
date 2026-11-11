@@ -25,7 +25,7 @@ body {
   overflow-x: hidden;
 }
 
-::selection { background: var(--color-navy-900); color: #fff; }
+::selection { background: var(--color-fill-strong); color: #fff; }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb {

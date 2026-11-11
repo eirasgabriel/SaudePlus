@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import Logo from "../components/Logo/Logo.jsx";
 import Button from "../components/Button/Button.jsx";
 import { SearchIcon, MenuIcon } from "../components/icons/Icons.jsx";
+import { MoonIcon, SunIcon } from "../features/medico/components/icons/MedicoIcons.jsx";
+import { useAuthOpcional } from "../features/auth/auth.context.js";
+import { ROTA_INICIAL_POR_ROLE } from "../features/auth/auth.rotas.js";
+import { useTema } from "../tema/contextoDoTema.js";
 import { NAV_ITEMS } from "./navigation.js";
 import { cx } from "../utils/cx.js";
 import styles from "./Header.module.css";
@@ -16,6 +20,30 @@ export default function Header() {
   const inputRef = useRef(null);
   const searchRef = useRef(null);
   const menuRef = useRef(null);
+  const { usuario, sair } = useAuthOpcional();
+  const { tema, alternarTema } = useTema();
+  const escuro = tema === "escuro";
+  const IconeTema = escuro ? SunIcon : MoonIcon;
+
+  const encerrarSessao = () => {
+    setOpenPanel(null);
+    sair();
+    navigate("/", { replace: true });
+  };
+
+  /* Logado, a faixa troca "Entrar / Criar conta" pelo atalho do painel. */
+  const acoesDaConta = (variantes) =>
+    usuario ? (
+      <>
+        <Button variant={variantes[0]} onClick={encerrarSessao} className={variantes[2]}>Sair</Button>
+        <Button variant={variantes[1]} to={ROTA_INICIAL_POR_ROLE[usuario.role] ?? "/login"} onClick={() => setOpenPanel(null)} className={variantes[3]}>Meu painel</Button>
+      </>
+    ) : (
+      <>
+        <Button variant={variantes[0]} to="/login" onClick={() => setOpenPanel(null)} className={variantes[2]}>Entrar</Button>
+        <Button variant={variantes[1]} to="/cadastro" onClick={() => setOpenPanel(null)} className={variantes[3]}>Criar conta</Button>
+      </>
+    );
 
 
   const toggle = (panel) => setOpenPanel((current) => (current === panel ? null : panel));
@@ -76,8 +104,18 @@ export default function Header() {
             <span className="sr-only">Pesquisar</span>
           </button>
 
-          <Button variant="ghost" to="/login" onClick={() => setOpenPanel(null)} className={styles.loginButton}>Entrar</Button>
-          <Button variant="light" to="/cadastro" onClick={() => setOpenPanel(null)} className={styles.signupButton}>Criar conta</Button>
+          <button
+            type="button"
+            className={cx(styles.iconButton, styles.themeButton)}
+            aria-pressed={escuro}
+            onClick={alternarTema}
+            title={escuro ? "Usar modo claro" : "Usar modo escuro"}
+          >
+            <IconeTema size={22} />
+            <span className="sr-only">Modo escuro</span>
+          </button>
+
+          {acoesDaConta(["ghost", "light", styles.loginButton, styles.signupButton])}
 
           <button
             type="button"
@@ -122,8 +160,7 @@ export default function Header() {
             </NavLink>
           ))}
           <div className={styles.mobileActions}>
-            <Button variant="outline" to="/login" onClick={() => setOpenPanel(null)}>Entrar</Button>
-            <Button variant="primary" to="/cadastro" onClick={() => setOpenPanel(null)}>Criar conta</Button>
+            {acoesDaConta(["outline", "primary"])}
           </div>
         </nav>
       )}

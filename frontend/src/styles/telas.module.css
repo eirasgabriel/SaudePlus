@@ -410,3 +410,11 @@ a.itemPrincipal:hover {
 }
 .caixaDeMarcar span { display: flex; flex-direction: column; gap: 2px; }
 .caixaDeMarcar small { font-weight: var(--fw-regular, 400); }
+
+/* Aviso curto ao lado das ações da consulta (ex.: chegada só no dia). */
+.dicaDoDia {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: var(--fs-small, 0.875rem);
+  color: var(--color-text-muted);
+}

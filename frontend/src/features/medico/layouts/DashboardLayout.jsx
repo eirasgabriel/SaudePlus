@@ -1,8 +1,7 @@
 import Footer from "../../../components/Footer/Footer.jsx";
 import { cx } from "../../../utils/cx.js";
 import { useNavegacao } from "../navegacao/useNavegacao.js";
-import { useTema } from "../tema/useTema.js";
-import "../tema/temaEscuro.css";
+import { useTema } from "../../../tema/contextoDoTema.js";
 import DashboardHeader from "./DashboardHeader.jsx";
 import DashboardSidebar from "./DashboardSidebar.jsx";
 import styles from "./DashboardLayout.module.css";
@@ -32,7 +31,7 @@ export default function DashboardLayout({
   const { tema, alternarTema } = useTema();
 
   return (
-    <div className={styles.pagina} data-tema={tema}>
+    <div className={styles.pagina} data-area="medico" data-tema={tema}>
       <a className="skip-link" href="#conteudo">
         Pular para o conteúdo
       </a>

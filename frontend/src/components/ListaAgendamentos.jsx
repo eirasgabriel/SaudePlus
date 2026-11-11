@@ -53,15 +53,17 @@ const IconeSeta = ({ className }) => (
   </svg>
 );
 
-export default function ListaAgendamentos({ agendamentos = [], linkAgendar = '#' }) {
+export default function ListaAgendamentos({ agendamentos = [], aoAgendar }) {
   if (agendamentos.length === 0) {
     return (
       <div className={estilos.vazio}>
         <p>Você não tem consultas agendadas.</p>
-        <a href={linkAgendar} className={estilos.linkVazio}>
-          Agendar consulta
-          <IconeSeta className={estilos.iconeSeta} />
-        </a>
+        {aoAgendar && (
+          <button type="button" onClick={aoAgendar} className={estilos.linkVazio}>
+            Agendar consulta
+            <IconeSeta className={estilos.iconeSeta} />
+          </button>
+        )}
       </div>
     );
   }

@@ -9,6 +9,7 @@ import {
 } from "../../../components/icons/Icons.jsx";
 import { buscarProfissional, listarAvaliacoes, listarHorarios } from "../profissionais.api.js";
 import { agruparHorarios, linkDeAgendamento, paraPerfil, rotuloDoDia } from "../perfil.js";
+import { useAuthOpcional } from "../../auth/auth.context.js";
 
 import styles from "./PerfilProfissional.module.css";
 
@@ -165,6 +166,7 @@ function Avaliacoes({ id, primeiraPagina }) {
 /** Perfil público do profissional (`/profissionais/:id`). */
 export default function PerfilProfissional() {
   const { id } = useParams();
+  const { usuario } = useAuthOpcional();
   const { estado, perfil, dias, avaliacoes, tentarDeNovo } = usePerfil(id);
 
   useEffect(() => {
@@ -238,7 +240,10 @@ export default function PerfilProfissional() {
             </p>
           )}
           <Button to={linkDeAgendamento(perfil.id)} className={styles.agendar}>Agendar consulta</Button>
-          <p className={styles.dica}>Para agendar, entre na sua conta de paciente.</p>
+          {!usuario && <p className={styles.dica}>Para agendar, entre na sua conta de paciente.</p>}
+          {usuario && usuario.role !== "PACIENTE" && (
+            <p className={styles.dica}>Agendamentos são feitos com uma conta de paciente.</p>
+          )}
         </div>
       </section>
 

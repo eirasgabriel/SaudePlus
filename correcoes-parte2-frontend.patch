@@ -1,0 +1,2817 @@
+diff --git a/frontend/index.html b/frontend/index.html
+index 11879d8..87152aa 100644
+--- a/frontend/index.html
++++ b/frontend/index.html
+@@ -9,6 +9,15 @@
+     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700;800&family=Caveat:wght@500&display=swap" rel="stylesheet" />
+     <title>SaúdePlus - Sua Saúde em Primeiro Lugar</title>
++    <!-- Aplica o tema salvo antes do primeiro desenho, sem piscar o claro. -->
++    <script>
++      try {
++        var t = localStorage.getItem('saudeplus:tema');
++        if (t !== 'claro' && t !== 'escuro') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
++        document.documentElement.dataset.tema = t;
++        document.documentElement.style.colorScheme = t === 'escuro' ? 'dark' : 'light';
++      } catch (e) {}
++    </script>
+   </head>
+   <body>
+     <div id="root"></div>
+diff --git a/frontend/scripts/adaptadores.test.mjs b/frontend/scripts/adaptadores.test.mjs
+index 4d4371a..9674ef2 100644
+--- a/frontend/scripts/adaptadores.test.mjs
++++ b/frontend/scripts/adaptadores.test.mjs
+@@ -31,17 +31,28 @@ const porId = (lista) => Object.fromEntries(lista.map((item) => [item.id, item])
+ describe('paciente', () => {
+   test('consulta leva os ids que as ações usam', () => {
+     const c = paciente.paraConsulta({
+-      id: 'a1', inicio: '2026-10-01T10:00:00', status: 'confirmada', podeAlterar: true,
+-      unidade: { nome: 'Clínica Centro', endereco: 'Rua A, 1' },
++      id: 'a1', inicio: '2026-10-01T10:00:00', fim: '2026-10-01T10:30:00', status: 'confirmada', podeAlterar: true,
++      unidade: { nome: 'Clínica Centro', endereco: 'Rua A, 1', telefone: '(22) 2655-1234' },
+       especialidade: { id: 'e1', nome: 'Cardiologia' }, medico: { id: 'm1', nome: 'Dr. X' },
+     })
+     assert.deepEqual(c, {
+-      id: 'a1', dateTime: '2026-10-01T10:00:00', clinic: 'Clínica Centro', address: 'Rua A, 1',
+-      specialty: 'Cardiologia', professional: 'Dr. X', status: 'confirmada', podeAlterar: true,
++      id: 'a1', dateTime: '2026-10-01T10:00:00', fim: '2026-10-01T10:30:00', clinic: 'Clínica Centro',
++      address: 'Rua A, 1', phone: '(22) 2655-1234', specialty: 'Cardiologia', professional: 'Dr. X', status: 'confirmada', podeAlterar: true,
+       medicoId: 'm1', especialidadeId: 'e1',
+     })
+   })
+ 
++  test('ocupados: só consultas ativas, sem a que está sendo remarcada', () => {
++    const consultas = [
++      { id: 'a', dateTime: '2026-10-01T10:00:00', fim: '2026-10-01T10:30:00', status: 'confirmada' },
++      { id: 'b', dateTime: '2026-10-01T11:00:00', fim: '2026-10-01T11:30:00', status: 'cancelada' },
++      { id: 'c', dateTime: '2026-10-01T12:00:00', fim: '2026-10-01T12:30:00', status: 'pendente' },
++    ]
++    assert.deepEqual(paciente.ocupadosDe(consultas, 'c'), [
++      { inicio: '2026-10-01T10:00:00', fim: '2026-10-01T10:30:00' },
++    ])
++  })
++
+   test('unidade ausente vira null; campos opcionais viram vazio', () => {
+     assert.equal(paciente.paraUnidade(null), null)
+     assert.deepEqual(paciente.paraUnidade({ nome: 'U', endereco: 'E' }), {
+diff --git a/frontend/src/app/App.jsx b/frontend/src/app/App.jsx
+index ec6b3d8..901f0ab 100644
+--- a/frontend/src/app/App.jsx
++++ b/frontend/src/app/App.jsx
+@@ -1,7 +1,8 @@
+-import { useRef, useState } from 'react'
++import { useEffect, useRef, useState } from 'react'
+ import { Outlet, Route, Routes, useLocation } from 'react-router-dom'
+ import MainLayout from '../layouts/MainLayout.jsx'
+ import AvailabilityNotice from '../components/AvailabilityNotice/AvailabilityNotice.jsx'
++import { EVENTO_EM_BREVE } from '../components/AvailabilityNotice/emBreve.js'
+ import Button from '../components/Button/Button.jsx'
+ import RotaProtegida from '../components/RotaProtegida.jsx'
+ import SomenteVisitante from '../components/SomenteVisitante.jsx'
+@@ -70,6 +71,16 @@ export default function App() {
+     noticeRef.current.showModal()
+   }
+ 
++  /* Telas internas (admin, paciente, médico) avisam por evento. */
++  useEffect(() => {
++    const aoAvisar = (evento) => {
++      setNotice({ title: evento.detail.titulo, query: evento.detail.detalhe })
++      noticeRef.current?.showModal()
++    }
++    window.addEventListener(EVENTO_EM_BREVE, aoAvisar)
++    return () => window.removeEventListener(EVENTO_EM_BREVE, aoAvisar)
++  }, [])
++
+   return (
+     <>
+       <RouteEffects />
+diff --git a/frontend/src/components/AdminConfigGeral.jsx b/frontend/src/components/AdminConfigGeral.jsx
+index 7f77667..f0e0114 100644
+--- a/frontend/src/components/AdminConfigGeral.jsx
++++ b/frontend/src/components/AdminConfigGeral.jsx
+@@ -14,6 +14,8 @@ import {
+ } from "../services/dadosAdminConfiguracoes";
+ import comum from "../styles/adminComum.module.css";
+ import estilos from "../styles/adminConfig.module.css";
++import { avisarEmBreve } from "./AvailabilityNotice/emBreve.js";
++import { useTema } from "../tema/contextoDoTema.js";
+ 
+ /**
+  * Sem props, é o protótipo com os mocks. Com a API:
+@@ -23,7 +25,9 @@ import estilos from "../styles/adminConfig.module.css";
+  * Backup é do provedor do banco, então com a API o cartão só explica isso.
+  */
+ export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
+-  const [form, definirForm] = useState(() => ({ ...configuracoesGerais, ...(valores ?? {}) }));
++  const { tema, definirTema } = useTema();
++  /* O tema mostrado é o que está em uso neste navegador. */
++  const [form, definirForm] = useState(() => ({ ...configuracoesGerais, ...(valores ?? {}), tema }));
+   const [notificacoes, definirNotificacoes] = useState(() =>
+     notificacoesSistema.map((n) => ({ ...n, ativo: valores?.notificacoes?.[n.id] ?? n.ativo })),
+   );
+@@ -133,7 +137,7 @@ export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
+                   <span>Saúde</span>
+                   <span>Plus</span>
+                 </span>
+-                <Botao variante="secundario" icone="upload">
++                <Botao variante="secundario" icone="upload" onClick={() => avisarEmBreve("Alterar logo")}>
+                   Alterar logo
+                 </Botao>
+                 <span className={estilos.dicaArquivo}>
+@@ -195,7 +199,10 @@ export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
+                     className={`${estilos.tema} ${
+                       form.tema === t.id ? estilos.temaAtivo : ""
+                     }`}
+-                    onClick={() => atualizar("tema", t.id)}
++                    onClick={() => {
++                      atualizar("tema", t.id);
++                      definirTema(t.id);
++                    }}
+                     aria-pressed={form.tema === t.id}
+                   >
+                     <Icone nome={t.icone} tam={18} />
+@@ -228,8 +235,8 @@ export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
+               </div>
+ 
+               <div className={estilos.backupBotoes}>
+-                <Botao icone="nuvem">Fazer backup agora</Botao>
+-                <Botao variante="secundario" icone="atualizar">
++                <Botao icone="nuvem" onClick={() => avisarEmBreve("Fazer backup agora")}>Fazer backup agora</Botao>
++                <Botao variante="secundario" icone="atualizar" onClick={() => avisarEmBreve("Restaurar backup")}>
+                   Restaurar backup
+                 </Botao>
+               </div>
+@@ -277,7 +284,12 @@ export default function AdminConfigGeral({ valores, informacoes, aoSalvar }) {
+               <p className={comum.avisoTexto}>
+                 Entre em contato com o suporte técnico em caso de dúvidas ou problemas.
+               </p>
+-              <Botao variante="secundario" icone="email" style={{ marginTop: 10 }}>
++              <Botao
++                variante="secundario"
++                icone="email"
++                style={{ marginTop: 10 }}
++                onClick={() => window.location.assign("mailto:suporte@saudeplus.com.br?subject=Chamado%20SaúdePlus")}
++              >
+                 Abrir chamado
+               </Botao>
+             </div>
+diff --git a/frontend/src/components/AdminConfigIntegracoes.jsx b/frontend/src/components/AdminConfigIntegracoes.jsx
+index 586f0fe..f7de56a 100644
+--- a/frontend/src/components/AdminConfigIntegracoes.jsx
++++ b/frontend/src/components/AdminConfigIntegracoes.jsx
+@@ -7,6 +7,7 @@ import { Interruptor, Botao } from "./Controles";
+ import { integracoes, integracoesDisponiveis } from "../services/dadosAdminConfiguracoes";
+ import comum from "../styles/adminComum.module.css";
+ import estilos from "../styles/adminConfig.module.css";
++import { avisarEmBreve } from "./AvailabilityNotice/emBreve.js";
+ 
+ export default function AdminConfigIntegracoes() {
+   const [lista, definirLista] = useState(integracoes);
+@@ -56,7 +57,7 @@ export default function AdminConfigIntegracoes() {
+                             {item.etiqueta.rotulo}
+                           </Etiqueta>
+                         )}
+-                        <Botao variante="secundario" icone="engrenagem">
++                        <Botao variante="secundario" icone="engrenagem" onClick={() => avisarEmBreve(`Configurar ${item.titulo}`)}>
+                           Configurar
+                         </Botao>
+                       </>
+@@ -83,7 +84,7 @@ export default function AdminConfigIntegracoes() {
+                 tom={i.tom}
+                 titulo={i.titulo}
+                 descricao={i.descricao}
+-                aoClicar={() => {}}
++                aoClicar={() => avisarEmBreve(i.titulo)}
+               />
+             ))}
+           </Lista>
+diff --git a/frontend/src/components/AdminConfigNotificacoes.jsx b/frontend/src/components/AdminConfigNotificacoes.jsx
+index 82c7b3c..d704a6f 100644
+--- a/frontend/src/components/AdminConfigNotificacoes.jsx
++++ b/frontend/src/components/AdminConfigNotificacoes.jsx
+@@ -13,6 +13,7 @@ import {
+ } from "../services/dadosAdminConfiguracoes";
+ import comum from "../styles/adminComum.module.css";
+ import estilos from "../styles/adminConfig.module.css";
++import { avisarEmBreve } from "./AvailabilityNotice/emBreve.js";
+ 
+ export default function AdminConfigNotificacoes() {
+   const [canais, definirCanais] = useState(canaisNotificacao);
+@@ -123,7 +124,7 @@ export default function AdminConfigNotificacoes() {
+                 icone={m.icone}
+                 titulo={m.titulo}
+                 comSeta
+-                aoClicar={() => {}}
++                aoClicar={() => avisarEmBreve(`Modelo: ${m.titulo}`)}
+               />
+             ))}
+           </Lista>
+diff --git a/frontend/src/components/AdminConfigSeguranca.jsx b/frontend/src/components/AdminConfigSeguranca.jsx
+index fd68f1d..c028292 100644
+--- a/frontend/src/components/AdminConfigSeguranca.jsx
++++ b/frontend/src/components/AdminConfigSeguranca.jsx
+@@ -10,6 +10,7 @@ import {
+   dicasSeguranca,
+ } from "../services/dadosAdminConfiguracoes";
+ import estilos from "../styles/adminConfig.module.css";
++import { avisarEmBreve } from "./AvailabilityNotice/emBreve.js";
+ 
+ /**
+  * `aoVerLogs` liga "Visualizar Logs" à auditoria. Os demais itens (2FA,
+@@ -55,7 +56,7 @@ export default function AdminConfigSeguranca({ aoVerLogs }) {
+                   <Botao
+                     variante="secundario"
+                     icone={item.botao.icone}
+-                    onClick={item.id === "logs" ? aoVerLogs : undefined}
++                    onClick={item.id === "logs" ? aoVerLogs : () => avisarEmBreve(item.titulo)}
+                   >
+                     {item.botao.rotulo}
+                   </Botao>
+diff --git a/frontend/src/components/AvailabilityNotice/emBreve.js b/frontend/src/components/AvailabilityNotice/emBreve.js
+new file mode 100644
+index 0000000..fe5f9c6
+--- /dev/null
++++ b/frontend/src/components/AvailabilityNotice/emBreve.js
+@@ -0,0 +1,11 @@
++/**
++ * Abre o aviso "Esta funcionalidade estará disponível em breve" de qualquer
++ * tela, sem precisar receber uma função do App por props.
++ *
++ * O App escuta o evento e mostra o mesmo diálogo usado no site público.
++ */
++export const EVENTO_EM_BREVE = "saudeplus:em-breve";
++
++export function avisarEmBreve(titulo, detalhe = "") {
++  window.dispatchEvent(new CustomEvent(EVENTO_EM_BREVE, { detail: { titulo, detalhe } }));
++}
+diff --git a/frontend/src/components/BarrasHorizontais.module.css b/frontend/src/components/BarrasHorizontais.module.css
+index b6919d5..62bc75a 100644
+--- a/frontend/src/components/BarrasHorizontais.module.css
++++ b/frontend/src/components/BarrasHorizontais.module.css
+@@ -30,7 +30,7 @@
+ .preenche {
+   height: 100%;
+   border-radius: var(--raio-pill);
+-  background: var(--color-navy-900);
++  background: var(--color-fill-strong);
+   transition: width 0.4s ease;
+ }
+ 
+diff --git a/frontend/src/components/Button/Button.module.css b/frontend/src/components/Button/Button.module.css
+index a0a90bf..d2a9675 100644
+--- a/frontend/src/components/Button/Button.module.css
++++ b/frontend/src/components/Button/Button.module.css
+@@ -40,12 +40,13 @@
+   min-height: 56px;
+   padding: 0 28px;
+   background: #fff;
+-  color: var(--color-navy-900);
++  /* Sempre sobre azul-marinho: as cores não trocam no tema escuro. */
++  color: var(--shell);
+   border: 1px solid #fff;
+   font-size: 18px;
+   font-weight: var(--fw-bold);
+ }
+-.hero:hover { background: var(--color-primary-light); border-color: var(--color-primary-light); }
++.hero:hover { background: #EAF4FF; border-color: #EAF4FF; }
+ 
+ /* Contorno branco sobre a casca/hero (ação secundária no escuro). */
+ .ghost {
+@@ -61,11 +62,11 @@
+ /* Branco sobre faixas azul-marinho. */
+ .light {
+   background: #fff;
+-  color: var(--color-navy-900);
++  color: var(--shell);
+   border: 1px solid #fff;
+   font-weight: var(--fw-bold);
+ }
+-.light:hover { background: var(--color-primary-light); border-color: var(--color-primary-light); }
++.light:hover { background: #EAF4FF; border-color: #EAF4FF; }
+ 
+ .icon { flex-shrink: 0; }
+ 
+diff --git a/frontend/src/components/Calendario.jsx b/frontend/src/components/Calendario.jsx
+index 5d97ea5..f7907b9 100644
+--- a/frontend/src/components/Calendario.jsx
++++ b/frontend/src/components/Calendario.jsx
+@@ -20,6 +20,9 @@ export default function Calendario({
+   tipos = [],
+   aoSelecionarDia,
+   aoMudarMes,
++  /* Modo controlado: "AAAA-MM-DD" do dia marcado, ou null para nenhum.
++     Sem a prop, o calendário guarda a seleção sozinho (só o número do dia). */
++  dataSelecionada,
+ }) {
+   const [referencia, definirReferencia] = useState(
+     new Date(mesInicial.getFullYear(), mesInicial.getMonth(), 1)
+@@ -107,7 +110,10 @@ export default function Calendario({
+ 
+         {celulas.map((celula, i) => {
+           const marcas = celula.doMes ? marcacoes[celula.dia] || [] : [];
+-          const ativo = celula.doMes && celula.dia === selecionado;
++          const iso = `${referencia.getFullYear()}-${String(referencia.getMonth() + 1).padStart(2, "0")}-${String(celula.dia).padStart(2, "0")}`;
++          const ativo =
++            celula.doMes &&
++            (dataSelecionada === undefined ? celula.dia === selecionado : dataSelecionada === iso);
+ 
+           return (
+             <button
+@@ -118,6 +124,7 @@ export default function Calendario({
+               }`}
+               onClick={() => celula.doMes && selecionar(celula.dia)}
+               aria-current={ativo ? "date" : undefined}
++              aria-pressed={dataSelecionada === undefined ? undefined : ativo}
+             >
+               {celula.dia}
+               <span className={estilos.marcadores} aria-hidden="true">
+diff --git a/frontend/src/components/Cartao.jsx b/frontend/src/components/Cartao.jsx
+index e272cd2..ba930ce 100644
+--- a/frontend/src/components/Cartao.jsx
++++ b/frontend/src/components/Cartao.jsx
+@@ -1,3 +1,4 @@
++import { Link } from "react-router-dom";
+ import Icone from "./Icone";
+ import estilos from "./Cartao.module.css";
+ 
+@@ -49,10 +50,10 @@ export default function Cartao({
+                   <Icone nome="setaDireita" tam={14} espessura={2.2} />
+                 </button>
+               ) : (
+-                <a className={estilos.acao} href={acao.href || "#"}>
++                <Link className={estilos.acao} to={acao.href}>
+                   {acao.rotulo}
+                   <Icone nome="setaDireita" tam={14} espessura={2.2} />
+-                </a>
++                </Link>
+               ))}
+           </div>
+         </header>
+diff --git a/frontend/src/components/Controles.module.css b/frontend/src/components/Controles.module.css
+index 4829174..52152d3 100644
+--- a/frontend/src/components/Controles.module.css
++++ b/frontend/src/components/Controles.module.css
+@@ -10,7 +10,7 @@
+   padding: 0;
+ }
+ 
+-.interruptorLigado { background: var(--color-navy-900); }
++.interruptorLigado { background: var(--color-fill-strong); }
+ 
+ .bolinha {
+   position: absolute;
+diff --git a/frontend/src/components/ListaAgendamentos.jsx b/frontend/src/components/ListaAgendamentos.jsx
+index 00072f3..9c72fb9 100644
+--- a/frontend/src/components/ListaAgendamentos.jsx
++++ b/frontend/src/components/ListaAgendamentos.jsx
+@@ -53,15 +53,17 @@ const IconeSeta = ({ className }) => (
+   </svg>
+ );
+ 
+-export default function ListaAgendamentos({ agendamentos = [], linkAgendar = '#' }) {
++export default function ListaAgendamentos({ agendamentos = [], aoAgendar }) {
+   if (agendamentos.length === 0) {
+     return (
+       <div className={estilos.vazio}>
+         <p>Você não tem consultas agendadas.</p>
+-        <a href={linkAgendar} className={estilos.linkVazio}>
+-          Agendar consulta
+-          <IconeSeta className={estilos.iconeSeta} />
+-        </a>
++        {aoAgendar && (
++          <button type="button" onClick={aoAgendar} className={estilos.linkVazio}>
++            Agendar consulta
++            <IconeSeta className={estilos.iconeSeta} />
++          </button>
++        )}
+       </div>
+     );
+   }
+diff --git a/frontend/src/components/ListaAgendamentos.module.css b/frontend/src/components/ListaAgendamentos.module.css
+index 025c46d..f82eba5 100644
+--- a/frontend/src/components/ListaAgendamentos.module.css
++++ b/frontend/src/components/ListaAgendamentos.module.css
+@@ -36,7 +36,7 @@
+   justify-content: center;
+   height: 64px;
+   border-radius: 6px;
+-  background: var(--color-navy-900);
++  background: var(--color-fill-strong);
+   color: #fff;
+ }
+ 
+@@ -157,6 +157,16 @@
+   color: var(--primary, #0070E8);
+   font-weight: 600;
+   text-decoration: none;
++  padding: 0;
++  font: inherit;
++  font-weight: 600;
++  background: none;
++  border: 0;
++  cursor: pointer;
++}
++
++.linkVazio:hover {
++  text-decoration: underline;
+ }
+ 
+ .iconeSeta {
+diff --git a/frontend/src/components/ModalAgendamento.jsx b/frontend/src/components/ModalAgendamento.jsx
+index 6ba72ff..a8d1f32 100644
+--- a/frontend/src/components/ModalAgendamento.jsx
++++ b/frontend/src/components/ModalAgendamento.jsx
+@@ -60,6 +60,8 @@ function descreverDiasDeAtendimento(profissional) {
+   return `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`;
+ }
+ 
++const SEM_OCUPADOS = [];
++
+ const FORMULARIO_VAZIO = {
+   especialidadeId: '',
+   profissionalId: '',
+@@ -117,6 +119,13 @@ export default function ModalAgendamento({
+     ? 'Escolha uma nova data e um horário livre com o mesmo profissional.'
+     : 'Escolha a especialidade, o profissional e o melhor horário para você.',
+   rotuloConfirmar = fixo ? 'Confirmar nova data' : 'Confirmar agendamento',
++  /* Consultas que a pessoa já tem ({ inicio, fim } em ISO): os horários que
++     batem com elas nem aparecem, em vez de falhar só ao confirmar. */
++  ocupados = SEM_OCUPADOS,
++  /* Campo a mais no topo do formulário (o admin escolhe o paciente) e a
++     validação dele: devolve a mensagem de erro ou null. */
++  campoExtra = null,
++  validarExtra,
+ }) {
+   const prefixoId = `ma-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+   const ids = {
+@@ -164,7 +173,14 @@ export default function ModalAgendamento({
+   const especialidadeEscolhida = especialidades.find((item) => item.id === formulario.especialidadeId) ?? null;
+   const profissionais = fixo ? [{ id: fixo.profissionalId, name: fixo.profissional }] : opcoes.profissionais;
+   const profissional = profissionais.find((item) => item.id === formulario.profissionalId) ?? null;
+-  const horarios = opcoes.horarios;
++  const horarios = useMemo(() => {
++    if (!formulario.data || ocupados.length === 0) return opcoes.horarios;
++    return opcoes.horarios.filter((livre) => {
++      const inicio = dataLocal(formulario.data, livre.horario);
++      const fim = new Date(inicio.getTime() + (livre.duracaoMin ?? 30) * 60000);
++      return !ocupados.some((o) => new Date(o.inicio) < fim && inicio < new Date(o.fim));
++    });
++  }, [opcoes.horarios, formulario.data, ocupados]);
+   const podeVerHorarios = Boolean(formulario.profissionalId && formulario.data);
+   const datasSugeridas = opcoes.datasSugeridas ?? [];
+   const resumoPronto = Boolean(formulario.data && formulario.horario);
+@@ -270,6 +286,11 @@ export default function ModalAgendamento({
+     if (enviando) return;
+ 
+     const novosErros = validar();
++    const erroExtra = validarExtra?.() ?? null;
++    if (erroExtra) {
++      setErroGeral(erroExtra);
++      if (Object.keys(novosErros).length === 0) return;
++    }
+ 
+     if (Object.keys(novosErros).length > 0) {
+       setErros(novosErros);
+@@ -351,6 +372,8 @@ export default function ModalAgendamento({
+             </div>
+           )}
+ 
++          {campoExtra}
++
+           {/* Especialidade */}
+           <div className={estilos.campo}>
+             <label className={estilos.rotulo} htmlFor={ids.especialidade}>Especialidade</label>
+diff --git a/frontend/src/components/ModalAgendamento.module.css b/frontend/src/components/ModalAgendamento.module.css
+index 95646e8..9b32a9f 100644
+--- a/frontend/src/components/ModalAgendamento.module.css
++++ b/frontend/src/components/ModalAgendamento.module.css
+@@ -13,7 +13,7 @@
+   --text: var(--color-text);
+   --muted: var(--color-text-muted);
+   --border: var(--color-border-strong);
+-  --surface: #ffffff;
++  --surface: var(--color-surface);
+ 
+   /* Status */
+   --danger: var(--state-danger);
+@@ -183,7 +183,7 @@
+   padding: 13px 15px;
+   border: 1px solid var(--border);
+   border-radius: var(--radius-button);
+-  background: #fff;
++  background: var(--color-surface);
+   font-family: inherit;
+   font-size: 15px;
+   color: var(--text);
+@@ -208,7 +208,7 @@
+ 
+ .select:focus,
+ .input:focus {
+-  background: #fff;
++  background: var(--color-surface);
+   border-color: var(--primary);
+   outline: none;
+   box-shadow: 0 0 0 3px rgba(0, 112, 232, 0.16);
+@@ -223,7 +223,7 @@
+ 
+ .campoInvalido {
+   border-color: var(--danger);
+-  background: #fff;
++  background: var(--color-surface);
+ }
+ 
+ .erro {
+@@ -264,7 +264,7 @@
+   padding: 9px 14px;
+   border: 1px solid var(--border);
+   border-radius: 4px;
+-  background: #fff;
++  background: var(--color-surface);
+   font-family: inherit;
+   font-size: 13px;
+   font-weight: 600;
+@@ -316,7 +316,7 @@
+   padding: 13px 8px;
+   border: 1px solid var(--border);
+   border-radius: var(--radius);
+-  background: #fafcff;
++  background: var(--color-surface-soft);
+   font-family: inherit;
+   font-size: 14.5px;
+   font-weight: 700;
+@@ -339,15 +339,15 @@
+ 
+ .horarioAtivo,
+ .horarioAtivo:hover {
+-  border-color: var(--color-navy-900);
+-  background: var(--color-navy-900);
++  border-color: var(--color-fill-strong);
++  background: var(--color-fill-strong);
+   color: #fff;
+   box-shadow: 0 6px 16px rgba(0, 102, 255, 0.28);
+ }
+ 
+ .aviso {
+   padding: 15px 16px;
+-  border: 1px dashed #cddcf0;
++  border: 1px dashed var(--color-border-strong);
+   border-radius: var(--radius);
+   font-size: 13px;
+   line-height: 1.45;
+@@ -416,7 +416,7 @@
+ 
+ .botaoSecundario {
+   border: 1px solid var(--border);
+-  background: #fff;
++  background: var(--color-surface);
+   color: var(--navy);
+ }
+ 
+@@ -489,3 +489,11 @@
+     transition: none !important;
+   }
+ }
++
++/* Atalhos de data sugerida acima do campo de data. */
++.datas {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 8px;
++  margin-bottom: 8px;
++}
+diff --git a/frontend/src/components/PacienteDashboard.jsx b/frontend/src/components/PacienteDashboard.jsx
+index 1f43a5e..53f6ca6 100644
+--- a/frontend/src/components/PacienteDashboard.jsx
++++ b/frontend/src/components/PacienteDashboard.jsx
+@@ -1,6 +1,9 @@
+ import { useId, useRef, useState } from 'react';
+ import { Link, NavLink, useNavigate } from 'react-router-dom';
+ import MenuPerfil from './MenuPerfil/MenuPerfil.jsx';
++import { useTema } from '../tema/contextoDoTema.js';
++import { ocupadosDe } from '../features/paciente/adaptadores.js';
++import { itemDoTema } from '../tema/itemDoTema.js';
+ import { useAuth } from '../features/auth/auth.context.js';
+ import ListaAgendamentos from './ListaAgendamentos';
+ import ModalAgendamento from './ModalAgendamento';
+@@ -325,6 +328,7 @@ export default function PacienteDashboard({
+     setTermoBusca('');
+   }
+ 
++  const { tema, alternarTema } = useTema();
+   const itensDaConta = [
+     {
+       rotulo: 'Minha conta',
+@@ -335,6 +339,7 @@ export default function PacienteDashboard({
+       },
+     },
+     { rotulo: 'Ajuda', href: '/ajuda' },
++    itemDoTema(tema, alternarTema),
+     {
+       rotulo: 'Sair',
+       href: '/login',
+@@ -682,7 +687,7 @@ export default function PacienteDashboard({
+                   <h2 id={ids.seguranca} className={estilos.faixaTitulo}>Seus dados estão seguros!</h2>
+                   <p className={estilos.faixaTexto}>Seguimos todas as normas de privacidade e proteção de dados.</p>
+                 </div>
+-                <LinkSeta href="#" pequeno className={estilos.faixaLink}>Saiba mais</LinkSeta>
++                <LinkSeta para="/ajuda" pequeno className={estilos.faixaLink}>Saiba mais</LinkSeta>
+                 <svg className={estilos.faixaSelo} viewBox="0 0 40 44" aria-hidden="true">
+                   <defs>
+                     <linearGradient id={ids.gradienteEscudo} x1="0" y1="0" x2="0" y2="1">
+@@ -801,7 +806,7 @@ export default function PacienteDashboard({
+         aberto={modalAberto}
+         aoFechar={fecharAgendamento}
+         aoConfirmar={confirmarAgendamento}
+-        agendamentosExistentes={consultas}
++        ocupados={ocupadosDe(consultas)}
+       />
+     </div>
+   );
+diff --git a/frontend/src/components/PacienteDashboard.module.css b/frontend/src/components/PacienteDashboard.module.css
+index 2e6d71a..88c9445 100644
+--- a/frontend/src/components/PacienteDashboard.module.css
++++ b/frontend/src/components/PacienteDashboard.module.css
+@@ -602,12 +602,12 @@
+   padding: 0 22px;
+   border-radius: var(--radius-button);
+   background: #fff;
+-  color: var(--color-navy-900);
++  color: var(--shell);
+   font-size: var(--fs-small);
+   font-weight: var(--fw-bold);
+   transition: background var(--duration) var(--ease);
+ }
+-.botaoAgendar:hover { background: var(--color-primary-light); }
++.botaoAgendar:hover { background: #EAF4FF; }
+ .botaoAgendar:active { transform: translateY(1px); }
+ 
+ .botaoAgendarIcone { width: 18px; height: 18px; stroke-width: 2.2; }
+@@ -723,3 +723,219 @@
+   .faixaLink { flex: 0 0 calc(100% - 46px); margin-left: 46px; }
+   .faixaSelo { display: none; }
+ }
++
++/* ---------- Busca aberta e sino de notificações ----------
++   Estas classes estavam no JSX sem regra correspondente (perdidas num
++   merge): o painel do sino abria sem posição nem fundo. */
++.menuTopoOculto {
++  display: none;
++}
++
++.faixaBusca {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 16px;
++  padding: 14px 20px;
++  border: 1px solid var(--color-border-strong);
++  border-radius: var(--radius-card);
++  background: var(--color-primary-light);
++  font-size: var(--fs-small);
++  color: var(--color-primary-dark);
++}
++
++.limparFaixa {
++  flex-shrink: 0;
++  font-size: var(--fs-small);
++  font-weight: var(--fw-bold);
++  color: var(--color-primary);
++  text-decoration: underline;
++  text-underline-offset: 3px;
++}
++
++.limparFaixa:hover {
++  color: var(--color-primary-hover);
++}
++
++.notificacoes {
++  position: relative;
++}
++
++@keyframes surgirPainel {
++  from { opacity: 0; transform: translateY(-4px); }
++  to { opacity: 1; transform: none; }
++}
++
++.painelNotificacoes {
++  position: absolute;
++  top: calc(100% + 12px);
++  right: 0;
++  z-index: 60;
++  width: 380px;
++  max-width: calc(100vw - 32px);
++  overflow: hidden;
++  background: var(--color-surface);
++  border: 1px solid var(--color-border);
++  border-radius: var(--radius-card);
++  box-shadow: var(--shadow-float);
++  animation: surgirPainel 0.16s ease-out;
++}
++
++.painelCabecalhoNot {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 14px;
++  padding: 16px 18px;
++  border-bottom: 1px solid var(--color-border);
++}
++
++.painelTituloNot {
++  margin: 0;
++  font-size: var(--fs-body);
++  font-weight: var(--fw-bold);
++  color: var(--color-navy-950);
++}
++
++.marcarLidas {
++  padding: 0;
++  font: inherit;
++  font-size: var(--fs-xs);
++  font-weight: var(--fw-semibold);
++  color: var(--color-primary);
++  background: none;
++  border: 0;
++  cursor: pointer;
++}
++
++.marcarLidas:hover {
++  text-decoration: underline;
++  text-underline-offset: 3px;
++}
++
++.listaNotificacoes {
++  max-height: 380px;
++  margin: 0;
++  padding: 0;
++  overflow-y: auto;
++  list-style: none;
++}
++
++.notItem {
++  display: flex;
++  align-items: flex-start;
++  gap: 14px;
++  width: 100%;
++  padding: 14px 18px;
++  text-align: left;
++  font: inherit;
++  background: transparent;
++  border: 0;
++  border-bottom: 1px solid var(--color-border);
++  transition: background var(--duration) var(--ease);
++}
++
++.listaNotificacoes li:last-child .notItem {
++  border-bottom: 0;
++}
++
++.notItem:hover {
++  background: var(--color-surface-muted);
++}
++
++.notItemNaoLida {
++  box-shadow: inset 3px 0 0 var(--color-primary);
++  background: var(--color-surface-soft);
++}
++
++.notIcone {
++  display: grid;
++  place-items: center;
++  flex-shrink: 0;
++  width: 38px;
++  height: 38px;
++  border-radius: 50%;
++  background: var(--color-primary-light);
++  color: var(--color-primary);
++}
++
++.notIcone svg {
++  width: 19px;
++  height: 19px;
++}
++
++.notTexto {
++  flex: 1;
++  min-width: 0;
++}
++
++.notTitulo {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  font-size: var(--fs-small);
++  font-weight: var(--fw-bold);
++  line-height: 1.35;
++  color: var(--color-navy-950);
++}
++
++.notPonto {
++  flex-shrink: 0;
++  width: 7px;
++  height: 7px;
++  border-radius: 50%;
++  background: var(--color-primary);
++}
++
++.notResumo {
++  display: block;
++  margin-top: 4px;
++  font-size: var(--fs-small);
++  line-height: 1.45;
++  color: var(--color-text-muted);
++}
++
++.notQuando {
++  display: block;
++  margin-top: 6px;
++  font-size: var(--fs-xs);
++  color: var(--color-text-subtle);
++}
++
++.notVazio {
++  margin: 0;
++  padding: 24px 18px;
++  font-size: var(--fs-small);
++  text-align: center;
++  color: var(--color-text-muted);
++}
++
++.somenteLeitor {
++  position: absolute;
++  width: 1px;
++  height: 1px;
++  overflow: hidden;
++  clip: rect(0 0 0 0);
++  white-space: nowrap;
++}
++
++@media (max-width: 720px) {
++  .notificacoes {
++    position: static;
++  }
++
++  .painelNotificacoes {
++    top: calc(100% + 8px);
++    left: 12px;
++    right: 12px;
++    width: auto;
++    max-width: none;
++  }
++
++  .faixaBusca {
++    flex-direction: column;
++    align-items: flex-start;
++    gap: 10px;
++    padding: 14px 16px;
++  }
++}
+diff --git a/frontend/src/components/Sidebar.jsx b/frontend/src/components/Sidebar.jsx
+deleted file mode 100644
+index 03e1748..0000000
+--- a/frontend/src/components/Sidebar.jsx
++++ /dev/null
+@@ -1,141 +0,0 @@
+-import { NavLink } from 'react-router-dom';
+-import estilos from './Sidebar.module.css';
+-
+-const classes = (...lista) => lista.filter(Boolean).join(' ');
+-
+-/**
+- * Itens do menu do paciente.
+- *
+- * `para` é a rota do react-router-dom. Um item sem `para` ainda não tem tela e
+- * vira âncora inerte; quando a rota existir, basta preencher o campo.
+- */
+-const MENU_PACIENTE = [
+-  { rotulo: 'Visão geral', icone: 'inicio', para: '/paciente' },
+-  { rotulo: 'Minhas informações', icone: 'usuario', para: '/paciente/perfil' },
+-];
+-
+-const propsSvg = {
+-  viewBox: '0 0 24 24',
+-  strokeWidth: 1.8,
+-  strokeLinecap: 'round',
+-  strokeLinejoin: 'round',
+-  'aria-hidden': true,
+-  focusable: 'false',
+-};
+-
+-const FORMAS = {
+-  inicio: <path d="M3 10.2 12 3l9 7.2V20a1.5 1.5 0 0 1-1.5 1.5H15v-6.5H9v6.5H4.5A1.5 1.5 0 0 1 3 20z" />,
+-  usuario: (
+-    <>
+-      <circle cx="12" cy="7.5" r="4.5" />
+-      <path d="M4 21.5v-1.5a5.5 5.5 0 0 1 5.5-5.5h5a5.5 5.5 0 0 1 5.5 5.5v1.5" />
+-    </>
+-  ),
+-  calendario: (
+-    <>
+-      <rect x="3" y="4.5" width="18" height="17" rx="2.5" />
+-      <path d="M8 2.5v4M16 2.5v4M3 9.5h18" />
+-    </>
+-  ),
+-  frasco: (
+-    <>
+-      <path d="M9.5 2.5h5M10 2.5v6.6L4.6 19.4A1.4 1.4 0 0 0 5.9 21.5h12.2a1.4 1.4 0 0 0 1.3-2.1L14 9.1V2.5" />
+-      <path d="M7 15h10" />
+-    </>
+-  ),
+-  arquivo: (
+-    <>
+-      <path d="M14 2.5H6.5A2 2 0 0 0 4.5 4.5v15a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V8z" />
+-      <path d="M14 2.5V8h5.5M8.5 13h7M8.5 17h7M8.5 9h2" />
+-    </>
+-  ),
+-  hospital: (
+-    <>
+-      <path d="M6 21.5V4.5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v17" />
+-      <path d="M6 9.5H4a1.5 1.5 0 0 0-1.5 1.5v9A1.5 1.5 0 0 0 4 21.5h16a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 20 9.5h-2" />
+-      <path d="M12 5.5v4M10 7.5h4M10 13h.01M14 13h.01M10.5 21.5v-4h3v4" />
+-    </>
+-  ),
+-  coracao: (
+-    <path d="M12 20.5s-8.5-5.1-8.5-11.2A4.8 4.8 0 0 1 8.3 4.5c1.6 0 2.9.8 3.7 2 .8-1.2 2.1-2 3.7-2a4.8 4.8 0 0 1 4.8 4.8c0 6.1-8.5 11.2-8.5 11.2z" />
+-  ),
+-};
+-
+-function Icone({ nome, preenchido = false, className }) {
+-  return (
+-    <svg
+-      {...propsSvg}
+-      className={className}
+-      fill={preenchido ? 'currentColor' : 'none'}
+-      stroke={preenchido ? 'none' : 'currentColor'}
+-    >
+-      {FORMAS[nome]}
+-    </svg>
+-  );
+-}
+-
+-/**
+- * Menu lateral da área do paciente.
+- *
+- * O item ativo sai do próprio NavLink: ele compara a rota atual com o `to` e
+- * entrega `isActive`, o que dispensa ler useLocation e comparar strings na mão.
+- * O `end` só vale para /paciente — sem ele, a raiz ficaria marcada como ativa
+- * em todas as telas filhas, já que é prefixo de todas.
+- */
+-export default function Sidebar({ itens = MENU_PACIENTE, className }) {
+-  return (
+-    <aside className={classes(estilos.menuLateral, className)} aria-label="Menu do paciente">
+-      <nav>
+-        <ul className={estilos.lista}>
+-          {itens.map((item) => (
+-            <li key={item.rotulo}>
+-              {item.para ? (
+-                <NavLink
+-                  to={item.para}
+-                  end={item.para === '/paciente'}
+-                  className={({ isActive }) => classes(estilos.link, isActive && estilos.ativo)}
+-                >
+-                  {({ isActive }) => (
+-                    <>
+-                      <Icone
+-                        nome={item.icone}
+-                        preenchido={isActive && item.icone === 'inicio'}
+-                        className={estilos.icone}
+-                      />
+-                      {item.rotulo}
+-                    </>
+-                  )}
+-                </NavLink>
+-              ) : (
+-                <a href="#" className={estilos.link}>
+-                  <Icone nome={item.icone} className={estilos.icone} />
+-                  {item.rotulo}
+-                </a>
+-              )}
+-            </li>
+-          ))}
+-        </ul>
+-      </nav>
+-
+-      <div className={estilos.cardCuidado}>
+-        <Icone nome="coracao" className={estilos.iconeCuidado} />
+-        <p className={estilos.textoCuidado}>
+-          Cuidar de você
+-          <br />é a nossa prioridade!
+-        </p>
+-        <svg className={estilos.arteCuidado} viewBox="0 0 210 110" preserveAspectRatio="none" aria-hidden="true">
+-          <path d="M0 60 C 40 30, 80 90, 130 55 S 190 20, 210 35 V110 H0z" fill="#C9DEFF" opacity=".55" />
+-          <path d="M0 85 C 50 60, 100 105, 150 80 S 200 60, 210 70 V110 H0z" fill="#B7D3FF" opacity=".55" />
+-          <path
+-            d="M145 52c-4-7-15-6-15 3 0 8 15 17 15 17s15-9 15-17c0-9-11-10-15-3z"
+-            fill="none"
+-            stroke="#2F8BFF"
+-            strokeWidth="2.5"
+-            strokeLinejoin="round"
+-            transform="translate(-6 -8) scale(1.08)"
+-          />
+-        </svg>
+-      </div>
+-    </aside>
+-  );
+-}
+diff --git a/frontend/src/components/Tabela.module.css b/frontend/src/components/Tabela.module.css
+index 6223dad..227b2db 100644
+--- a/frontend/src/components/Tabela.module.css
++++ b/frontend/src/components/Tabela.module.css
+@@ -146,7 +146,7 @@
+ 
+ .pagAtiva,
+ .pagAtiva:hover:not(:disabled) {
+-  background: var(--color-navy-900);
+-  border-color: var(--color-navy-900);
++  background: var(--color-fill-strong);
++  border-color: var(--color-fill-strong);
+   color: #fff;
+ }
+diff --git a/frontend/src/features/admin/admin.api.js b/frontend/src/features/admin/admin.api.js
+index 30ef00d..6b69554 100644
+--- a/frontend/src/features/admin/admin.api.js
++++ b/frontend/src/features/admin/admin.api.js
+@@ -122,6 +122,16 @@ export function buscarCalendario({ mes, sinal } = {}) {
+   return http.get("/api/admin/agendamentos/calendario", { parametros: { mes }, sinal, autenticado });
+ }
+ 
++/** Pacientes ativos para o "Novo agendamento" (id do usuário, nome, CPF, e-mail). */
++export function listarPacientesParaAgendar({ sinal } = {}) {
++  return http.get("/api/admin/agendamentos/pacientes", { sinal, autenticado });
++}
++
++/** A clínica marca uma consulta por um paciente; horário tomado responde 409. */
++export function criarAgendamento(dados, { sinal } = {}) {
++  return http.post("/api/admin/agendamentos", dados, { sinal, autenticado });
++}
++
+ /** Confirmar, registrar chegada, cancelar...; transição inválida responde 422. */
+ export function alterarStatusDoAgendamento(id, status, { motivo, sinal } = {}) {
+   return http.patch(`/api/admin/agendamentos/${id}/status`, { status, motivo }, { sinal, autenticado });
+diff --git a/frontend/src/features/admin/components/ModalNovoAgendamento.jsx b/frontend/src/features/admin/components/ModalNovoAgendamento.jsx
+new file mode 100644
+index 0000000..9185327
+--- /dev/null
++++ b/frontend/src/features/admin/components/ModalNovoAgendamento.jsx
+@@ -0,0 +1,88 @@
++import { useEffect, useId, useState } from "react";
++
++import ModalAgendamento from "../../../components/ModalAgendamento";
++import estilos from "../../../components/ModalAgendamento.module.css";
++import { criarAgendamento, listarPacientesParaAgendar } from "../admin.api.js";
++
++/**
++ * "Novo agendamento" da clínica: o mesmo formulário do paciente, com a
++ * escolha do paciente no topo. `aoAgendar(paciente, escolha)` roda depois que
++ * a API aceitou (para recarregar a lista e mostrar o aviso).
++ */
++export default function ModalNovoAgendamento({ aberto, aoFechar, aoAgendar }) {
++  const idPaciente = `na-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}-paciente`;
++  const [pacientes, definirPacientes] = useState({ estado: "carregando", lista: [] });
++  const [pacienteId, definirPacienteId] = useState("");
++
++  useEffect(() => {
++    if (!aberto) return undefined;
++    const controle = new AbortController();
++    listarPacientesParaAgendar({ sinal: controle.signal })
++      .then((lista) => {
++        if (!controle.signal.aborted) definirPacientes({ estado: "pronto", lista });
++      })
++      .catch(() => {
++        if (!controle.signal.aborted) definirPacientes({ estado: "erro", lista: [] });
++      });
++    return () => controle.abort();
++  }, [aberto]);
++
++  const fechar = () => {
++    definirPacienteId("");
++    aoFechar();
++  };
++
++  const paciente = pacientes.lista.find((p) => p.usuarioId === pacienteId) ?? null;
++
++  const campoPaciente = (
++    <div className={estilos.campo}>
++      <label className={estilos.rotulo} htmlFor={idPaciente}>Paciente</label>
++      <select
++        id={idPaciente}
++        className={estilos.select}
++        value={pacienteId}
++        onChange={(evento) => definirPacienteId(evento.target.value)}
++        disabled={pacientes.estado !== "pronto"}
++      >
++        <option value="">
++          {pacientes.estado === "carregando"
++            ? "Carregando pacientes…"
++            : pacientes.estado === "erro"
++              ? "Não foi possível carregar os pacientes"
++              : "Selecione o paciente"}
++        </option>
++        {pacientes.lista.map((p) => (
++          <option key={p.usuarioId} value={p.usuarioId}>
++            {p.nome}
++            {p.cpf ? ` · CPF ${p.cpf}` : ` · ${p.email}`}
++          </option>
++        ))}
++      </select>
++    </div>
++  );
++
++  const confirmar = async (escolha) => {
++    await criarAgendamento({
++      pacienteUsuarioId: pacienteId,
++      medicoId: escolha.profissionalId,
++      especialidadeId: escolha.especialidadeId,
++      data: escolha.data,
++      horario: escolha.horario,
++      modalidade: escolha.modalidade,
++    });
++    definirPacienteId("");
++    aoAgendar?.(paciente, escolha);
++  };
++
++  return (
++    <ModalAgendamento
++      aberto={aberto}
++      aoFechar={fechar}
++      aoConfirmar={confirmar}
++      titulo="Novo agendamento"
++      descricao="Escolha o paciente, a especialidade, o profissional e um horário livre."
++      campoExtra={campoPaciente}
++      validarExtra={() => (pacienteId ? null : "Escolha o paciente.")}
++    />
++  );
++}
+diff --git a/frontend/src/features/admin/pages/AdminConectado.jsx b/frontend/src/features/admin/pages/AdminConectado.jsx
+index 1dea683..55404b5 100644
+--- a/frontend/src/features/admin/pages/AdminConectado.jsx
++++ b/frontend/src/features/admin/pages/AdminConectado.jsx
+@@ -16,6 +16,7 @@ import AvisoDoAdmin from "../components/AvisoDoAdmin.jsx";
+ import DialogoAuditoria from "../components/DialogoAuditoria.jsx";
+ import ModalConvenios from "../components/ModalConvenios.jsx";
+ import ModalFormasPagamento from "../components/ModalFormasPagamento.jsx";
++import ModalNovoAgendamento from "../components/ModalNovoAgendamento.jsx";
+ import * as api from "../admin.api.js";
+ import { useEdicaoDeUnidades, useEdicaoDeUsuarios } from "../useEdicaoDeCadastros.jsx";
+ import NotificacoesDoAdmin from "./NotificacoesDoAdmin.jsx";
+@@ -171,6 +172,7 @@ export function UsuariosDoAdmin() {
+         <>
+           <AdminUsuariosPage
+             usuarios={dados.pagina.conteudo.map(paraUsuario)}
++            idDaPropriaConta={usuario?.id ?? null}
+             metricas={metricasDeUsuarios(modelosUsuarios, dados.metricas)}
+             aviso={retorno.aviso}
+             aoNovoUsuario={edicao.novo}
+@@ -253,6 +255,16 @@ export function AgendamentosDoAdmin() {
+ 
+   const lista = useDadosDaApi(carregarLista);
+   const calendario = useDadosDaApi(carregarCalendario);
++  const [novo, definirNovo] = useState(false);
++
++  const agendou = (paciente, escolha) => {
++    const [ano, mesDoAno, dia] = escolha.data.split("-");
++    retorno.sucesso(
++      `Consulta de ${paciente?.nome ?? "paciente"} com ${escolha.profissional} marcada para ${dia}/${mesDoAno}/${ano} às ${escolha.horario}.`,
++    );
++    lista.recarregar();
++    calendario.recarregar();
++  };
+ 
+   const alterarStatus = async (a, status) => {
+     try {
+@@ -271,6 +283,8 @@ export function AgendamentosDoAdmin() {
+       {() => {
+         const agendamentos = lista.dados.pagina.conteudo.map(paraAgendamento);
+         return (
++          <>
++          <ModalNovoAgendamento aberto={novo} aoFechar={() => definirNovo(false)} aoAgendar={agendou} />
+           <AdminAgendamentosPage
+             agendamentos={agendamentos}
+             metricas={metricasDeAgendamentos(modelosAgendamentos, lista.dados.metricas)}
+@@ -280,11 +294,12 @@ export function AgendamentosDoAdmin() {
+             marcacoes={calendario.origem === "api" && calendario.dados ? paraMarcacoes(calendario.dados) : {}}
+             mesInicial={new Date(hoje.getFullYear(), hoje.getMonth(), 1)}
+             diaSelecionado={hoje.getDate()}
+-            periodoInicial={`${mesDe(hoje)}-${String(hoje.getDate()).padStart(2, "0")}`}
+             aviso={retorno.aviso}
+             aoMudarMes={(data) => definirMes(mesDe(data))}
+             aoAlterarStatus={alterarStatus}
++            aoNovoAgendamento={() => definirNovo(true)}
+           />
++          </>
+         );
+       }}
+     </PortaoDaApi>
+diff --git a/frontend/src/features/admin/pages/ExamesDoAdmin.jsx b/frontend/src/features/admin/pages/ExamesDoAdmin.jsx
+index 1c35df8..84455bc 100644
+--- a/frontend/src/features/admin/pages/ExamesDoAdmin.jsx
++++ b/frontend/src/features/admin/pages/ExamesDoAdmin.jsx
+@@ -45,6 +45,10 @@ export default function ExamesDoAdmin() {
+   const [agendando, setAgendando] = useState(null);
+   const [enviandoResultado, setEnviandoResultado] = useState(null);
+   const [cancelando, setCancelando] = useState(null);
++  const [analiseAntecipada, setAnaliseAntecipada] = useState(null);
++
++  const porEmAnalise = (e) =>
++    agir(() => exames.iniciarAnalise(e.id), `${e.nome} de ${e.paciente} em análise.`);
+ 
+   const agir = async (acao, texto) => {
+     try {
+@@ -65,7 +69,12 @@ export default function ExamesDoAdmin() {
+             {
+               icone: "frasco",
+               rotulo: "Pôr em análise",
+-              aoClicar: () => agir(() => exames.iniciarAnalise(e.id), `${e.nome} de ${e.paciente} em análise.`),
++              /* Coleta marcada para depois de agora: pergunta antes, porque
++                 normalmente a análise só começa depois da coleta. */
++              aoClicar: () =>
++                e.status === "agendado" && e.dataHora && new Date(e.dataHora) > new Date()
++                  ? setAnaliseAntecipada(e)
++                  : porEmAnalise(e),
+             },
+           ]
+         : []),
+@@ -132,6 +141,19 @@ export default function ExamesDoAdmin() {
+         }}
+       />
+ 
++      <DialogoConfirmacao
++        aberto={Boolean(analiseAntecipada)}
++        aoFechar={() => setAnaliseAntecipada(null)}
++        titulo="A coleta ainda não aconteceu"
++        mensagem={
++          analiseAntecipada
++            ? `A coleta de ${analiseAntecipada.nome} de ${analiseAntecipada.paciente} está marcada para ${dataHoraBr(analiseAntecipada.dataHora)}. Pôr em análise mesmo assim?`
++            : ""
++        }
++        rotuloConfirmar="Pôr em análise"
++        aoConfirmar={() => porEmAnalise(analiseAntecipada)}
++      />
++
+       <DialogoConfirmacao
+         aberto={Boolean(cancelando)}
+         aoFechar={() => setCancelando(null)}
+diff --git a/frontend/src/features/auth/auth.context.js b/frontend/src/features/auth/auth.context.js
+index 9a7d003..e1616d0 100644
+--- a/frontend/src/features/auth/auth.context.js
++++ b/frontend/src/features/auth/auth.context.js
+@@ -15,3 +15,11 @@ export function useAuth() {
+   }
+   return contexto
+ }
++
++/**
++ * Igual a useAuth, mas fora do <AuthProvider> (telas públicas renderizadas
++ * sozinhas, como nos testes) devolve "ninguém logado" em vez de falhar.
++ */
++export function useAuthOpcional() {
++  return useContext(AuthContext) ?? { usuario: null, sair: () => {} }
++}
+diff --git a/frontend/src/features/medico/layouts/DashboardHeader.module.css b/frontend/src/features/medico/layouts/DashboardHeader.module.css
+index fdf2941..a79e85c 100644
+--- a/frontend/src/features/medico/layouts/DashboardHeader.module.css
++++ b/frontend/src/features/medico/layouts/DashboardHeader.module.css
+@@ -137,7 +137,7 @@
+   font: inherit;
+   font-size: var(--fs-small);
+   color: var(--color-text);
+-  background: #fff;
++  background: var(--color-surface);
+   border: 0;
+   border-radius: var(--radius-button);
+   opacity: 0;
+diff --git a/frontend/src/features/medico/layouts/DashboardLayout.jsx b/frontend/src/features/medico/layouts/DashboardLayout.jsx
+index a8396cf..f6c8a59 100644
+--- a/frontend/src/features/medico/layouts/DashboardLayout.jsx
++++ b/frontend/src/features/medico/layouts/DashboardLayout.jsx
+@@ -1,8 +1,7 @@
+ import Footer from "../../../components/Footer/Footer.jsx";
+ import { cx } from "../../../utils/cx.js";
+ import { useNavegacao } from "../navegacao/useNavegacao.js";
+-import { useTema } from "../tema/useTema.js";
+-import "../tema/temaEscuro.css";
++import { useTema } from "../../../tema/contextoDoTema.js";
+ import DashboardHeader from "./DashboardHeader.jsx";
+ import DashboardSidebar from "./DashboardSidebar.jsx";
+ import styles from "./DashboardLayout.module.css";
+@@ -32,7 +31,7 @@ export default function DashboardLayout({
+   const { tema, alternarTema } = useTema();
+ 
+   return (
+-    <div className={styles.pagina} data-tema={tema}>
++    <div className={styles.pagina} data-area="medico" data-tema={tema}>
+       <a className="skip-link" href="#conteudo">
+         Pular para o conteúdo
+       </a>
+diff --git a/frontend/src/features/medico/telas/AcoesDaConsulta.jsx b/frontend/src/features/medico/telas/AcoesDaConsulta.jsx
+index 92b8641..c7d2da7 100644
+--- a/frontend/src/features/medico/telas/AcoesDaConsulta.jsx
++++ b/frontend/src/features/medico/telas/AcoesDaConsulta.jsx
+@@ -22,12 +22,20 @@ const ACOES_POR_STATUS = {
+ 
+ const CANCELAVEIS = new Set(["pendente", "confirmada"]);
+ 
++/* Só no dia da consulta: antes disso o paciente não chegou nem faltou. */
++const SO_NO_DIA = new Set(["aguardando", "em_andamento", "faltou"]);
++
++const hojeIso = () => {
++  const d = new Date();
++  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
++};
++
+ /**
+  * Botões para mover a consulta de status, com o cancelamento pedindo o
+  * motivo (o paciente recebe o aviso). `aoMudar(consultaAtualizada)` roda
+  * depois de cada mudança; `aoErrar(falha)` recebe a recusa do servidor.
+  */
+-export default function AcoesDaConsulta({ consulta, aoMudar, aoErrar }) {
++export default function AcoesDaConsulta({ consulta, data = consulta.data, aoMudar, aoErrar }) {
+   const [enviando, setEnviando] = useState(false);
+   const [cancelando, setCancelando] = useState(false);
+   const [motivo, setMotivo] = useState("");
+@@ -45,11 +53,19 @@ export default function AcoesDaConsulta({ consulta, aoMudar, aoErrar }) {
+     }
+   };
+ 
+-  const acoes = ACOES_POR_STATUS[consulta.status] ?? [];
+-  if (!acoes.length && !CANCELAVEIS.has(consulta.status)) return null;
++  const futura = Boolean(data) && data > hojeIso();
++  const todas = ACOES_POR_STATUS[consulta.status] ?? [];
++  const acoes = futura ? todas.filter((acao) => !SO_NO_DIA.has(acao.status)) : todas;
++  const esperandoODia = futura && acoes.length < todas.length;
++  if (!acoes.length && !CANCELAVEIS.has(consulta.status)) {
++    return esperandoODia ? <p className={estilos.dicaDoDia}>Chegada e atendimento ficam disponíveis no dia da consulta.</p> : null;
++  }
+ 
+   return (
+     <div className={estilos.botoes}>
++      {esperandoODia && (
++        <p className={estilos.dicaDoDia}>Chegada e atendimento ficam disponíveis no dia da consulta.</p>
++      )}
+       {acoes.map((acao) => (
+         <button
+           key={acao.status}
+diff --git a/frontend/src/features/medico/telas/AgendaDoMedico.jsx b/frontend/src/features/medico/telas/AgendaDoMedico.jsx
+index e1a560c..2f7a50a 100644
+--- a/frontend/src/features/medico/telas/AgendaDoMedico.jsx
++++ b/frontend/src/features/medico/telas/AgendaDoMedico.jsx
+@@ -94,6 +94,7 @@ function ConsultasDoDia({ retorno }) {
+                   ) : (
+                     <AcoesDaConsulta
+                       consulta={consulta}
++                      data={data}
+                       aoMudar={(atualizada) => {
+                         retorno.sucesso(`Consulta de ${atualizada.paciente} atualizada.`);
+                         agenda.recarregar();
+diff --git a/frontend/src/features/medico/tema/useTema.js b/frontend/src/features/medico/tema/useTema.js
+deleted file mode 100644
+index 4262c37..0000000
+--- a/frontend/src/features/medico/tema/useTema.js
++++ /dev/null
+@@ -1,50 +0,0 @@
+-import { useCallback, useEffect, useState } from "react";
+-
+-const CHAVE = "saudeplus:tema";
+-
+-/* Sem escolha salva, segue o sistema operacional. Tudo em try/catch: em aba
+-   anônima ou com armazenamento bloqueado, o tema só não fica salvo. */
+-function temaInicial() {
+-  try {
+-    const salvo = window.localStorage.getItem(CHAVE);
+-    if (salvo === "claro" || salvo === "escuro") return salvo;
+-  } catch {
+-    /* sem armazenamento: cai no padrão do sistema */
+-  }
+-  if (typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches) {
+-    return "escuro";
+-  }
+-  return "claro";
+-}
+-
+-/**
+- * Tema claro/escuro da área do médico.
+- *
+- * Devolve `{ tema, alternarTema }`. Quem usa aplica `data-tema={tema}` no
+- * elemento raiz da área; as cores escuras vêm de `temaEscuro.css`. A escolha
+- * fica salva e vale para todas as telas do médico.
+- */
+-export function useTema() {
+-  const [tema, setTema] = useState(() => (typeof window === "undefined" ? "claro" : temaInicial()));
+-
+-  useEffect(() => {
+-    try {
+-      window.localStorage.setItem(CHAVE, tema);
+-    } catch {
+-      /* sem armazenamento: vale só nesta visita */
+-    }
+-    /* O fundo fora da página (rolagem elástica) e os controles nativos
+-       acompanham o tema enquanto a área do médico estiver aberta. */
+-    const raiz = document.documentElement;
+-    raiz.style.colorScheme = tema === "escuro" ? "dark" : "";
+-    raiz.dataset.temaPainel = tema;
+-    return () => {
+-      raiz.style.colorScheme = "";
+-      delete raiz.dataset.temaPainel;
+-    };
+-  }, [tema]);
+-
+-  const alternarTema = useCallback(() => setTema((atual) => (atual === "escuro" ? "claro" : "escuro")), []);
+-
+-  return { tema, alternarTema };
+-}
+diff --git a/frontend/src/features/paciente/adaptadores.js b/frontend/src/features/paciente/adaptadores.js
+index 3ab43ac..09e74e4 100644
+--- a/frontend/src/features/paciente/adaptadores.js
++++ b/frontend/src/features/paciente/adaptadores.js
+@@ -8,8 +8,10 @@ export function paraConsulta(consulta) {
+   return {
+     id: consulta.id,
+     dateTime: consulta.inicio,
++    fim: consulta.fim,
+     clinic: consulta.unidade.nome,
+     address: consulta.unidade.endereco,
++    phone: consulta.unidade.telefone ?? "",
+     specialty: consulta.especialidade.nome,
+     professional: consulta.medico.nome,
+     status: consulta.status,
+@@ -93,3 +95,15 @@ export function paraNotificacao(notificacao) {
+     para,
+   };
+ }
++
++const STATUS_QUE_OCUPAM = new Set(["pendente", "confirmada", "aguardando", "em_andamento"]);
++
++/**
++ * Horários já tomados pelo paciente, no formato `ocupados` do
++ * ModalAgendamento. `ignorar`: id da consulta que está sendo remarcada.
++ */
++export function ocupadosDe(consultas, ignorar = null) {
++  return consultas
++    .filter((c) => c.fim && STATUS_QUE_OCUPAM.has(c.status) && c.id !== ignorar)
++    .map((c) => ({ inicio: c.dateTime, fim: c.fim }));
++}
+diff --git a/frontend/src/features/paciente/pages/PacienteConectado.jsx b/frontend/src/features/paciente/pages/PacienteConectado.jsx
+index 85bdb2e..850bd99 100644
+--- a/frontend/src/features/paciente/pages/PacienteConectado.jsx
++++ b/frontend/src/features/paciente/pages/PacienteConectado.jsx
+@@ -10,7 +10,7 @@ import ModalAgendamento from "../../../components/ModalAgendamento";
+ import PortaoDaApi from "../../../components/PortaoDaApi/PortaoDaApi.jsx";
+ import AvisoDeSucesso from "../components/AvisoDeSucesso.jsx";
+ import { useDadosDaApi } from "../useDadosDaApi.js";
+-import { paraAtendimento, paraConsulta, paraExame, paraNotificacao, paraPaciente, paraUnidade } from "../adaptadores.js";
++import { ocupadosDe, paraAtendimento, paraConsulta, paraExame, paraNotificacao, paraPaciente, paraUnidade } from "../adaptadores.js";
+ import {
+   avaliarConsulta,
+   baixarResultadoDoExame,
+@@ -183,6 +183,7 @@ export function ConsultasDoPaciente() {
+         aberto={Boolean(remarcando)}
+         aoFechar={() => setRemarcando(null)}
+         aoConfirmar={confirmarRemarcacao}
++        ocupados={ocupadosDe((dados ?? []).map(paraConsulta), remarcando?.id)}
+         fixo={
+           remarcando && {
+             especialidadeId: remarcando.especialidadeId,
+@@ -197,6 +198,7 @@ export function ConsultasDoPaciente() {
+         aoFechar={pedido.encerrar}
+         aoConfirmar={confirmarAgendamento}
+         inicial={pedido.inicial}
++        ocupados={ocupadosDe((dados ?? []).map(paraConsulta))}
+       />
+     </>
+   );
+@@ -239,7 +241,7 @@ export function ClinicasDoPaciente() {
+   const unidades = useDadosDaApi(carregarUnidades);
+   return (
+     <PortaoDaApi estados={unidades} carregando="Carregando as clínicas…" voltar={VOLTAR_AO_PAINEL}>
+-      {() => <ClinicasPage unidades={unidades.dados.map(paraUnidadePublica)} />}
++      {() => <ClinicasPage clinicas={unidades.dados.map(paraUnidadePublica)} />}
+     </PortaoDaApi>
+   );
+ }
+diff --git a/frontend/src/features/profissionais/components/FilterSidebar/FilterSidebar.module.css b/frontend/src/features/profissionais/components/FilterSidebar/FilterSidebar.module.css
+index 97eb9c5..ecef837 100644
+--- a/frontend/src/features/profissionais/components/FilterSidebar/FilterSidebar.module.css
++++ b/frontend/src/features/profissionais/components/FilterSidebar/FilterSidebar.module.css
+@@ -81,13 +81,13 @@
+   height: 18px;
+   border: 1.5px solid var(--color-text-subtle);
+   border-radius: 4px;
+-  background: #fff;
++  background: var(--color-surface);
+   transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease);
+ }
+ .checkbox:hover .box { border-color: var(--color-primary); }
+ .checkbox input:checked + .box {
+-  border-color: var(--color-navy-900);
+-  background: var(--color-navy-900) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 12px no-repeat;
++  border-color: var(--color-fill-strong);
++  background: var(--color-fill-strong) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 12px no-repeat;
+ }
+ .checkbox input:focus-visible + .box {
+   outline: 2px solid var(--color-primary);
+diff --git a/frontend/src/features/profissionais/components/ProfessionalCard/ProfessionalCard.module.css b/frontend/src/features/profissionais/components/ProfessionalCard/ProfessionalCard.module.css
+index b824c47..3ae11f1 100644
+--- a/frontend/src/features/profissionais/components/ProfessionalCard/ProfessionalCard.module.css
++++ b/frontend/src/features/profissionais/components/ProfessionalCard/ProfessionalCard.module.css
+@@ -124,7 +124,7 @@
+   padding: 0;
+   border: 1px solid var(--color-border-strong);
+   border-radius: 4px;
+-  background: #fff;
++  background: var(--color-surface);
+   color: var(--color-navy-950);
+   font-size: var(--fs-xs);
+   font-weight: var(--fw-semibold);
+@@ -134,8 +134,8 @@
+ .slot:hover { border-color: var(--color-primary); color: var(--color-primary-dark); }
+ .slotSelected,
+ .slotSelected:hover {
+-  border-color: var(--color-navy-900);
+-  background: var(--color-navy-900);
++  border-color: var(--color-fill-strong);
++  background: var(--color-fill-strong);
+   color: #fff;
+ }
+ 
+diff --git a/frontend/src/features/profissionais/pages/Buscar.jsx b/frontend/src/features/profissionais/pages/Buscar.jsx
+index e97cc6c..ae953bb 100644
+--- a/frontend/src/features/profissionais/pages/Buscar.jsx
++++ b/frontend/src/features/profissionais/pages/Buscar.jsx
+@@ -15,6 +15,7 @@ import { UsersIcon, ChevronDownIcon } from "../../../components/icons/Icons.jsx"
+ import { useBuscaProfissionais, useListasDaBusca } from "../useBuscaProfissionais.js";
+ import { lerConsultaDaUrl } from "../buscaParametros.js";
+ import { linkDeAgendamento } from "../perfil.js";
++import { useAuthOpcional } from "../../auth/auth.context.js";
+ import {
+   SEARCH_BENEFITS, CITIES, CARE_TYPES, SPECIALTY_NAMES, SIDEBAR_SPECIALTIES, SORT_OPTIONS,
+ } from "../data/buscar.js";
+@@ -27,6 +28,12 @@ const EMPTY_FILTERS = { types: [], specialties: [], insurances: [], allInsurance
+ 
+ export default function Buscar({ onUnavailable }) {
+   const [params, setParams] = useSearchParams();
++  const { usuario } = useAuthOpcional();
++  const avisoDeAgendamento = !usuario
++    ? "Para agendar, entre na sua conta: as consultas são marcadas pela área do paciente."
++    : usuario.role === "PACIENTE"
++      ? "Escolha um horário no cartão do profissional e clique em “Agendar consulta”."
++      : "Agendamentos são feitos com uma conta de paciente.";
+ 
+   // Parâmetros vindos de outras páginas (?q=, ?especialidade=, ?cidade=, ?tipo=)
+   const initialPanel = lerConsultaDaUrl(params);
+@@ -129,9 +136,7 @@ export default function Buscar({ onUnavailable }) {
+         />
+ 
+         <section className={styles.results} aria-labelledby="results-title">
+-          <p className={styles.demoNotice}>
+-            Para agendar, entre na sua conta: as consultas são marcadas pela área do paciente.
+-          </p>
++          <p className={styles.demoNotice}>{avisoDeAgendamento}</p>
+           <header className={styles.resultsHeader}>
+             <IconCircle icon={UsersIcon} tone="glass" size={48} iconSize={30} />
+             <div className={styles.resultsHeading}>
+diff --git a/frontend/src/features/profissionais/pages/Buscar.module.css b/frontend/src/features/profissionais/pages/Buscar.module.css
+index 20f4996..aca148b 100644
+--- a/frontend/src/features/profissionais/pages/Buscar.module.css
++++ b/frontend/src/features/profissionais/pages/Buscar.module.css
+@@ -114,7 +114,7 @@
+   height: 40px;
+   border: 1px solid var(--color-border-strong);
+   border-radius: 6px;
+-  background: #fff;
++  background: var(--color-surface);
+   color: var(--color-text-soft);
+ }
+ .sortSelect:focus-within { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(0, 112, 232, 0.16); }
+@@ -149,7 +149,7 @@
+   margin-top: var(--space-4);
+   padding: var(--space-10) var(--space-6);
+   text-align: center;
+-  background: #fff;
++  background: var(--color-surface);
+   border: 1px dashed var(--color-border-strong);
+   border-radius: var(--radius-card);
+ }
+@@ -161,7 +161,7 @@
+   padding: 0 22px;
+   border: 1px solid var(--color-border-strong);
+   border-radius: var(--radius-button);
+-  background: #fff;
++  background: var(--color-surface);
+   color: var(--color-primary-dark);
+   font-weight: var(--fw-semibold);
+ }
+diff --git a/frontend/src/features/profissionais/pages/PerfilProfissional.jsx b/frontend/src/features/profissionais/pages/PerfilProfissional.jsx
+index 9e2063c..22503a7 100644
+--- a/frontend/src/features/profissionais/pages/PerfilProfissional.jsx
++++ b/frontend/src/features/profissionais/pages/PerfilProfissional.jsx
+@@ -9,6 +9,7 @@ import {
+ } from "../../../components/icons/Icons.jsx";
+ import { buscarProfissional, listarAvaliacoes, listarHorarios } from "../profissionais.api.js";
+ import { agruparHorarios, linkDeAgendamento, paraPerfil, rotuloDoDia } from "../perfil.js";
++import { useAuthOpcional } from "../../auth/auth.context.js";
+ 
+ import styles from "./PerfilProfissional.module.css";
+ 
+@@ -165,6 +166,7 @@ function Avaliacoes({ id, primeiraPagina }) {
+ /** Perfil público do profissional (`/profissionais/:id`). */
+ export default function PerfilProfissional() {
+   const { id } = useParams();
++  const { usuario } = useAuthOpcional();
+   const { estado, perfil, dias, avaliacoes, tentarDeNovo } = usePerfil(id);
+ 
+   useEffect(() => {
+@@ -238,7 +240,10 @@ export default function PerfilProfissional() {
+             </p>
+           )}
+           <Button to={linkDeAgendamento(perfil.id)} className={styles.agendar}>Agendar consulta</Button>
+-          <p className={styles.dica}>Para agendar, entre na sua conta de paciente.</p>
++          {!usuario && <p className={styles.dica}>Para agendar, entre na sua conta de paciente.</p>}
++          {usuario && usuario.role !== "PACIENTE" && (
++            <p className={styles.dica}>Agendamentos são feitos com uma conta de paciente.</p>
++          )}
+         </div>
+       </section>
+ 
+diff --git a/frontend/src/features/profissionais/pages/PerfilProfissional.module.css b/frontend/src/features/profissionais/pages/PerfilProfissional.module.css
+index 3f2a3a9..3efe939 100644
+--- a/frontend/src/features/profissionais/pages/PerfilProfissional.module.css
++++ b/frontend/src/features/profissionais/pages/PerfilProfissional.module.css
+@@ -173,7 +173,7 @@
+   height: 38px;
+   border: 1px solid var(--color-border-strong);
+   border-radius: 4px;
+-  background: #fff;
++  background: var(--color-surface);
+   color: var(--color-navy-950);
+   font-size: var(--fs-xs);
+   font-weight: var(--fw-semibold);
+@@ -183,8 +183,8 @@
+ }
+ .horario:hover,
+ .horario:focus-visible {
+-  border-color: var(--color-navy-900);
+-  background: var(--color-navy-900);
++  border-color: var(--color-fill-strong);
++  background: var(--color-fill-strong);
+   color: #fff;
+ }
+ 
+diff --git a/frontend/src/layouts/AdminLayout.jsx b/frontend/src/layouts/AdminLayout.jsx
+index c62890b..12f13e3 100644
+--- a/frontend/src/layouts/AdminLayout.jsx
++++ b/frontend/src/layouts/AdminLayout.jsx
+@@ -4,6 +4,8 @@ import Icone from "../components/Icone";
+ import Avatar from "../components/Avatar";
+ import MenuPerfil from "../components/MenuPerfil/MenuPerfil.jsx";
+ import { useAuth } from "../features/auth/auth.context.js";
++import { useTema } from "../tema/contextoDoTema.js";
++import { itemDoTema } from "../tema/itemDoTema.js";
+ import { itensMenu, itensTopo, usuarioLogado } from "../services/dadosAdminNavegacao";
+ import estilos from "./AdminLayout.module.css";
+ 
+@@ -28,6 +30,7 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
+   const idMenuConta = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}-menu-conta`;
+   const navegar = useNavigate();
+   const { sair } = useAuth();
++  const { tema, alternarTema } = useTema();
+ 
+   const iconeDoMenu = (nome) =>
+     function IconeDoMenu({ size, className }) {
+@@ -37,6 +40,7 @@ export default function AdminLayout({ usuario = usuarioLogado, modulos = null, c
+   const itensDaConta = [
+     { rotulo: "Minha conta", icone: iconeDoMenu("usuario"), href: "/admin/configuracoes" },
+     { rotulo: "Ajuda", icone: iconeDoMenu("interrogacao"), href: "/ajuda" },
++    itemDoTema(tema, alternarTema),
+     {
+       rotulo: "Sair",
+       icone: iconeDoMenu("cadeadoAberto"),
+diff --git a/frontend/src/layouts/Header.jsx b/frontend/src/layouts/Header.jsx
+index 47f8f3c..ea0beca 100644
+--- a/frontend/src/layouts/Header.jsx
++++ b/frontend/src/layouts/Header.jsx
+@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from "react";
+ import Logo from "../components/Logo/Logo.jsx";
+ import Button from "../components/Button/Button.jsx";
+ import { SearchIcon, MenuIcon } from "../components/icons/Icons.jsx";
++import { MoonIcon, SunIcon } from "../features/medico/components/icons/MedicoIcons.jsx";
++import { useAuthOpcional } from "../features/auth/auth.context.js";
++import { ROTA_INICIAL_POR_ROLE } from "../features/auth/auth.rotas.js";
++import { useTema } from "../tema/contextoDoTema.js";
+ import { NAV_ITEMS } from "./navigation.js";
+ import { cx } from "../utils/cx.js";
+ import styles from "./Header.module.css";
+@@ -16,6 +20,30 @@ export default function Header() {
+   const inputRef = useRef(null);
+   const searchRef = useRef(null);
+   const menuRef = useRef(null);
++  const { usuario, sair } = useAuthOpcional();
++  const { tema, alternarTema } = useTema();
++  const escuro = tema === "escuro";
++  const IconeTema = escuro ? SunIcon : MoonIcon;
++
++  const encerrarSessao = () => {
++    setOpenPanel(null);
++    sair();
++    navigate("/", { replace: true });
++  };
++
++  /* Logado, a faixa troca "Entrar / Criar conta" pelo atalho do painel. */
++  const acoesDaConta = (variantes) =>
++    usuario ? (
++      <>
++        <Button variant={variantes[0]} onClick={encerrarSessao} className={variantes[2]}>Sair</Button>
++        <Button variant={variantes[1]} to={ROTA_INICIAL_POR_ROLE[usuario.role] ?? "/login"} onClick={() => setOpenPanel(null)} className={variantes[3]}>Meu painel</Button>
++      </>
++    ) : (
++      <>
++        <Button variant={variantes[0]} to="/login" onClick={() => setOpenPanel(null)} className={variantes[2]}>Entrar</Button>
++        <Button variant={variantes[1]} to="/cadastro" onClick={() => setOpenPanel(null)} className={variantes[3]}>Criar conta</Button>
++      </>
++    );
+ 
+ 
+   const toggle = (panel) => setOpenPanel((current) => (current === panel ? null : panel));
+@@ -76,8 +104,18 @@ export default function Header() {
+             <span className="sr-only">Pesquisar</span>
+           </button>
+ 
+-          <Button variant="ghost" to="/login" onClick={() => setOpenPanel(null)} className={styles.loginButton}>Entrar</Button>
+-          <Button variant="light" to="/cadastro" onClick={() => setOpenPanel(null)} className={styles.signupButton}>Criar conta</Button>
++          <button
++            type="button"
++            className={cx(styles.iconButton, styles.themeButton)}
++            aria-pressed={escuro}
++            onClick={alternarTema}
++            title={escuro ? "Usar modo claro" : "Usar modo escuro"}
++          >
++            <IconeTema size={22} />
++            <span className="sr-only">Modo escuro</span>
++          </button>
++
++          {acoesDaConta(["ghost", "light", styles.loginButton, styles.signupButton])}
+ 
+           <button
+             type="button"
+@@ -122,8 +160,7 @@ export default function Header() {
+             </NavLink>
+           ))}
+           <div className={styles.mobileActions}>
+-            <Button variant="outline" to="/login" onClick={() => setOpenPanel(null)}>Entrar</Button>
+-            <Button variant="primary" to="/cadastro" onClick={() => setOpenPanel(null)}>Criar conta</Button>
++            {acoesDaConta(["outline", "primary"])}
+           </div>
+         </nav>
+       )}
+diff --git a/frontend/src/layouts/Header.module.css b/frontend/src/layouts/Header.module.css
+index 5da09da..e02b279 100644
+--- a/frontend/src/layouts/Header.module.css
++++ b/frontend/src/layouts/Header.module.css
+@@ -100,7 +100,8 @@
+ .iconButton:hover { background: var(--shell-hover); }
+ .iconButton[aria-expanded="true"] { background: var(--shell-active); }
+ 
+-.searchButton { margin-right: var(--space-2); }
++.searchButton { margin-right: 0; }
++.themeButton { margin-right: var(--space-2); }
+ 
+ .loginButton,
+ .signupButton {
+diff --git a/frontend/src/main.jsx b/frontend/src/main.jsx
+index 686b0de..81b4183 100644
+--- a/frontend/src/main.jsx
++++ b/frontend/src/main.jsx
+@@ -5,15 +5,19 @@ import './styles/tokens.css'
+ import './styles/tokens-admin.css'
+ import './styles/global.css'
+ import './styles/auth-base.css'
++import './styles/temaEscuro.css'
+ import App from './app/App.jsx'
+ import AuthProvider from './features/auth/AuthProvider.jsx'
++import ProvedorDeTema from './tema/ProvedorDeTema.jsx'
+ 
+ createRoot(document.getElementById('root')).render(
+   <StrictMode>
+-    <BrowserRouter>
+-      <AuthProvider>
+-        <App />
+-      </AuthProvider>
+-    </BrowserRouter>
++    <ProvedorDeTema>
++      <BrowserRouter>
++        <AuthProvider>
++          <App />
++        </AuthProvider>
++      </BrowserRouter>
++    </ProvedorDeTema>
+   </StrictMode>,
+ )
+diff --git a/frontend/src/pages/AdminAgendamentosPage.jsx b/frontend/src/pages/AdminAgendamentosPage.jsx
+index b7e8aae..56ee7dd 100644
+--- a/frontend/src/pages/AdminAgendamentosPage.jsx
++++ b/frontend/src/pages/AdminAgendamentosPage.jsx
+@@ -5,6 +5,7 @@ import Cartao from "../components/Cartao";
+ import Etiqueta from "../components/Etiqueta";
+ import Avatar from "../components/Avatar";
+ import Calendario from "../components/Calendario";
++import DialogoConfirmacao from "../components/DialogoConfirmacao.jsx";
+ import { CampoBusca, Seletor, Botao, Campo } from "../components/Controles";
+ import {
+   Tabela,
+@@ -39,16 +40,17 @@ const COLUNAS = [
+  * Ações da linha com a API: confirmar o que está pendente, registrar a
+  * chegada do confirmado e cancelar enquanto a consulta não começou.
+  */
+-function acoesDoAgendamento(a, aoAlterarStatus) {
++function acoesDoAgendamento(a, aoAlterarStatus, aoPedirCancelamento, hojeIso) {
+   const acoes = [];
+   if (a.status === "pendente") {
+     acoes.push({ icone: "checkCirculo", rotulo: "Confirmar", aoClicar: () => aoAlterarStatus(a, "confirmada") });
+   }
+-  if (a.status === "confirmada") {
++  /* Chegada só no dia: antes disso o paciente ainda não pode estar na recepção. */
++  if (a.status === "confirmada" && (!a.dataIso || a.dataIso <= hojeIso)) {
+     acoes.push({ icone: "usuario", rotulo: "Registrar chegada", aoClicar: () => aoAlterarStatus(a, "aguardando") });
+   }
+   if (a.status === "pendente" || a.status === "confirmada") {
+-    acoes.push({ icone: "alertaX", rotulo: "Cancelar", tom: "perigo", aoClicar: () => aoAlterarStatus(a, "cancelada") });
++    acoes.push({ icone: "alertaX", rotulo: "Cancelar", tom: "perigo", aoClicar: () => aoPedirCancelamento(a) });
+   }
+   return acoes;
+ }
+@@ -66,22 +68,24 @@ export default function AdminAgendamentosPage({
+   diaSelecionado = 15,
+   filtrosClinica = filtrosClinicaMock,
+   filtrosProfissional = filtrosProfissionalMock,
+-  periodoInicial = "2026-09-15",
+   aviso = null,
+   aoMudarMes,
+   aoAlterarStatus,
++  aoNovoAgendamento,
+ }) {
+-  const [periodo, definirPeriodo] = useState(periodoInicial);
+   const [hoje] = useState(() => new Date());
++  const hojeIso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
++  const [cancelando, definirCancelando] = useState(null);
+ 
+   const tabela = useTabela({
+     dados: agendamentos,
+     porPagina: 7,
+     camposBusca: ["paciente", "profissional", "especialidade", "cpf"],
+-    valoresIniciais: { clinica: "todas", profissional: "todos" },
++    valoresIniciais: { clinica: "todas", profissional: "todos", data: "" },
+     filtros: {
+       clinica: (item, valor) => item.unidade === valor,
+       profissional: (item, valor) => item.profissional === valor,
++      data: (item, valor) => item.dataIso === valor,
+     },
+   });
+ 
+@@ -109,9 +113,15 @@ export default function AdminAgendamentosPage({
+             <Calendario
+               mesInicial={mesInicial}
+               diaSelecionado={diaSelecionado}
++              dataSelecionada={tabela.valores.data || null}
+               marcacoes={marcacoes}
+               tipos={tiposCalendario}
+               aoMudarMes={aoMudarMes}
++              aoSelecionarDia={(dia, referencia) => {
++                const iso = `${referencia.getFullYear()}-${String(referencia.getMonth() + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
++                // Clicar de novo no dia marcado tira o filtro.
++                tabela.definirFiltro("data", tabela.valores.data === iso ? "" : iso);
++              }}
+             />
+           </Cartao>
+ 
+@@ -132,15 +142,12 @@ export default function AdminAgendamentosPage({
+               <Campo
+                 rotulo="Data"
+                 tipo="date"
+-                valor={periodo}
+-                aoMudar={definirPeriodo}
++                valor={tabela.valores.data}
++                aoMudar={(v) => tabela.definirFiltro("data", v)}
+                 icone="calendario"
+               />
+-              <Botao icone="busca" blocoTotal onClick={() => tabela.definirPagina(1)}>
+-                Aplicar filtros
+-              </Botao>
+               <Botao variante="secundario" blocoTotal onClick={tabela.limpar}>
+-                Limpar
++                Limpar filtros
+               </Botao>
+             </div>
+           </Cartao>
+@@ -154,7 +161,9 @@ export default function AdminAgendamentosPage({
+               aoMudar={tabela.aoBuscar}
+               placeholder="Buscar paciente, profissional ou especialidade..."
+             />
+-            <Botao icone="mais">Novo agendamento</Botao>
++            {aoNovoAgendamento && (
++              <Botao icone="mais" onClick={aoNovoAgendamento}>Novo agendamento</Botao>
++            )}
+           </div>
+ 
+           <Cartao semPadding>
+@@ -183,7 +192,7 @@ export default function AdminAgendamentosPage({
+                       </td>
+                       <td>
+                         <CelulaIcone icone="localizacao">
+-                          <span>
++                          <span style={{ minWidth: 150, display: "inline-block" }}>
+                             <span style={{ fontWeight: 600, color: "var(--texto)" }}>
+                               {a.unidade}
+                             </span>
+@@ -203,7 +212,7 @@ export default function AdminAgendamentosPage({
+                         <AcoesLinha
+                           acoes={
+                             aoAlterarStatus
+-                              ? acoesDoAgendamento(a, aoAlterarStatus)
++                              ? acoesDoAgendamento(a, aoAlterarStatus, definirCancelando, hojeIso)
+                               : [
+                                   { icone: "olho", rotulo: "Ver detalhes" },
+                                   { icone: "lapis", rotulo: "Editar" },
+@@ -228,6 +237,19 @@ export default function AdminAgendamentosPage({
+           </Cartao>
+         </div>
+       </div>
++
++      <DialogoConfirmacao
++        aberto={Boolean(cancelando)}
++        aoFechar={() => definirCancelando(null)}
++        titulo="Cancelar agendamento"
++        mensagem={
++          cancelando
++            ? `Cancelar a consulta de ${cancelando.paciente} em ${cancelando.data} às ${cancelando.hora}? O paciente e o profissional são avisados, e não dá para desfazer.`
++            : ""
++        }
++        rotuloConfirmar="Sim, cancelar"
++        aoConfirmar={() => aoAlterarStatus(cancelando, "cancelada")}
++      />
+     </>
+   );
+ }
+diff --git a/frontend/src/pages/AdminConfiguracoesPage.jsx b/frontend/src/pages/AdminConfiguracoesPage.jsx
+index 7de9222..ddcb006 100644
+--- a/frontend/src/pages/AdminConfiguracoesPage.jsx
++++ b/frontend/src/pages/AdminConfiguracoesPage.jsx
+@@ -1,3 +1,4 @@
++import { useState } from "react";
+ import { useSearchParams } from "react-router-dom";
+ import CabecalhoPagina from "../components/CabecalhoPagina";
+ import Abas from "../components/Abas";
+@@ -37,6 +38,7 @@ const subtitulos = {
+ /** `propsDasAbas`: props extras por aba (ex.: `{ usuarios: { aoSalvarPermissoes } }`). */
+ export default function AdminConfiguracoesPage({ propsDasAbas = {}, aviso = null }) {
+   const [parametros, definirParametros] = useSearchParams();
++  const [hoje] = useState(() => new Date());
+   const aba = conteudos[parametros.get("aba")] ? parametros.get("aba") : "geral";
+   const Conteudo = conteudos[aba];
+ 
+@@ -50,7 +52,7 @@ export default function AdminConfiguracoesPage({ propsDasAbas = {}, aviso = null
+         titulo="Configurações"
+         subtitulo={subtitulos[aba]}
+         icone="engrenagem"
+-        data={new Date(2026, 8, 15)}
++        data={hoje}
+       />
+ 
+       {aviso}
+diff --git a/frontend/src/pages/AdminDashboardPage.jsx b/frontend/src/pages/AdminDashboardPage.jsx
+index e3c9593..4e84ba2 100644
+--- a/frontend/src/pages/AdminDashboardPage.jsx
++++ b/frontend/src/pages/AdminDashboardPage.jsx
+@@ -186,7 +186,7 @@ export default function AdminDashboardPage({
+         <Cartao
+           titulo="Notificações do sistema"
+           icone="sino"
+-          acao={{ rotulo: "Ver todas", href: "#" }}
++          acao={{ rotulo: "Ver todas", href: "/admin/notificacoes" }}
+         >
+           <div className={estilos.lista}>
+             {notificacoes.map((n) => (
+diff --git a/frontend/src/pages/AdminSuportePage.jsx b/frontend/src/pages/AdminSuportePage.jsx
+index a8aaad6..c572c97 100644
+--- a/frontend/src/pages/AdminSuportePage.jsx
++++ b/frontend/src/pages/AdminSuportePage.jsx
+@@ -1,4 +1,8 @@
++import { useState } from "react";
++import { useNavigate } from "react-router-dom";
++
+ import CabecalhoPagina from "../components/CabecalhoPagina";
++import { avisarEmBreve } from "../components/AvailabilityNotice/emBreve.js";
+ import Cartao from "../components/Cartao";
+ import Acordeao from "../components/Acordeao";
+ import ItemLista, { Lista } from "../components/ItemLista";
+@@ -14,13 +18,15 @@ import comum from "../styles/adminComum.module.css";
+ import estilos from "./AdminSuportePage.module.css";
+ 
+ export default function AdminSuportePage() {
++  const navegar = useNavigate();
++  const [hoje] = useState(() => new Date());
+   return (
+     <>
+       <CabecalhoPagina
+         titulo="Suporte"
+         subtitulo="Estamos aqui para te ajudar! Encontre as informações e canais de atendimento."
+         icone="suporte"
+-        data={new Date(2026, 8, 15)}
++        data={hoje}
+       />
+ 
+       {/* ---------- canais de atendimento ---------- */}
+@@ -34,13 +40,21 @@ export default function AdminSuportePage() {
+             <p className={estilos.canalTexto}>{canal.descricao}</p>
+ 
+             {canal.acao.href ? (
+-              <a href={canal.acao.href} className={estilos.canalLink}>
+-                <Botao variante={canal.acao.variante} icone={canal.acao.icone} blocoTotal>
+-                  {canal.acao.rotulo}
+-                </Botao>
+-              </a>
++              <Botao
++                variante={canal.acao.variante}
++                icone={canal.acao.icone}
++                blocoTotal
++                onClick={() => window.location.assign(canal.acao.href)}
++              >
++                {canal.acao.rotulo}
++              </Botao>
+             ) : (
+-              <Botao variante={canal.acao.variante} icone={canal.acao.icone} blocoTotal>
++              <Botao
++                variante={canal.acao.variante}
++                icone={canal.acao.icone}
++                blocoTotal
++                onClick={() => avisarEmBreve(canal.acao.emBreve ?? canal.titulo)}
++              >
+                 {canal.acao.rotulo}
+               </Botao>
+             )}
+@@ -55,7 +69,7 @@ export default function AdminSuportePage() {
+             titulo="Perguntas Frequentes (FAQ)"
+             subtitulo="Encontre respostas para as dúvidas mais comuns."
+             icone="chatDuplo"
+-            acao={{ rotulo: "Ver todas as perguntas", href: "#" }}
++            acao={{ rotulo: "Ver todas as perguntas", href: "/ajuda" }}
+           >
+             <Acordeao itens={perguntasFrequentes} />
+ 
+@@ -70,7 +84,9 @@ export default function AdminSuportePage() {
+                   conosco!
+                 </p>
+               </div>
+-              <Botao icone="chat">Falar com o Suporte</Botao>
++              <Botao icone="chat" onClick={() => window.location.assign("mailto:suporte@saudeplus.com.br")}>
++                Falar com o Suporte
++              </Botao>
+             </div>
+           </Cartao>
+         </div>
+@@ -107,7 +123,7 @@ export default function AdminSuportePage() {
+                   titulo={link.titulo}
+                   descricao={link.descricao}
+                   comSeta
+-                  aoClicar={() => {}}
++                  aoClicar={() => (link.para ? navegar(link.para) : avisarEmBreve(link.emBreve ?? link.titulo))}
+                 />
+               ))}
+             </Lista>
+diff --git a/frontend/src/pages/AdminUsuariosPage.jsx b/frontend/src/pages/AdminUsuariosPage.jsx
+index b5bbe43..b914ed4 100644
+--- a/frontend/src/pages/AdminUsuariosPage.jsx
++++ b/frontend/src/pages/AdminUsuariosPage.jsx
+@@ -47,6 +47,8 @@ export default function AdminUsuariosPage({
+   aoAlternarBloqueio,
+   aoEditar,
+   aoExcluir,
++  /* A própria conta não aparece com "Bloquear" nem "Excluir": a API recusa. */
++  idDaPropriaConta = null,
+ }) {
+   const [hoje] = useState(() => new Date());
+   const tabela = useTabela({
+@@ -144,7 +146,9 @@ export default function AdminUsuariosPage({
+                         ...(aoEditar
+                           ? [{ icone: "lapis", rotulo: "Editar", aoClicar: () => aoEditar(u) }]
+                           : [{ icone: "olho", rotulo: "Ver detalhes" }, { icone: "lapis", rotulo: "Editar" }]),
+-                        aoAlternarBloqueio
++                        u.id === idDaPropriaConta
++                          ? null
++                          : aoAlternarBloqueio
+                           ? {
+                               icone: "cadeado",
+                               rotulo: u.status === "bloqueado" ? "Desbloquear" : "Bloquear",
+@@ -152,10 +156,10 @@ export default function AdminUsuariosPage({
+                               aoClicar: () => aoAlternarBloqueio(u),
+                             }
+                           : { icone: "maisOpcoes", rotulo: "Mais opções", tom: "neutra" },
+-                        ...(aoExcluir && u.status !== "inativo"
++                        ...(aoExcluir && u.status !== "inativo" && u.id !== idDaPropriaConta
+                           ? [{ icone: "lixeira", rotulo: "Excluir", tom: "perigo", aoClicar: () => aoExcluir(u) }]
+                           : []),
+-                      ]}
++                      ].filter(Boolean)}
+                     />
+                   </td>
+                 </tr>
+diff --git a/frontend/src/pages/ClinicasPage.jsx b/frontend/src/pages/ClinicasPage.jsx
+index f6bdfd3..26b9047 100644
+--- a/frontend/src/pages/ClinicasPage.jsx
++++ b/frontend/src/pages/ClinicasPage.jsx
+@@ -44,14 +44,14 @@ function MiniaturaMapa() {
+   return (
+     <div className={estilos.mapa} aria-hidden="true">
+       <svg viewBox="0 0 120 120" preserveAspectRatio="xMidYMid slice">
+-        <rect width="120" height="120" fill="#FDE7EE" />
+-        <path d="M-10 70 130 20M-10 110 130 60M30 -10 70 130M-10 30 130 100" stroke="#fff" strokeWidth="8" />
+-        <path d="M-10 90 130 40" stroke="#fff" strokeWidth="4" />
++        <rect width="120" height="120" className={estilos.mapaFundo} />
++        <path d="M-10 70 130 20M-10 110 130 60M30 -10 70 130M-10 30 130 100" className={estilos.mapaRua} strokeWidth="8" />
++        <path d="M-10 90 130 40" className={estilos.mapaRua} strokeWidth="4" />
+         <path
+           d="M60 38c-8 0-14 5.9-14 13.4 0 10 14 22.6 14 22.6s14-12.6 14-22.6C74 43.9 68 38 60 38z"
+-          fill="#F0436B"
++          className={estilos.mapaPino}
+         />
+-        <circle cx="60" cy="51" r="5" fill="#fff" />
++        <circle cx="60" cy="51" r="5" className={estilos.mapaPinoMiolo} />
+       </svg>
+     </div>
+   );
+diff --git a/frontend/src/pages/ClinicasPage.module.css b/frontend/src/pages/ClinicasPage.module.css
+index d4ef778..00a1aeb 100644
+--- a/frontend/src/pages/ClinicasPage.module.css
++++ b/frontend/src/pages/ClinicasPage.module.css
+@@ -136,3 +136,186 @@
+   color: var(--color-text-muted);
+ }
+ .info strong { color: var(--color-text-strong); }
++
++/* ---------- Lista de unidades (dados da API) ---------- */
++.secao {
++  margin-top: var(--space-8);
++}
++
++.lista {
++  display: flex;
++  flex-direction: column;
++  gap: var(--space-3);
++  margin: 0;
++  padding: 0;
++  list-style: none;
++}
++
++.vazio {
++  padding: 22px;
++  border: 1px dashed var(--color-border-strong);
++  border-radius: var(--radius-card);
++  font-size: var(--fs-small);
++  line-height: 1.55;
++  color: var(--color-text-muted);
++}
++
++.cartaoItem {
++  display: flex;
++  align-items: flex-start;
++  gap: 20px;
++  padding: 18px 20px;
++  background: var(--color-surface);
++  border: 1px solid var(--color-border);
++  border-radius: var(--radius-card);
++  transition: border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
++}
++
++.cartaoItem:hover {
++  border-color: var(--color-border-hover);
++  box-shadow: var(--shadow-card);
++}
++
++.mapa {
++  flex-shrink: 0;
++  width: 84px;
++  height: 84px;
++  overflow: hidden;
++  border-radius: 14px;
++}
++
++.mapa svg {
++  display: block;
++  width: 100%;
++  height: 100%;
++}
++
++.mapaFundo { fill: var(--color-primary-light); }
++.mapaRua { stroke: var(--color-surface); }
++.mapaPino { fill: var(--color-primary); }
++.mapaPinoMiolo { fill: var(--color-surface); }
++
++.corpo {
++  flex: 1;
++  min-width: 0;
++}
++
++.linhaTopo {
++  display: flex;
++  align-items: center;
++  gap: 12px;
++}
++
++.nome {
++  flex: 1;
++  min-width: 0;
++  margin: 0;
++  font-size: var(--fs-body);
++  font-weight: var(--fw-bold);
++  color: var(--color-navy-950);
++}
++
++.selo {
++  flex-shrink: 0;
++  padding: 5px 12px;
++  border-radius: var(--radius-pill);
++  background: var(--state-info-bg);
++  font-size: var(--fs-xs);
++  font-weight: var(--fw-semibold);
++  color: var(--state-info);
++  white-space: nowrap;
++}
++
++.detalhes {
++  display: flex;
++  flex-direction: column;
++  gap: 7px;
++  margin-top: 10px;
++  font-style: normal;
++}
++
++.meta {
++  display: flex;
++  align-items: center;
++  gap: 8px;
++  margin: 0;
++  font-size: var(--fs-small);
++  line-height: 1.45;
++  color: var(--color-text-muted);
++}
++
++.metaIcone {
++  flex-shrink: 0;
++  width: 16px;
++  height: 16px;
++  color: var(--color-primary);
++}
++
++.telefone {
++  color: inherit;
++  text-decoration: none;
++}
++
++.telefone:hover {
++  color: var(--color-primary);
++  text-decoration: underline;
++}
++
++.especialidades {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 8px;
++  margin: 14px 0 0;
++  padding: 14px 0 0;
++  list-style: none;
++  border-top: 1px solid var(--color-border);
++}
++
++.etiqueta {
++  padding: 5px 12px;
++  border: 1px solid var(--color-border);
++  border-radius: var(--radius-pill);
++  background: var(--color-surface-soft);
++  font-size: var(--fs-xs);
++  font-weight: var(--fw-semibold);
++  color: var(--color-navy-900);
++}
++
++.acao {
++  display: inline-flex;
++  align-items: center;
++  gap: 8px;
++  min-height: 44px;
++  margin-top: 8px;
++  margin-left: -14px;
++  padding: 10px 14px;
++  border: 0;
++  border-radius: var(--radius-pill);
++  background: none;
++  font-family: inherit;
++  font-size: var(--fs-small);
++  font-weight: var(--fw-bold);
++  color: var(--color-primary);
++  cursor: pointer;
++  transition: background var(--duration) var(--ease);
++}
++
++.acao:hover {
++  background: var(--color-primary-light);
++}
++
++.acaoIcone {
++  width: 16px;
++  height: 16px;
++  transition: transform var(--duration) var(--ease);
++}
++
++.acao:hover .acaoIcone {
++  transform: translateX(3px);
++}
++
++@media (max-width: 720px) {
++  .cartaoItem { gap: 14px; padding: 16px; }
++  .mapa { width: 60px; height: 60px; }
++  .linhaTopo { flex-wrap: wrap; gap: 8px; }
++}
+diff --git a/frontend/src/pages/ConsultasPage.jsx b/frontend/src/pages/ConsultasPage.jsx
+index dad93cc..d8ca141 100644
+--- a/frontend/src/pages/ConsultasPage.jsx
++++ b/frontend/src/pages/ConsultasPage.jsx
+@@ -93,6 +93,13 @@ function CartaoConsulta({ consulta, passada = false, aoCancelar, aoRemarcar }) {
+   const [enviando, setEnviando] = useState(false);
+   const [erro, setErro] = useState(null);
+   const temAcoes = consulta.podeAlterar && (aoCancelar || aoRemarcar);
++  /* Dentro do prazo mínimo a API não deixa remarcar nem cancelar: em vez de
++     os botões sumirem sem explicação, a pessoa sabe o que fazer. */
++  const foraDoPrazo =
++    !passada &&
++    (aoCancelar || aoRemarcar) &&
++    consulta.podeAlterar === false &&
++    (consulta.status === 'pendente' || consulta.status === 'confirmada');
+ 
+   const cancelar = async () => {
+     setEnviando(true);
+@@ -180,6 +187,12 @@ function CartaoConsulta({ consulta, passada = false, aoCancelar, aoRemarcar }) {
+             )}
+           </div>
+         )}
++        {foraDoPrazo && (
++          <p className={estilos.prazo}>
++            Faltam menos de 24 horas para esta consulta. Para remarcar ou cancelar, fale com a clínica
++            {consulta.phone ? ` pelo ${consulta.phone}` : ''}.
++          </p>
++        )}
+         {erro && <p className={estilos.erroAcao} role="alert">{erro}</p>}
+       </div>
+     </li>
+@@ -199,16 +212,20 @@ export default function ConsultasPage({ consultas = mockAppointments, aviso = nu
+   // Instante fixado na montagem: Date.now() direto no render é impuro.
+   const [agora] = useState(() => Date.now());
+ 
+-  const { proximas, anteriores } = useMemo(() => {
++  const { proximas, anteriores, canceladas } = useMemo(() => {
+     const ordenadas = [...consultas].sort(
+       (a, b) => paraData(a.dateTime) - paraData(b.dateTime)
+     );
+ 
++    /* Cancelada não é "próxima" nem "anterior": fica numa seção própria,
++       e os contadores só contam o que ainda vai (ou foi) acontecer. */
++    const ativas = ordenadas.filter((item) => item.status !== 'cancelada');
+     return {
+-      proximas: ordenadas.filter((item) => paraData(item.dateTime).getTime() >= agora),
+-      anteriores: ordenadas
++      proximas: ativas.filter((item) => paraData(item.dateTime).getTime() >= agora),
++      anteriores: ativas
+         .filter((item) => paraData(item.dateTime).getTime() < agora)
+         .reverse(),
++      canceladas: ordenadas.filter((item) => item.status === 'cancelada').reverse(),
+     };
+   }, [consultas, agora]);
+ 
+@@ -279,6 +296,23 @@ export default function ConsultasPage({ consultas = mockAppointments, aviso = nu
+             </ul>
+           </section>
+         )}
++
++        {canceladas.length > 0 && (
++          <section className={estilos.secao} aria-labelledby="consultas-canceladas">
++            <div className={estilos.secaoCabecalho}>
++              <h2 id="consultas-canceladas" className={estilos.secaoTitulo}>Canceladas</h2>
++              <span className={estilos.contador}>
++                {canceladas.length === 1 ? '1 consulta' : `${canceladas.length} consultas`}
++              </span>
++            </div>
++
++            <ul className={estilos.lista}>
++              {canceladas.map((consulta) => (
++                <CartaoConsulta key={consulta.id} consulta={consulta} passada />
++              ))}
++            </ul>
++          </section>
++        )}
+       </div>
+     </div>
+   );
+diff --git a/frontend/src/pages/ConsultasPage.module.css b/frontend/src/pages/ConsultasPage.module.css
+index dbb42a0..0778991 100644
+--- a/frontend/src/pages/ConsultasPage.module.css
++++ b/frontend/src/pages/ConsultasPage.module.css
+@@ -524,3 +524,14 @@
+   font-size: 14px;
+   color: var(--state-danger);
+ }
++
++/* Aviso de prazo: substitui os botões quando a consulta está perto. */
++.prazo {
++  margin: 12px 0 0;
++  padding: 10px 12px;
++  font-size: 0.875rem;
++  line-height: 1.45;
++  color: var(--state-pending, #8A5A00);
++  background: var(--state-pending-bg, #FFF4DD);
++  border-radius: 10px;
++}
+diff --git a/frontend/src/pages/PerfilPage.module.css b/frontend/src/pages/PerfilPage.module.css
+index 6db8d07..cabe046 100644
+--- a/frontend/src/pages/PerfilPage.module.css
++++ b/frontend/src/pages/PerfilPage.module.css
+@@ -196,7 +196,7 @@
+ }
+ 
+ .input:focus {
+-  background: #fff;
++  background: var(--color-surface);
+   border-color: var(--primary);
+   outline-offset: 0;
+ }
+diff --git a/frontend/src/services/dadosAdminSuporte.js b/frontend/src/services/dadosAdminSuporte.js
+index 3c36f7f..b7462ab 100644
+--- a/frontend/src/services/dadosAdminSuporte.js
++++ b/frontend/src/services/dadosAdminSuporte.js
+@@ -6,7 +6,7 @@ export const canais = [
+     titulo: "Atendimento ao Cliente",
+     descricao: "Fale com a nossa equipe de suporte para tirar dúvidas e resolver problemas.",
+     icone: "suporte",
+-    acao: { rotulo: "Abrir Chat", icone: "chat", variante: "primario" },
++    acao: { rotulo: "Abrir Chat", icone: "chat", variante: "primario", emBreve: "Chat de suporte" },
+   },
+   {
+     id: "email",
+@@ -37,7 +37,7 @@ export const canais = [
+     titulo: "Chat Online",
+     descricao: "Atendimento rápido pelo nosso chat em tempo real.",
+     icone: "chatDuplo",
+-    acao: { rotulo: "Iniciar Chat", icone: "chat", variante: "secundario" },
++    acao: { rotulo: "Iniciar Chat", icone: "chat", variante: "secundario", emBreve: "Chat online" },
+   },
+ ];
+ 
+@@ -46,37 +46,37 @@ export const perguntasFrequentes = [
+     id: "agendar",
+     pergunta: "Como agendar uma consulta?",
+     resposta:
+-      "Acesse o menu Agendamentos e clique em “Novo agendamento”. Escolha a unidade, a especialidade e o profissional, selecione um horário disponível e confirme. O paciente recebe a confirmação por e-mail e, se estiver ativo nas configurações, também por SMS ou WhatsApp.",
++      "Em Agendamentos, clique em “Novo agendamento”. Escolha o paciente, a especialidade, o profissional, a data e um horário livre, e confirme. O paciente vê a consulta no painel dele e recebe uma notificação. O próprio paciente também pode agendar pela área dele ou pela busca do site.",
+   },
+   {
+     id: "cancelar",
+     pergunta: "Como cancelar ou remarcar um agendamento?",
+     resposta:
+-      "Na lista de agendamentos, use o menu de ações (⋮) da linha desejada e escolha “Remarcar” ou “Cancelar”. O cancelamento exige um motivo, que passa a compor o Relatório de Cancelamentos. Remarcações mantêm o histórico do agendamento original.",
++      "Na lista de Agendamentos, use o botão “Cancelar” da linha e confirme. A remarcação é feita pelo paciente, na área “Minhas consultas”, até 24 horas antes do horário. Com menos de 24 horas, o paciente precisa falar com a clínica.",
+   },
+   {
+     id: "senha",
+     pergunta: "Como recuperar minha senha?",
+     resposta:
+-      "Na tela de login, clique em “Esqueci minha senha” e informe o e-mail cadastrado. O link de redefinição vale por 30 minutos. Se a autenticação em dois fatores estiver ativa, o segundo fator continua sendo solicitado após a troca.",
++      "Na tela de login, clique em “Esqueci minha senha” e informe o e-mail cadastrado. O link de redefinição chega por e-mail e vale por 30 minutos.",
+   },
+   {
+     id: "lembrete",
+-    pergunta: "O que fazer se não receber a notificação de lembrete?",
++    pergunta: "Onde aparecem as notificações?",
+     resposta:
+-      "Verifique em Configurações › Notificações se o canal correspondente está ativo e se o horário de envio cobre o período do agendamento. Confirme também se o e-mail ou telefone do paciente está correto no cadastro e se a mensagem não caiu na caixa de spam.",
++      "No sino do cabeçalho de cada área (paciente, médico e administração) e na tela Notificações. Agendamentos, cancelamentos e resultados de exame geram uma notificação para quem precisa saber.",
+   },
+   {
+     id: "relatorio",
+     pergunta: "Como emitir um relatório de atendimentos?",
+     resposta:
+-      "Vá em Relatórios, ajuste o período e os filtros avançados (unidade, profissional, especialidade e status), escolha o formato de saída e clique em “Gerar relatório personalizado”. O arquivo fica disponível para download assim que o processamento termina.",
++      "Vá em Relatórios, ajuste o período e os filtros e use os botões de exportação. O arquivo é baixado na hora.",
+   },
+   {
+     id: "contato",
+-    pergunta: "Como entrar em contato com a clínica onde meu atendimento foi marcado?",
++    pergunta: "Como ver os dados de contato de uma clínica?",
+     resposta:
+-      "Abra o agendamento e clique no nome da unidade para ver telefone, endereço e horário de funcionamento. Os mesmos dados estão em Configurações › Clínicas e Unidades, no painel de detalhes de cada clínica.",
++      "Em Clínicas, cada unidade mostra endereço, telefone e horário de funcionamento. O paciente vê as mesmas informações em “Clínicas”, na área dele.",
+   },
+ ];
+ 
+@@ -89,26 +89,30 @@ export const horarioAtendimento = {
+ export const linksUteis = [
+   {
+     id: "manual",
+-    titulo: "Manual do Usuário",
+-    descricao: "Guia completo do sistema",
++    titulo: "Central de Ajuda",
++    descricao: "Perguntas frequentes do site",
+     icone: "documento",
++    para: "/ajuda",
+   },
+   {
+     id: "videos",
+     titulo: "Vídeos Tutoriais",
+     descricao: "Aprenda de forma prática",
+     icone: "play",
++    emBreve: "Vídeos tutoriais",
+   },
+   {
+     id: "termos",
+     titulo: "Termos de Uso",
+     descricao: "Regras e condições do sistema",
+     icone: "documento",
++    emBreve: "Termos de uso",
+   },
+   {
+     id: "privacidade",
+     titulo: "Política de Privacidade",
+     descricao: "Seus dados estão protegidos",
+     icone: "escudoCheck",
++    emBreve: "Política de privacidade",
+   },
+ ];
+diff --git a/frontend/src/styles/auth-base.css b/frontend/src/styles/auth-base.css
+index cf85d98..96e3f4d 100644
+--- a/frontend/src/styles/auth-base.css
++++ b/frontend/src/styles/auth-base.css
+@@ -242,7 +242,7 @@
+ .sp-btn-secondary {
+   color: var(--sp-blue-dark);
+ 
+-  background: #ffffff;
++  background: var(--color-surface);
+ 
+   border-color: var(--sp-border-input);
+ 
+@@ -262,7 +262,7 @@
+ .sp-btn-outline {
+   color: var(--sp-primary);
+ 
+-  background: #ffffff;
++  background: var(--color-surface);
+ 
+   border-color: var(--sp-primary);
+ }
+@@ -300,7 +300,7 @@
+ 
+   padding: 20px;
+ 
+-  background: #ffffff;
++  background: var(--color-surface);
+ 
+   border: 1px solid var(--sp-border);
+ 
+@@ -408,7 +408,7 @@
+ 
+   outline: none;
+ 
+-  background: #ffffff;
++  background: var(--color-surface);
+ 
+   color: var(--sp-blue-dark);
+ 
+@@ -476,7 +476,7 @@
+ 
+   outline: none;
+ 
+-  background: #ffffff;
++  background: var(--color-surface);
+ 
+   color: var(--sp-blue-dark);
+ 
+@@ -524,7 +524,7 @@
+ 
+   outline: none;
+ 
+-  background: #ffffff;
++  background: var(--color-surface);
+ 
+   color: var(--sp-blue-dark);
+ 
+@@ -720,7 +720,7 @@
+ 
+   padding: 0 24px;
+ 
+-  background: #ffffff;
++  background: var(--color-surface);
+ 
+   border-bottom: 1px solid var(--sp-border);
+ }
+@@ -821,7 +821,7 @@
+ 
+   border-radius: var(--sp-radius-lg);
+ 
+-  background: #ffffff;
++  background: var(--color-surface);
+ }
+ 
+ 
+@@ -904,7 +904,7 @@
+ 
+   padding: 22px;
+ 
+-  background: #ffffff;
++  background: var(--color-surface);
+ 
+   border: 1px solid var(--sp-border);
+ 
+diff --git a/frontend/src/styles/global.css b/frontend/src/styles/global.css
+index 7c51355..c9a92bd 100644
+--- a/frontend/src/styles/global.css
++++ b/frontend/src/styles/global.css
+@@ -25,7 +25,7 @@ body {
+   overflow-x: hidden;
+ }
+ 
+-::selection { background: var(--color-navy-900); color: #fff; }
++::selection { background: var(--color-fill-strong); color: #fff; }
+ 
+ ::-webkit-scrollbar { width: 10px; height: 10px; }
+ ::-webkit-scrollbar-thumb {
+diff --git a/frontend/src/styles/listaPaciente.css b/frontend/src/styles/listaPaciente.css
+index 3ccb8bc..da2e02c 100644
+--- a/frontend/src/styles/listaPaciente.css
++++ b/frontend/src/styles/listaPaciente.css
+@@ -79,7 +79,7 @@
+   min-height: 80px;
+   padding: 8px 0;
+   border-radius: 6px;
+-  background: var(--color-navy-900);
++  background: var(--color-fill-strong);
+   color: #fff;
+   font-variant-numeric: tabular-nums;
+ }
+diff --git a/frontend/src/styles/telas.module.css b/frontend/src/styles/telas.module.css
+index a158bba..80b78b6 100644
+--- a/frontend/src/styles/telas.module.css
++++ b/frontend/src/styles/telas.module.css
+@@ -410,3 +410,11 @@ a.itemPrincipal:hover {
+ }
+ .caixaDeMarcar span { display: flex; flex-direction: column; gap: 2px; }
+ .caixaDeMarcar small { font-weight: var(--fw-regular, 400); }
++
++/* Aviso curto ao lado das ações da consulta (ex.: chegada só no dia). */
++.dicaDoDia {
++  flex-basis: 100%;
++  margin: 0;
++  font-size: var(--fs-small, 0.875rem);
++  color: var(--color-text-muted);
++}
+diff --git a/frontend/src/features/medico/tema/temaEscuro.css b/frontend/src/styles/temaEscuro.css
+similarity index 91%
+rename from frontend/src/features/medico/tema/temaEscuro.css
+rename to frontend/src/styles/temaEscuro.css
+index fff4cc7..bf925d4 100644
+--- a/frontend/src/features/medico/tema/temaEscuro.css
++++ b/frontend/src/styles/temaEscuro.css
+@@ -1,13 +1,14 @@
+ /* ==========================================================
+-   Tema escuro da área do médico.
++   Tema escuro do site inteiro.
+    Só redefine tokens: os componentes já usam var(--...). Vale para
+-   tudo dentro do elemento com data-tema="escuro" (DashboardLayout).
++   tudo dentro do elemento com data-tema="escuro" (o <html>, pelo
++   ProvedorDeTema).
+    Os tons de status (--tom-*) têm o valor claro como fallback em cada
+    componente; aqui só ganham a versão escura.
+    ========================================================== */
+ /* Fundo da área do médico, um tom abaixo do padrão do site: os cartões
+    brancos se destacam mais e a divisão entre eles fica clara. */
+-[data-tema="claro"] {
++[data-area="medico"][data-tema="claro"] {
+   --color-background: #E2ECF7;
+ }
+ 
+@@ -35,6 +36,8 @@
+   --color-navy-800: #C7D4EA;
+   --color-navy-700: #AFC0DE;
+ 
++  --color-fill-strong: #2B6CD4;
++
+   --color-primary: #3B8BF0;
+   --color-primary-hover: #5C9FF4;
+   --color-primary-dark: #8CC0FF;
+@@ -91,7 +94,7 @@
+   color: var(--color-text);
+ }
+ 
+-/* O fundo atrás da página acompanha enquanto a área do médico está aberta. */
+-:root[data-tema-painel="escuro"] body {
++/* O fundo atrás da página (rolagem elástica) acompanha o tema. */
++:root[data-tema="escuro"] body {
+   background: #070D19;
+ }
+diff --git a/frontend/src/styles/tokens.css b/frontend/src/styles/tokens.css
+index 047062b..6bb7503 100644
+--- a/frontend/src/styles/tokens.css
++++ b/frontend/src/styles/tokens.css
+@@ -48,6 +48,9 @@
+   --color-text-soft: #4A5E86;
+   --color-text-subtle: #6B7FA6;     /* placeholders: 4.6:1 */
+   --color-text-on-dark: #FFFFFF;
++  /* Preenchimento forte de item selecionado (chip, página ativa, chave
++     ligada), sempre com texto branco. No escuro vira azul, não claro. */
++  --color-fill-strong: var(--color-navy-900);
+   --color-handwriting: #EAF4FF;
+ 
+   /* ---------- Casca (estrutura marinho) ---------- */
+diff --git a/frontend/src/tema/ProvedorDeTema.jsx b/frontend/src/tema/ProvedorDeTema.jsx
+new file mode 100644
+index 0000000..b76a65f
+--- /dev/null
++++ b/frontend/src/tema/ProvedorDeTema.jsx
+@@ -0,0 +1,31 @@
++import { useCallback, useEffect, useMemo, useState } from "react";
++
++import { ContextoDoTema, temaInicial, CHAVE_DO_TEMA } from "./contextoDoTema.js";
++
++/**
++ * Tema claro/escuro do site inteiro (público, paciente, médico e admin).
++ *
++ * Aplica `data-tema` no <html>; as cores escuras vêm de styles/temaEscuro.css,
++ * que só redefine tokens. A escolha fica salva no navegador e vale para todas
++ * as telas. Sem escolha salva, segue o sistema operacional.
++ */
++export default function ProvedorDeTema({ children }) {
++  const [tema, setTema] = useState(temaInicial);
++
++  useEffect(() => {
++    try {
++      window.localStorage.setItem(CHAVE_DO_TEMA, tema);
++    } catch {
++      /* sem armazenamento: vale só nesta visita */
++    }
++    const raiz = document.documentElement;
++    raiz.dataset.tema = tema;
++    raiz.style.colorScheme = tema === "escuro" ? "dark" : "light";
++  }, [tema]);
++
++  const alternarTema = useCallback(() => setTema((atual) => (atual === "escuro" ? "claro" : "escuro")), []);
++  const definirTema = useCallback((novo) => setTema(novo === "escuro" ? "escuro" : "claro"), []);
++
++  const valor = useMemo(() => ({ tema, alternarTema, definirTema }), [tema, alternarTema, definirTema]);
++  return <ContextoDoTema.Provider value={valor}>{children}</ContextoDoTema.Provider>;
++}
+diff --git a/frontend/src/tema/contextoDoTema.js b/frontend/src/tema/contextoDoTema.js
+new file mode 100644
+index 0000000..2e5fd52
+--- /dev/null
++++ b/frontend/src/tema/contextoDoTema.js
+@@ -0,0 +1,29 @@
++import { createContext, useContext } from "react";
++
++export const CHAVE_DO_TEMA = "saudeplus:tema";
++
++/* Tudo em try/catch: em aba anônima ou com armazenamento bloqueado, o tema
++   só não fica salvo. */
++export function temaInicial() {
++  if (typeof window === "undefined") return "claro";
++  try {
++    const salvo = window.localStorage.getItem(CHAVE_DO_TEMA);
++    if (salvo === "claro" || salvo === "escuro") return salvo;
++  } catch {
++    /* sem armazenamento: cai no padrão do sistema */
++  }
++  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "escuro" : "claro";
++}
++
++/* Fora do provedor (testes de componente isolado) o tema é claro e alternar
++   não faz nada. */
++export const ContextoDoTema = createContext({
++  tema: "claro",
++  alternarTema: () => {},
++  definirTema: () => {},
++});
++
++/** `{ tema, alternarTema, definirTema }` do tema global do site. */
++export function useTema() {
++  return useContext(ContextoDoTema);
++}
+diff --git a/frontend/src/tema/itemDoTema.js b/frontend/src/tema/itemDoTema.js
+new file mode 100644
+index 0000000..5b7e7ab
+--- /dev/null
++++ b/frontend/src/tema/itemDoTema.js
+@@ -0,0 +1,11 @@
++import { MoonIcon, SunIcon } from "../features/medico/components/icons/MedicoIcons.jsx";
++
++/** Item "Modo escuro" do menu da conta (MenuPerfil), igual em todas as áreas. */
++export function itemDoTema(tema, alternarTema) {
++  const escuro = tema === "escuro";
++  return {
++    rotulo: "Modo escuro",
++    icone: escuro ? MoonIcon : SunIcon,
++    alternar: { ligado: escuro, aoAlternar: alternarTema },
++  };
++}

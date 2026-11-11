@@ -47,6 +47,8 @@ export default function AdminUsuariosPage({
   aoAlternarBloqueio,
   aoEditar,
   aoExcluir,
+  /* A própria conta não aparece com "Bloquear" nem "Excluir": a API recusa. */
+  idDaPropriaConta = null,
 }) {
   const [hoje] = useState(() => new Date());
   const tabela = useTabela({
@@ -144,7 +146,9 @@ export default function AdminUsuariosPage({
                         ...(aoEditar
                           ? [{ icone: "lapis", rotulo: "Editar", aoClicar: () => aoEditar(u) }]
                           : [{ icone: "olho", rotulo: "Ver detalhes" }, { icone: "lapis", rotulo: "Editar" }]),
-                        aoAlternarBloqueio
+                        u.id === idDaPropriaConta
+                          ? null
+                          : aoAlternarBloqueio
                           ? {
                               icone: "cadeado",
                               rotulo: u.status === "bloqueado" ? "Desbloquear" : "Bloquear",
@@ -152,10 +156,10 @@ export default function AdminUsuariosPage({
                               aoClicar: () => aoAlternarBloqueio(u),
                             }
                           : { icone: "maisOpcoes", rotulo: "Mais opções", tom: "neutra" },
-                        ...(aoExcluir && u.status !== "inativo"
+                        ...(aoExcluir && u.status !== "inativo" && u.id !== idDaPropriaConta
                           ? [{ icone: "lixeira", rotulo: "Excluir", tom: "perigo", aoClicar: () => aoExcluir(u) }]
                           : []),
-                      ]}
+                      ].filter(Boolean)}
                     />
                   </td>
                 </tr>

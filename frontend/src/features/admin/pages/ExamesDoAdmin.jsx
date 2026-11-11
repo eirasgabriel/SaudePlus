@@ -45,6 +45,10 @@ export default function ExamesDoAdmin() {
   const [agendando, setAgendando] = useState(null);
   const [enviandoResultado, setEnviandoResultado] = useState(null);
   const [cancelando, setCancelando] = useState(null);
+  const [analiseAntecipada, setAnaliseAntecipada] = useState(null);
+
+  const porEmAnalise = (e) =>
+    agir(() => exames.iniciarAnalise(e.id), `${e.nome} de ${e.paciente} em análise.`);
 
   const agir = async (acao, texto) => {
     try {
@@ -65,7 +69,12 @@ export default function ExamesDoAdmin() {
             {
               icone: "frasco",
               rotulo: "Pôr em análise",
-              aoClicar: () => agir(() => exames.iniciarAnalise(e.id), `${e.nome} de ${e.paciente} em análise.`),
+              /* Coleta marcada para depois de agora: pergunta antes, porque
+                 normalmente a análise só começa depois da coleta. */
+              aoClicar: () =>
+                e.status === "agendado" && e.dataHora && new Date(e.dataHora) > new Date()
+                  ? setAnaliseAntecipada(e)
+                  : porEmAnalise(e),
             },
           ]
         : []),
@@ -130,6 +139,19 @@ export default function ExamesDoAdmin() {
           setRetorno({ tom: "sucesso", texto: `Resultado de ${enviandoResultado.nome} liberado para ${enviandoResultado.paciente}.` });
           recarregar();
         }}
+      />
+
+      <DialogoConfirmacao
+        aberto={Boolean(analiseAntecipada)}
+        aoFechar={() => setAnaliseAntecipada(null)}
+        titulo="A coleta ainda não aconteceu"
+        mensagem={
+          analiseAntecipada
+            ? `A coleta de ${analiseAntecipada.nome} de ${analiseAntecipada.paciente} está marcada para ${dataHoraBr(analiseAntecipada.dataHora)}. Pôr em análise mesmo assim?`
+            : ""
+        }
+        rotuloConfirmar="Pôr em análise"
+        aoConfirmar={() => porEmAnalise(analiseAntecipada)}
       />
 
       <DialogoConfirmacao

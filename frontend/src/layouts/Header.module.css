@@ -100,7 +100,8 @@
 .iconButton:hover { background: var(--shell-hover); }
 .iconButton[aria-expanded="true"] { background: var(--shell-active); }
 
-.searchButton { margin-right: var(--space-2); }
+.searchButton { margin-right: 0; }
+.themeButton { margin-right: var(--space-2); }
 
 .loginButton,
 .signupButton {

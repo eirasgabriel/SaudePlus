@@ -196,7 +196,7 @@
 }
 
 .input:focus {
-  background: #fff;
+  background: var(--color-surface);
   border-color: var(--primary);
   outline-offset: 0;
 }

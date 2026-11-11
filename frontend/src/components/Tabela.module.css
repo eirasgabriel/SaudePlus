@@ -146,7 +146,7 @@
 
 .pagAtiva,
 .pagAtiva:hover:not(:disabled) {
-  background: var(--color-navy-900);
-  border-color: var(--color-navy-900);
+  background: var(--color-fill-strong);
+  border-color: var(--color-fill-strong);
   color: #fff;
 }

@@ -6,7 +6,7 @@ export const canais = [
     titulo: "Atendimento ao Cliente",
     descricao: "Fale com a nossa equipe de suporte para tirar dúvidas e resolver problemas.",
     icone: "suporte",
-    acao: { rotulo: "Abrir Chat", icone: "chat", variante: "primario" },
+    acao: { rotulo: "Abrir Chat", icone: "chat", variante: "primario", emBreve: "Chat de suporte" },
   },
   {
     id: "email",
@@ -37,7 +37,7 @@ export const canais = [
     titulo: "Chat Online",
     descricao: "Atendimento rápido pelo nosso chat em tempo real.",
     icone: "chatDuplo",
-    acao: { rotulo: "Iniciar Chat", icone: "chat", variante: "secundario" },
+    acao: { rotulo: "Iniciar Chat", icone: "chat", variante: "secundario", emBreve: "Chat online" },
   },
 ];
 
@@ -46,37 +46,37 @@ export const perguntasFrequentes = [
     id: "agendar",
     pergunta: "Como agendar uma consulta?",
     resposta:
-      "Acesse o menu Agendamentos e clique em “Novo agendamento”. Escolha a unidade, a especialidade e o profissional, selecione um horário disponível e confirme. O paciente recebe a confirmação por e-mail e, se estiver ativo nas configurações, também por SMS ou WhatsApp.",
+      "Em Agendamentos, clique em “Novo agendamento”. Escolha o paciente, a especialidade, o profissional, a data e um horário livre, e confirme. O paciente vê a consulta no painel dele e recebe uma notificação. O próprio paciente também pode agendar pela área dele ou pela busca do site.",
   },
   {
     id: "cancelar",
     pergunta: "Como cancelar ou remarcar um agendamento?",
     resposta:
-      "Na lista de agendamentos, use o menu de ações (⋮) da linha desejada e escolha “Remarcar” ou “Cancelar”. O cancelamento exige um motivo, que passa a compor o Relatório de Cancelamentos. Remarcações mantêm o histórico do agendamento original.",
+      "Na lista de Agendamentos, use o botão “Cancelar” da linha e confirme. A remarcação é feita pelo paciente, na área “Minhas consultas”, até 24 horas antes do horário. Com menos de 24 horas, o paciente precisa falar com a clínica.",
   },
   {
     id: "senha",
     pergunta: "Como recuperar minha senha?",
     resposta:
-      "Na tela de login, clique em “Esqueci minha senha” e informe o e-mail cadastrado. O link de redefinição vale por 30 minutos. Se a autenticação em dois fatores estiver ativa, o segundo fator continua sendo solicitado após a troca.",
+      "Na tela de login, clique em “Esqueci minha senha” e informe o e-mail cadastrado. O link de redefinição chega por e-mail e vale por 30 minutos.",
   },
   {
     id: "lembrete",
-    pergunta: "O que fazer se não receber a notificação de lembrete?",
+    pergunta: "Onde aparecem as notificações?",
     resposta:
-      "Verifique em Configurações › Notificações se o canal correspondente está ativo e se o horário de envio cobre o período do agendamento. Confirme também se o e-mail ou telefone do paciente está correto no cadastro e se a mensagem não caiu na caixa de spam.",
+      "No sino do cabeçalho de cada área (paciente, médico e administração) e na tela Notificações. Agendamentos, cancelamentos e resultados de exame geram uma notificação para quem precisa saber.",
   },
   {
     id: "relatorio",
     pergunta: "Como emitir um relatório de atendimentos?",
     resposta:
-      "Vá em Relatórios, ajuste o período e os filtros avançados (unidade, profissional, especialidade e status), escolha o formato de saída e clique em “Gerar relatório personalizado”. O arquivo fica disponível para download assim que o processamento termina.",
+      "Vá em Relatórios, ajuste o período e os filtros e use os botões de exportação. O arquivo é baixado na hora.",
   },
   {
     id: "contato",
-    pergunta: "Como entrar em contato com a clínica onde meu atendimento foi marcado?",
+    pergunta: "Como ver os dados de contato de uma clínica?",
     resposta:
-      "Abra o agendamento e clique no nome da unidade para ver telefone, endereço e horário de funcionamento. Os mesmos dados estão em Configurações › Clínicas e Unidades, no painel de detalhes de cada clínica.",
+      "Em Clínicas, cada unidade mostra endereço, telefone e horário de funcionamento. O paciente vê as mesmas informações em “Clínicas”, na área dele.",
   },
 ];
 
@@ -89,26 +89,30 @@ export const horarioAtendimento = {
 export const linksUteis = [
   {
     id: "manual",
-    titulo: "Manual do Usuário",
-    descricao: "Guia completo do sistema",
+    titulo: "Central de Ajuda",
+    descricao: "Perguntas frequentes do site",
     icone: "documento",
+    para: "/ajuda",
   },
   {
     id: "videos",
     titulo: "Vídeos Tutoriais",
     descricao: "Aprenda de forma prática",
     icone: "play",
+    emBreve: "Vídeos tutoriais",
   },
   {
     id: "termos",
     titulo: "Termos de Uso",
     descricao: "Regras e condições do sistema",
     icone: "documento",
+    emBreve: "Termos de uso",
   },
   {
     id: "privacidade",
     titulo: "Política de Privacidade",
     descricao: "Seus dados estão protegidos",
     icone: "escudoCheck",
+    emBreve: "Política de privacidade",
   },
 ];

@@ -9,6 +9,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;600;700;800&family=Caveat:wght@500&display=swap" rel="stylesheet" />
     <title>SaúdePlus - Sua Saúde em Primeiro Lugar</title>
+    <!-- Aplica o tema salvo antes do primeiro desenho, sem piscar o claro. -->
+    <script>
+      try {
+        var t = localStorage.getItem('saudeplus:tema');
+        if (t !== 'claro' && t !== 'escuro') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'escuro' : 'claro';
+        document.documentElement.dataset.tema = t;
+        document.documentElement.style.colorScheme = t === 'escuro' ? 'dark' : 'light';
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

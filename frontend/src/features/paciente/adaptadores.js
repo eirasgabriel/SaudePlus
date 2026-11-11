@@ -8,8 +8,10 @@ export function paraConsulta(consulta) {
   return {
     id: consulta.id,
     dateTime: consulta.inicio,
+    fim: consulta.fim,
     clinic: consulta.unidade.nome,
     address: consulta.unidade.endereco,
+    phone: consulta.unidade.telefone ?? "",
     specialty: consulta.especialidade.nome,
     professional: consulta.medico.nome,
     status: consulta.status,
@@ -92,4 +94,16 @@ export function paraNotificacao(notificacao) {
     lida: Boolean(notificacao.lida),
     para,
   };
+}
+
+const STATUS_QUE_OCUPAM = new Set(["pendente", "confirmada", "aguardando", "em_andamento"]);
+
+/**
+ * Horários já tomados pelo paciente, no formato `ocupados` do
+ * ModalAgendamento. `ignorar`: id da consulta que está sendo remarcada.
+ */
+export function ocupadosDe(consultas, ignorar = null) {
+  return consultas
+    .filter((c) => c.fim && STATUS_QUE_OCUPAM.has(c.status) && c.id !== ignorar)
+    .map((c) => ({ inicio: c.dateTime, fim: c.fim }));
 }

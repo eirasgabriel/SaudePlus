@@ -81,13 +81,13 @@
   height: 18px;
   border: 1.5px solid var(--color-text-subtle);
   border-radius: 4px;
-  background: #fff;
+  background: var(--color-surface);
   transition: background var(--duration) var(--ease), border-color var(--duration) var(--ease);
 }
 .checkbox:hover .box { border-color: var(--color-primary); }
 .checkbox input:checked + .box {
-  border-color: var(--color-navy-900);
-  background: var(--color-navy-900) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 12px no-repeat;
+  border-color: var(--color-fill-strong);
+  background: var(--color-fill-strong) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 12px no-repeat;
 }
 .checkbox input:focus-visible + .box {
   outline: 2px solid var(--color-primary);

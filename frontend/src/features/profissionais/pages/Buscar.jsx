@@ -15,6 +15,7 @@ import { UsersIcon, ChevronDownIcon } from "../../../components/icons/Icons.jsx"
 import { useBuscaProfissionais, useListasDaBusca } from "../useBuscaProfissionais.js";
 import { lerConsultaDaUrl } from "../buscaParametros.js";
 import { linkDeAgendamento } from "../perfil.js";
+import { useAuthOpcional } from "../../auth/auth.context.js";
 import {
   SEARCH_BENEFITS, CITIES, CARE_TYPES, SPECIALTY_NAMES, SIDEBAR_SPECIALTIES, SORT_OPTIONS,
 } from "../data/buscar.js";
@@ -27,6 +28,12 @@ const EMPTY_FILTERS = { types: [], specialties: [], insurances: [], allInsurance
 
 export default function Buscar({ onUnavailable }) {
   const [params, setParams] = useSearchParams();
+  const { usuario } = useAuthOpcional();
+  const avisoDeAgendamento = !usuario
+    ? "Para agendar, entre na sua conta: as consultas são marcadas pela área do paciente."
+    : usuario.role === "PACIENTE"
+      ? "Escolha um horário no cartão do profissional e clique em “Agendar consulta”."
+      : "Agendamentos são feitos com uma conta de paciente.";
 
   // Parâmetros vindos de outras páginas (?q=, ?especialidade=, ?cidade=, ?tipo=)
   const initialPanel = lerConsultaDaUrl(params);
@@ -129,9 +136,7 @@ export default function Buscar({ onUnavailable }) {
         />
 
         <section className={styles.results} aria-labelledby="results-title">
-          <p className={styles.demoNotice}>
-            Para agendar, entre na sua conta: as consultas são marcadas pela área do paciente.
-          </p>
+          <p className={styles.demoNotice}>{avisoDeAgendamento}</p>
           <header className={styles.resultsHeader}>
             <IconCircle icon={UsersIcon} tone="glass" size={48} iconSize={30} />
             <div className={styles.resultsHeading}>

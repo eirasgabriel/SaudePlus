@@ -36,7 +36,7 @@
   justify-content: center;
   height: 64px;
   border-radius: 6px;
-  background: var(--color-navy-900);
+  background: var(--color-fill-strong);
   color: #fff;
 }
 
@@ -157,6 +157,16 @@
   color: var(--primary, #0070E8);
   font-weight: 600;
   text-decoration: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.linkVazio:hover {
+  text-decoration: underline;
 }
 
 .iconeSeta {

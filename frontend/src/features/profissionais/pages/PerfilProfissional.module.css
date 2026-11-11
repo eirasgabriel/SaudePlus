@@ -173,7 +173,7 @@
   height: 38px;
   border: 1px solid var(--color-border-strong);
   border-radius: 4px;
-  background: #fff;
+  background: var(--color-surface);
   color: var(--color-navy-950);
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
@@ -183,8 +183,8 @@
 }
 .horario:hover,
 .horario:focus-visible {
-  border-color: var(--color-navy-900);
-  background: var(--color-navy-900);
+  border-color: var(--color-fill-strong);
+  background: var(--color-fill-strong);
   color: #fff;
 }
 

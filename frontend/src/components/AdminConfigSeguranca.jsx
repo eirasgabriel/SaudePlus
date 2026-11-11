@@ -10,6 +10,7 @@ import {
   dicasSeguranca,
 } from "../services/dadosAdminConfiguracoes";
 import estilos from "../styles/adminConfig.module.css";
+import { avisarEmBreve } from "./AvailabilityNotice/emBreve.js";
 
 /**
  * `aoVerLogs` liga "Visualizar Logs" à auditoria. Os demais itens (2FA,
@@ -55,7 +56,7 @@ export default function AdminConfigSeguranca({ aoVerLogs }) {
                   <Botao
                     variante="secundario"
                     icone={item.botao.icone}
-                    onClick={item.id === "logs" ? aoVerLogs : undefined}
+                    onClick={item.id === "logs" ? aoVerLogs : () => avisarEmBreve(item.titulo)}
                   >
                     {item.botao.rotulo}
                   </Botao>

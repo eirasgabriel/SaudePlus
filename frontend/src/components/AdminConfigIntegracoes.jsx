@@ -7,6 +7,7 @@ import { Interruptor, Botao } from "./Controles";
 import { integracoes, integracoesDisponiveis } from "../services/dadosAdminConfiguracoes";
 import comum from "../styles/adminComum.module.css";
 import estilos from "../styles/adminConfig.module.css";
+import { avisarEmBreve } from "./AvailabilityNotice/emBreve.js";
 
 export default function AdminConfigIntegracoes() {
   const [lista, definirLista] = useState(integracoes);
@@ -56,7 +57,7 @@ export default function AdminConfigIntegracoes() {
                             {item.etiqueta.rotulo}
                           </Etiqueta>
                         )}
-                        <Botao variante="secundario" icone="engrenagem">
+                        <Botao variante="secundario" icone="engrenagem" onClick={() => avisarEmBreve(`Configurar ${item.titulo}`)}>
                           Configurar
                         </Botao>
                       </>
@@ -83,7 +84,7 @@ export default function AdminConfigIntegracoes() {
                 tom={i.tom}
                 titulo={i.titulo}
                 descricao={i.descricao}
-                aoClicar={() => {}}
+                aoClicar={() => avisarEmBreve(i.titulo)}
               />
             ))}
           </Lista>

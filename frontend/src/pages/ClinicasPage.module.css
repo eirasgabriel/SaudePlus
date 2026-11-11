@@ -136,3 +136,186 @@
   color: var(--color-text-muted);
 }
 .info strong { color: var(--color-text-strong); }
+
+/* ---------- Lista de unidades (dados da API) ---------- */
+.secao {
+  margin-top: var(--space-8);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vazio {
+  padding: 22px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-card);
+  font-size: var(--fs-small);
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+.cartaoItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 18px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  transition: border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+
+.cartaoItem:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-card);
+}
+
+.mapa {
+  flex-shrink: 0;
+  width: 84px;
+  height: 84px;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.mapa svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mapaFundo { fill: var(--color-primary-light); }
+.mapaRua { stroke: var(--color-surface); }
+.mapaPino { fill: var(--color-primary); }
+.mapaPinoMiolo { fill: var(--color-surface); }
+
+.corpo {
+  flex: 1;
+  min-width: 0;
+}
+
+.linhaTopo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nome {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: var(--fw-bold);
+  color: var(--color-navy-950);
+}
+
+.selo {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--state-info-bg);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--state-info);
+  white-space: nowrap;
+}
+
+.detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 10px;
+  font-style: normal;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.metaIcone {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--color-primary);
+}
+
+.telefone {
+  color: inherit;
+  text-decoration: none;
+}
+
+.telefone:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.especialidades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 14px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+}
+
+.etiqueta {
+  padding: 5px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-soft);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-navy-900);
+}
+
+.acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 8px;
+  margin-left: -14px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  font-family: inherit;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: background var(--duration) var(--ease);
+}
+
+.acao:hover {
+  background: var(--color-primary-light);
+}
+
+.acaoIcone {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--duration) var(--ease);
+}
+
+.acao:hover .acaoIcone {
+  transform: translateX(3px);
+}
+
+@media (max-width: 720px) {
+  .cartaoItem { gap: 14px; padding: 16px; }
+  .mapa { width: 60px; height: 60px; }
+  .linhaTopo { flex-wrap: wrap; gap: 8px; }
+}

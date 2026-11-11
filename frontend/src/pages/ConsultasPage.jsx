@@ -93,6 +93,13 @@ function CartaoConsulta({ consulta, passada = false, aoCancelar, aoRemarcar }) {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState(null);
   const temAcoes = consulta.podeAlterar && (aoCancelar || aoRemarcar);
+  /* Dentro do prazo mínimo a API não deixa remarcar nem cancelar: em vez de
+     os botões sumirem sem explicação, a pessoa sabe o que fazer. */
+  const foraDoPrazo =
+    !passada &&
+    (aoCancelar || aoRemarcar) &&
+    consulta.podeAlterar === false &&
+    (consulta.status === 'pendente' || consulta.status === 'confirmada');
 
   const cancelar = async () => {
     setEnviando(true);
@@ -180,6 +187,12 @@ function CartaoConsulta({ consulta, passada = false, aoCancelar, aoRemarcar }) {
             )}
           </div>
         )}
+        {foraDoPrazo && (
+          <p className={estilos.prazo}>
+            Faltam menos de 24 horas para esta consulta. Para remarcar ou cancelar, fale com a clínica
+            {consulta.phone ? ` pelo ${consulta.phone}` : ''}.
+          </p>
+        )}
         {erro && <p className={estilos.erroAcao} role="alert">{erro}</p>}
       </div>
     </li>
@@ -199,16 +212,20 @@ export default function ConsultasPage({ consultas = mockAppointments, aviso = nu
   // Instante fixado na montagem: Date.now() direto no render é impuro.
   const [agora] = useState(() => Date.now());
 
-  const { proximas, anteriores } = useMemo(() => {
+  const { proximas, anteriores, canceladas } = useMemo(() => {
     const ordenadas = [...consultas].sort(
       (a, b) => paraData(a.dateTime) - paraData(b.dateTime)
     );
 
+    /* Cancelada não é "próxima" nem "anterior": fica numa seção própria,
+       e os contadores só contam o que ainda vai (ou foi) acontecer. */
+    const ativas = ordenadas.filter((item) => item.status !== 'cancelada');
     return {
-      proximas: ordenadas.filter((item) => paraData(item.dateTime).getTime() >= agora),
-      anteriores: ordenadas
+      proximas: ativas.filter((item) => paraData(item.dateTime).getTime() >= agora),
+      anteriores: ativas
         .filter((item) => paraData(item.dateTime).getTime() < agora)
         .reverse(),
+      canceladas: ordenadas.filter((item) => item.status === 'cancelada').reverse(),
     };
   }, [consultas, agora]);
 
@@ -274,6 +291,23 @@ export default function ConsultasPage({ consultas = mockAppointments, aviso = nu
 
             <ul className={estilos.lista}>
               {anteriores.map((consulta) => (
+                <CartaoConsulta key={consulta.id} consulta={consulta} passada />
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {canceladas.length > 0 && (
+          <section className={estilos.secao} aria-labelledby="consultas-canceladas">
+            <div className={estilos.secaoCabecalho}>
+              <h2 id="consultas-canceladas" className={estilos.secaoTitulo}>Canceladas</h2>
+              <span className={estilos.contador}>
+                {canceladas.length === 1 ? '1 consulta' : `${canceladas.length} consultas`}
+              </span>
+            </div>
+
+            <ul className={estilos.lista}>
+              {canceladas.map((consulta) => (
                 <CartaoConsulta key={consulta.id} consulta={consulta} passada />
               ))}
             </ul>

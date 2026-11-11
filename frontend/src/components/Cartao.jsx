@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Icone from "./Icone";
 import estilos from "./Cartao.module.css";
 
@@ -49,10 +50,10 @@ export default function Cartao({
                   <Icone nome="setaDireita" tam={14} espessura={2.2} />
                 </button>
               ) : (
-                <a className={estilos.acao} href={acao.href || "#"}>
+                <Link className={estilos.acao} to={acao.href}>
                   {acao.rotulo}
                   <Icone nome="setaDireita" tam={14} espessura={2.2} />
-                </a>
+                </Link>
               ))}
           </div>
         </header>

@@ -1,4 +1,8 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import CabecalhoPagina from "../components/CabecalhoPagina";
+import { avisarEmBreve } from "../components/AvailabilityNotice/emBreve.js";
 import Cartao from "../components/Cartao";
 import Acordeao from "../components/Acordeao";
 import ItemLista, { Lista } from "../components/ItemLista";
@@ -14,13 +18,15 @@ import comum from "../styles/adminComum.module.css";
 import estilos from "./AdminSuportePage.module.css";
 
 export default function AdminSuportePage() {
+  const navegar = useNavigate();
+  const [hoje] = useState(() => new Date());
   return (
     <>
       <CabecalhoPagina
         titulo="Suporte"
         subtitulo="Estamos aqui para te ajudar! Encontre as informações e canais de atendimento."
         icone="suporte"
-        data={new Date(2026, 8, 15)}
+        data={hoje}
       />
 
       {/* ---------- canais de atendimento ---------- */}
@@ -34,13 +40,21 @@ export default function AdminSuportePage() {
             <p className={estilos.canalTexto}>{canal.descricao}</p>
 
             {canal.acao.href ? (
-              <a href={canal.acao.href} className={estilos.canalLink}>
-                <Botao variante={canal.acao.variante} icone={canal.acao.icone} blocoTotal>
-                  {canal.acao.rotulo}
-                </Botao>
-              </a>
+              <Botao
+                variante={canal.acao.variante}
+                icone={canal.acao.icone}
+                blocoTotal
+                onClick={() => window.location.assign(canal.acao.href)}
+              >
+                {canal.acao.rotulo}
+              </Botao>
             ) : (
-              <Botao variante={canal.acao.variante} icone={canal.acao.icone} blocoTotal>
+              <Botao
+                variante={canal.acao.variante}
+                icone={canal.acao.icone}
+                blocoTotal
+                onClick={() => avisarEmBreve(canal.acao.emBreve ?? canal.titulo)}
+              >
                 {canal.acao.rotulo}
               </Botao>
             )}
@@ -55,7 +69,7 @@ export default function AdminSuportePage() {
             titulo="Perguntas Frequentes (FAQ)"
             subtitulo="Encontre respostas para as dúvidas mais comuns."
             icone="chatDuplo"
-            acao={{ rotulo: "Ver todas as perguntas", href: "#" }}
+            acao={{ rotulo: "Ver todas as perguntas", href: "/ajuda" }}
           >
             <Acordeao itens={perguntasFrequentes} />
 
@@ -70,7 +84,9 @@ export default function AdminSuportePage() {
                   conosco!
                 </p>
               </div>
-              <Botao icone="chat">Falar com o Suporte</Botao>
+              <Botao icone="chat" onClick={() => window.location.assign("mailto:suporte@saudeplus.com.br")}>
+                Falar com o Suporte
+              </Botao>
             </div>
           </Cartao>
         </div>
@@ -107,7 +123,7 @@ export default function AdminSuportePage() {
                   titulo={link.titulo}
                   descricao={link.descricao}
                   comSeta
-                  aoClicar={() => {}}
+                  aoClicar={() => (link.para ? navegar(link.para) : avisarEmBreve(link.emBreve ?? link.titulo))}
                 />
               ))}
             </Lista>
