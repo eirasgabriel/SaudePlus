@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import Logo from "../components/Logo/Logo.jsx";
 import Button from "../components/Button/Button.jsx";
@@ -12,14 +12,24 @@ import { NAV_ITEMS } from "./navigation.js";
 import { cx } from "../utils/cx.js";
 import styles from "./Header.module.css";
 
+/* Busca expansível: cresce para a esquerda a partir da lupa até no máximo
+   LARGURA_MAXIMA, parando ESPACO_LIVRE px antes do menu (ou do logo). Se não
+   couber LARGURA_MINIMA, a busca desce como painel abaixo da faixa. */
+const LARGURA_MAXIMA = 440;
+const LARGURA_MINIMA = 220;
+const ESPACO_LIVRE = 24;
+
 /** Header global — o mesmo componente (e o mesmo tamanho) em todas as páginas. */
 export default function Header() {
   const [openPanel, setOpenPanel] = useState(null); // "search" | "menu" | null
   const [query, setQuery] = useState("");
+  const [larguraBusca, setLarguraBusca] = useState(null); // null = sem espaço: painel
   const navigate = useNavigate();
   const inputRef = useRef(null);
   const searchRef = useRef(null);
   const menuRef = useRef(null);
+  const barRef = useRef(null);
+  const buscaRef = useRef(null);
   const { usuario, sair } = useAuthOpcional();
   const { tema, alternarTema } = useTema();
   const escuro = tema === "escuro";
@@ -48,6 +58,45 @@ export default function Header() {
 
   const toggle = (panel) => setOpenPanel((current) => (current === panel ? null : panel));
 
+  /** Espaço entre o fim do menu (ou do logo) e a borda direita da lupa. */
+  const medirBusca = useCallback(() => {
+    const bar = barRef.current;
+    const busca = buscaRef.current;
+    if (!bar || !busca) return null;
+    const ancora = busca.getBoundingClientRect().right;
+    let limite = bar.getBoundingClientRect().left;
+    for (const filho of bar.children) {
+      if (filho.contains(busca)) break;
+      if (filho.getClientRects().length) limite = Math.max(limite, filho.getBoundingClientRect().right);
+    }
+    const disponivel = Math.floor(ancora - limite - ESPACO_LIVRE);
+    const largura = disponivel >= LARGURA_MINIMA ? Math.min(LARGURA_MAXIMA, disponivel) : null;
+    setLarguraBusca(largura);
+    return largura;
+  }, []);
+
+  const alternarBusca = () => {
+    if (openPanel !== "search") medirBusca();
+    toggle("search");
+  };
+
+  const buscaEmLinha = openPanel === "search" && larguraBusca !== null;
+
+  // Aberta: acompanha o redimensionamento e fecha com clique fora.
+  useEffect(() => {
+    if (openPanel !== "search") return undefined;
+    const aoRedimensionar = () => medirBusca();
+    const aoClicarFora = (e) => {
+      if (!buscaRef.current?.contains(e.target) && !e.target.closest?.("#header-search-painel")) setOpenPanel(null);
+    };
+    window.addEventListener("resize", aoRedimensionar);
+    document.addEventListener("pointerdown", aoClicarFora);
+    return () => {
+      window.removeEventListener("resize", aoRedimensionar);
+      document.removeEventListener("pointerdown", aoClicarFora);
+    };
+  }, [openPanel, medirBusca]);
+
   // Esc fecha painéis
   useEffect(() => {
     const onKey = (e) => {
@@ -73,7 +122,7 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
-      <div className={styles.bar}>
+      <div className={styles.bar} ref={barRef}>
         <Logo tone="light" />
         <span className={styles.divisor} aria-hidden="true" />
 
@@ -92,17 +141,48 @@ export default function Header() {
         </nav>
 
         <div className={styles.actions}>
-          <button
-            type="button"
-            className={cx(styles.iconButton, styles.searchButton)}
-            ref={searchRef}
-            aria-expanded={openPanel === "search"}
-            aria-controls="header-search"
-            onClick={() => toggle("search")}
+          <div
+            ref={buscaRef}
+            className={cx(styles.busca, buscaEmLinha && styles.buscaAberta)}
+            style={larguraBusca ? { "--busca-largura": `${larguraBusca}px` } : undefined}
           >
-            <SearchIcon />
-            <span className="sr-only">Pesquisar</span>
-          </button>
+            <form
+              id="header-search"
+              className={styles.buscaForm}
+              role="search"
+              onSubmit={handleSearch}
+              inert={!buscaEmLinha}
+            >
+              <button type="submit" className={styles.buscaEnviar}>
+                <SearchIcon />
+                <span className="sr-only">Buscar</span>
+              </button>
+              <label className="sr-only" htmlFor="header-search-input">Buscar profissionais ou especialidades</label>
+              <input
+                ref={buscaEmLinha ? inputRef : undefined}
+                id="header-search-input"
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Busque por profissional ou especialidade"
+              />
+            </form>
+            <button
+              type="button"
+              className={cx(styles.iconButton, styles.searchButton)}
+              ref={searchRef}
+              aria-expanded={openPanel === "search"}
+              aria-controls={larguraBusca === null ? "header-search-painel" : "header-search"}
+              onClick={alternarBusca}
+            >
+              {openPanel === "search" ? (
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" /></svg>
+              ) : (
+                <SearchIcon />
+              )}
+              <span className="sr-only">{openPanel === "search" ? "Fechar busca" : "Pesquisar"}</span>
+            </button>
+          </div>
 
           <button
             type="button"
@@ -131,12 +211,13 @@ export default function Header() {
         </div>
       </div>
 
-      {openPanel === "search" && (
-        <form id="header-search" className={styles.searchPanel} role="search" onSubmit={handleSearch}>
-          <label className="sr-only" htmlFor="header-search-input">Buscar profissionais ou especialidades</label>
+      {/* Sem espaço na faixa (telas estreitas): a busca desce como painel. */}
+      {openPanel === "search" && larguraBusca === null && (
+        <form id="header-search-painel" className={styles.searchPanel} role="search" onSubmit={handleSearch}>
+          <label className="sr-only" htmlFor="header-search-painel-input">Buscar profissionais ou especialidades</label>
           <input
             ref={inputRef}
-            id="header-search-input"
+            id="header-search-painel-input"
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

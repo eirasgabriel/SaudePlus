@@ -71,6 +71,28 @@ public class ProfissionaisPublicoService {
                 proximos.getOrDefault(medico.getId(), List.of())));
     }
 
+    /**
+     * Cartões (o mesmo resumo da busca) dos médicos `ids`, na ordem dada.
+     * Ignora ids que não existem ou de contas que não estão ativas.
+     */
+    @Transactional(readOnly = true)
+    public List<ProfissionalResumoResposta> resumos(List<UUID> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        Map<UUID, Medico> porId = medicos.findAllById(ids).stream()
+                .filter(medico -> medico.getUsuario().ativo())
+                .collect(Collectors.toMap(Medico::getId, medico -> medico));
+        List<UUID> encontrados = ids.stream().filter(porId::containsKey).toList();
+        Map<UUID, List<Modalidade>> modalidades = modalidadesPorMedico(encontrados);
+        Map<UUID, List<HorarioLivre>> proximos = agenda.proximosHorarios(encontrados, DIAS_A_FRENTE, HORARIOS_NO_CARTAO);
+        FiltroDeProfissionais semFiltro = new FiltroDeProfissionais(null, null, null, null, null, null);
+        return encontrados.stream()
+                .map(id -> resumo(porId.get(id), semFiltro,
+                        modalidades.getOrDefault(id, List.of()), proximos.getOrDefault(id, List.of())))
+                .toList();
+    }
+
     /** Avaliações do médico, mais recentes primeiro. */
     @Transactional(readOnly = true)
     public Pagina<AvaliacaoPublicaResposta> avaliacoes(UUID id, int pagina, int tamanho) {

@@ -29,24 +29,26 @@
   color: var(--color-text-soft);
 }
 
+/* Botão da ListaSuspensa: ocupa o corpo do campo, com a seta à direita. */
 .select {
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  font: inherit;
   font-size: var(--fs-small);
   font-weight: var(--fw-semibold);
   line-height: 20px;
   color: var(--color-navy-950);
-  cursor: pointer;
-  appearance: none;
+}
+/* O campo inteiro (ícone e rótulo inclusive) abre a lista. */
+.select::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
 }
 
-.chevron {
-  flex-shrink: 0;
-  color: var(--color-text-soft);
-  pointer-events: none;
+/* A lista se ancora no campo (.field), não só no texto. */
+.ancora { position: static; }
+.lista {
+  left: 0;
+  right: 0;
+  min-width: 0;
+  top: calc(100% + 8px);
 }

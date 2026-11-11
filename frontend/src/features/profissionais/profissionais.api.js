@@ -45,3 +45,13 @@ export function listarConvenios({ sinal } = {}) {
 export function listarEspecialidades({ sinal } = {}) {
   return http.get("/api/publico/especialidades", { sinal });
 }
+
+/** Especialidades mais buscadas nos últimos 30 dias: `[{ slug, nome }]` (vazia sem buscas suficientes). */
+export function listarBuscasPopulares({ limite } = {}, { sinal } = {}) {
+  return http.get("/api/publico/buscas-populares", { parametros: { limite }, sinal });
+}
+
+/** Profissionais em destaque: perfis mais abertos nos últimos 30 dias, no formato do cartão da busca. */
+export function listarDestaques({ limite } = {}, { sinal } = {}) {
+  return http.get("/api/publico/destaques", { parametros: { limite }, sinal });
+}

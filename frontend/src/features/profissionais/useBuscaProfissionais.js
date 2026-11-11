@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { buscarProfissionais, listarCidades, listarConvenios } from "./profissionais.api.js";
+import { buscarProfissionais, listarCidades, listarConvenios, listarDestaques } from "./profissionais.api.js";
 import { montarParametros, paraCartao } from "./buscaParametros.js";
 import { paraDestaque } from "./perfil.js";
 import { CITIES, INSURANCES } from "./data/buscar.js";
@@ -77,25 +77,56 @@ export function useListasDaBusca() {
   return listas;
 }
 
+/** De quanto em quanto tempo os destaques são conferidos de novo com a aba visível. */
+export const INTERVALO_DOS_DESTAQUES_MS = 60_000;
+
 /**
- * "Profissionais em destaque": os mais bem avaliados da API, com link para o
- * perfil. Até a API responder (ou se ela não responder), a lista fica vazia e
- * a seção não aparece: não há profissionais de demonstração.
+ * Profissionais em destaque, já no formato do DoctorCard: só os perfis mais
+ * abertos nos últimos 30 dias (API), sem completar com outros médicos.
+ * Acompanha o ranking: a lista é buscada de novo a cada minuto e quando a aba
+ * volta a ficar visível. Uma falha mantém a lista que já estava.
  */
-export function useDestaques(quantidade = 4) {
+export function useDestaques(quantidade = 4, intervaloMs = INTERVALO_DOS_DESTAQUES_MS) {
   const [destaques, setDestaques] = useState([]);
 
   useEffect(() => {
-    const controle = new AbortController();
-    buscarProfissionais({ ordem: "avaliacao", tamanho: quantidade }, { sinal: controle.signal })
-      .then((pagina) => {
-        if (!controle.signal.aborted && pagina.conteudo.length) setDestaques(pagina.conteudo.map(paraDestaque));
-      })
-      .catch(() => {
-        // Sem API, a lista continua vazia e a seção fica oculta.
-      });
-    return () => controle.abort();
-  }, [quantidade]);
+    let controle = null;
+    let ultima = "";
+
+    const atualizar = () => {
+      controle?.abort();
+      const atual = new AbortController();
+      controle = atual;
+      listarDestaques({ limite: quantidade }, { sinal: atual.signal })
+        .then((lista) => {
+          if (atual.signal.aborted || !Array.isArray(lista)) return;
+          // Só re-renderiza quando algo mudou (ordem, nota, horários...).
+          const assinatura = JSON.stringify(lista);
+          if (assinatura === ultima) return;
+          ultima = assinatura;
+          setDestaques(lista.map(paraDestaque));
+        })
+        .catch(() => {
+          // Mantém os cartões atuais; sem API desde o início, fica em branco.
+        });
+    };
+
+    const visivel = () => document.visibilityState !== "hidden";
+    const aoMudarVisibilidade = () => {
+      if (visivel()) atualizar();
+    };
+
+    atualizar();
+    const relogio = setInterval(() => {
+      if (visivel()) atualizar();
+    }, intervaloMs);
+    document.addEventListener("visibilitychange", aoMudarVisibilidade);
+    return () => {
+      clearInterval(relogio);
+      document.removeEventListener("visibilitychange", aoMudarVisibilidade);
+      controle?.abort();
+    };
+  }, [quantidade, intervaloMs]);
 
   return destaques;
 }

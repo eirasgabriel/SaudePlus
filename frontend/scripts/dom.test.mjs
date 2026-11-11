@@ -69,6 +69,7 @@ const ESPECIALIDADES = [
 function rotasPublicas({ livres = LIVRES } = {}) {
   return {
     'GET /api/publico/profissionais': pagina([RESUMO]),
+    'GET /api/publico/destaques': [RESUMO],
     'GET /api/publico/profissionais/c1': DETALHE,
     'GET /api/publico/profissionais/c1/horarios': ({ parametros }) =>
       parametros.get('de') ? livres.filter((h) => h.data === parametros.get('de')) : livres,
@@ -199,23 +200,30 @@ describe('perfil do profissional', () => {
 /* ------------------------------------------------------------ destaques */
 
 describe('profissionais em destaque', () => {
-  test('com API, os mais bem avaliados com link para o perfil', async () => {
+  test('com API, os perfis mais vistos com link para o perfil', async () => {
     const chamadas = apiFalsa(rotasPublicas())
     await aplicacao('/especialidades')
     await esperar(() => document.querySelector('a[href="/profissionais/c1"]'), { mensagem: 'link do destaque' })
-    const destaques = chamadas.find((c) => c.caminho === '/api/publico/profissionais')
-    assert.equal(destaques.parametros.get('ordem'), 'avaliacao')
-    assert.equal(destaques.parametros.get('tamanho'), '4')
+    const destaques = chamadas.find((c) => c.caminho === '/api/publico/destaques')
+    assert.equal(destaques.parametros.get('limite'), '4')
+    // Um médico no ranking: um cartão preenchido e três vagas em branco.
+    const secao = document.getElementById('featured-title').closest('section')
+    assert.equal(secao.querySelectorAll('article').length, 4)
+    assert.equal(secao.querySelectorAll('article[aria-hidden="true"]').length, 3)
   })
 
-  test('sem API, a seção de destaques não aparece (sem demonstração)', async () => {
-    const chamadas = apiFalsa(null)
-    await aplicacao('/especialidades')
-    await esperar(() => chamadas.some((c) => c.caminho === '/api/publico/profissionais'), { mensagem: 'pedido dos destaques' })
-    await new Promise((resolver) => setTimeout(resolver, 50))
-    assert.equal(porTexto('Profissionais em destaque', 'h2'), null)
-    assert.equal(document.querySelector('a[href^="/profissionais/"]'), null)
-  })
+  for (const [caso, rotas] of [['sem visitas', { 'GET /api/publico/destaques': [] }], ['sem API', null]]) {
+    test(`${caso}: quatro cartões em branco, sem médicos de demonstração`, async () => {
+      const chamadas = apiFalsa(rotas)
+      await aplicacao('/especialidades')
+      await esperar(() => chamadas.some((c) => c.caminho === '/api/publico/destaques'), { mensagem: 'pedido dos destaques' })
+      await new Promise((resolver) => setTimeout(resolver, 50))
+      assert.ok(porTexto('Profissionais em destaque', 'h2'))
+      assert.equal(document.querySelector('a[href^="/profissionais/"]'), null)
+      const secao = document.getElementById('featured-title').closest('section')
+      assert.equal(secao.querySelectorAll('article[aria-hidden="true"]').length, 4)
+    })
+  }
 })
 
 /* ------------------------------------------------------------ agendar */

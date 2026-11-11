@@ -15,6 +15,7 @@ import br.com.saudeplus.agenda.Modalidade;
 import br.com.saudeplus.comum.Pagina;
 import br.com.saudeplus.profissionais.FiltroDeProfissionais;
 import br.com.saudeplus.publico.dto.AvaliacaoPublicaResposta;
+import br.com.saudeplus.publico.dto.BuscaPopularResposta;
 import br.com.saudeplus.publico.dto.CidadeResposta;
 import br.com.saudeplus.publico.dto.ConvenioResposta;
 import br.com.saudeplus.publico.dto.EspecialidadeResposta;
@@ -34,10 +35,24 @@ public class PublicoController {
 
     private final CatalogoPublicoService catalogo;
     private final ProfissionaisPublicoService profissionais;
+    private final BuscasPopularesService buscasPopulares;
+    private final ProfissionaisEmDestaqueService emDestaque;
 
-    public PublicoController(CatalogoPublicoService catalogo, ProfissionaisPublicoService profissionais) {
+    public PublicoController(CatalogoPublicoService catalogo, ProfissionaisPublicoService profissionais,
+            BuscasPopularesService buscasPopulares, ProfissionaisEmDestaqueService emDestaque) {
         this.catalogo = catalogo;
         this.profissionais = profissionais;
+        this.buscasPopulares = buscasPopulares;
+        this.emDestaque = emDestaque;
+    }
+
+    /**
+     * Profissionais em destaque: os perfis mais abertos nos últimos 30 dias,
+     * no formato do cartão da busca. Lista vazia enquanto ninguém tiver aberto.
+     */
+    @GetMapping("/destaques")
+    public List<ProfissionalResumoResposta> destaques(@RequestParam(defaultValue = "4") int limite) {
+        return emDestaque.destaques(limite);
     }
 
     @GetMapping("/especialidades")
@@ -87,12 +102,30 @@ public class PublicoController {
                 : modalidades.stream().map(Modalidade::porChave).toList();
         FiltroDeProfissionais filtro = new FiltroDeProfissionais(
                 q, especialidades, cidade, uf, modalidadesEscolhidas, convenios);
-        return profissionais.buscar(filtro, OrdemDaBusca.porChave(ordem), pagina, tamanho);
+        Pagina<ProfissionalResumoResposta> resultado =
+                profissionais.buscar(filtro, OrdemDaBusca.porChave(ordem), pagina, tamanho);
+        // Só a primeira página conta: paginar a mesma busca não é buscar de novo.
+        if (pagina <= 0) {
+            buscasPopulares.registrar(especialidades);
+        }
+        return resultado;
+    }
+
+    /**
+     * Top 10 (ou `limite`) das especialidades mais buscadas nos últimos 30 dias
+     * (`[{ slug, nome }]`). Lista vazia enquanto ninguém tiver buscado.
+     */
+    @GetMapping("/buscas-populares")
+    public List<BuscaPopularResposta> buscasPopulares(@RequestParam(defaultValue = "8") int limite) {
+        return buscasPopulares.maisBuscadas(limite);
     }
 
     @GetMapping("/profissionais/{id}")
     public ProfissionalDetalheResposta profissional(@PathVariable UUID id) {
-        return profissionais.detalhe(id);
+        ProfissionalDetalheResposta perfil = profissionais.detalhe(id);
+        // Só conta perfil que existe e está ativo (detalhe lança 404 antes).
+        emDestaque.registrarVisualizacao(id);
+        return perfil;
     }
 
     @GetMapping("/profissionais/{id}/avaliacoes")

@@ -20,8 +20,3 @@ export const SPECIALTIES = [
   { slug: "pneumologia", name: "Pneumologia", description: "Saúde respiratória", detail: "Saúde dos pulmões e do sistema respiratório", icon: LungsIcon, iconSize: 38 },
   { slug: "nutricao", name: "Nutrição", description: "Alimentação saudável", detail: "Alimentação saudável e qualidade de vida", icon: AppleIcon, iconSize: 36 },
 ];
-
-/* "Buscas populares" da página Especialidades. */
-export const POPULAR_SPECIALTIES = [
-  "Clínico Geral", "Pediatria", "Ginecologia", "Cardiologia", "Dermatologia", "Ortopedia", "Oftalmologia", "Psiquiatria",
-];

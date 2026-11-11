@@ -14,7 +14,7 @@ for (const nome of [
   'window', 'document', 'navigator', 'location', 'history', 'localStorage', 'sessionStorage',
   'HTMLElement', 'HTMLInputElement', 'HTMLSelectElement', 'HTMLTextAreaElement', 'HTMLButtonElement',
   'Node', 'Element', 'Event', 'MouseEvent', 'KeyboardEvent', 'FocusEvent', 'InputEvent', 'CustomEvent',
-  'MutationObserver', 'getComputedStyle', 'requestAnimationFrame', 'cancelAnimationFrame',
+  'MutationObserver', 'getComputedStyle', 'requestAnimationFrame', 'cancelAnimationFrame', 'FormData',
 ]) {
   Object.defineProperty(globalThis, nome, { value: window[nome], configurable: true, writable: true })
 }

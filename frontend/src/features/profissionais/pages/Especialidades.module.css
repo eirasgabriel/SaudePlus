@@ -37,6 +37,10 @@
   list-style: none;
 }
 
+/* Sem buscas (ou sem API): o cartão fica em branco, com a altura de uma
+   linha de botões, para não mudar de tamanho quando eles chegam. */
+.popularVazio { display: block; min-height: 36px; }
+
 /* Atalhos em pílula azul cheia, com texto branco. */
 .chip {
   composes: chip chipAtivo from vitrine;

@@ -64,6 +64,12 @@
   font-size: var(--fs-small);
 }
 
+/* Vaga em branco: mesmo cartão, sem conteúdo nem hover. */
+.vazio:hover { transform: none; box-shadow: var(--realce-sombra); }
+.photoEmBranco { display: block; background: var(--color-surface-muted); }
+.invisivel { visibility: hidden; }
+.botaoEmBranco { display: block; }
+
 @media (max-width: 560px) {
   .card { flex-direction: column; }
   .body { width: 100%; }

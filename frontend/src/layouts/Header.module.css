@@ -103,6 +103,96 @@
 .searchButton { margin-right: 0; }
 .themeButton { margin-right: var(--space-2); }
 
+/* ---------- Busca expansível ----------
+   Ocupa só o lugar da lupa no fluxo (44px); o campo é absoluto, preso à
+   direita, e cresce para a esquerda até --busca-largura (medida no JS para
+   parar antes do menu). Assim nada na faixa se mexe ao abrir. */
+.busca {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 44px;
+}
+
+.busca .searchButton {
+  position: relative;
+  z-index: 1;
+}
+
+.buscaForm {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  padding-right: 44px; /* espaço da lupa/fechar, que fica por cima */
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: var(--radius-button);
+  background: transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    width var(--duration-slow) var(--ease),
+    background var(--duration) var(--ease),
+    border-color var(--duration) var(--ease),
+    opacity var(--duration) var(--ease),
+    visibility 0s linear var(--duration-slow);
+}
+
+.buscaAberta .buscaForm {
+  width: var(--busca-largura, 320px);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.32);
+  opacity: 1;
+  visibility: visible;
+  transition:
+    width var(--duration-slow) var(--ease),
+    background var(--duration) var(--ease),
+    border-color var(--duration) var(--ease),
+    opacity var(--duration) var(--ease),
+    visibility 0s;
+}
+.buscaAberta .buscaForm:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(68, 198, 244, 0.22);
+}
+/* Com a busca aberta, o botão vira "fechar" sem fundo próprio. */
+.buscaAberta .searchButton[aria-expanded="true"] { background: transparent; }
+.buscaAberta .searchButton:hover { background: var(--shell-hover); }
+
+.buscaEnviar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+}
+.buscaEnviar svg { width: 20px; height: 20px; }
+.buscaEnviar:hover { color: #fff; }
+
+.buscaForm input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 4px 0 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-size: var(--fs-nav);
+  color: #fff;
+}
+.buscaForm input::placeholder { color: rgba(255, 255, 255, 0.72); }
+.buscaForm input::-webkit-search-cancel-button { display: none; }
+
 .loginButton,
 .signupButton {
   height: 44px;

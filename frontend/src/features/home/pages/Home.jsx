@@ -5,9 +5,9 @@ import Container from "../../../components/Container/Container.jsx";
 import { FaixaDestaques } from "../../../components/Vitrine/Vitrine.jsx";
 import { SectionLink } from "../../../components/SectionTitle/SectionTitle.jsx";
 import IconCircle from "../../../components/IconCircle/IconCircle.jsx";
-import ChatFlutuante from "../../../components/ChatFlutuante/ChatFlutuante.jsx";
 import { CalendarLineIcon, PlayCircleLineIcon } from "../../../components/icons/Icons.jsx";
 
+import { useBuscasPopulares } from "../../profissionais/useBuscasPopulares.js";
 import { heroContent, benefits, featuredSpecialties } from "../data/home.js";
 import { BENEFICIOS_PLATAFORMA } from "../../institucional/data/sobreNos.js";
 import heroArt from "../../../assets/images/hero-home-rente.jpg";
@@ -18,6 +18,8 @@ import styles from "./Home.module.css";
 const buscaPor = (nome) => `/buscar?especialidade=${encodeURIComponent(nome)}`;
 
 export default function Home() {
+  const { buscas: buscasPopulares } = useBuscasPopulares(6);
+
   return (
     <>
       <HeroSection
@@ -66,6 +68,19 @@ export default function Home() {
           ))}
         </nav>
 
+        {buscasPopulares.length > 0 && (
+          <nav className={styles.populares} aria-labelledby="buscas-populares-titulo">
+            <h3 id="buscas-populares-titulo" className={styles.popularesRotulo}>Buscas populares</h3>
+            <ul className={styles.popularesLista}>
+              {buscasPopulares.map((b) => (
+                <li key={b.slug}>
+                  <Link to={buscaPor(b.nome)} className={styles.popularesItem}>{b.nome}</Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+
         <ul className={styles.specialtyGrid}>
           {featuredSpecialties.map((s) => (
             <li key={s.slug}>
@@ -81,7 +96,6 @@ export default function Home() {
         </ul>
       </Container>
 
-      <ChatFlutuante />
     </>
   );
 }

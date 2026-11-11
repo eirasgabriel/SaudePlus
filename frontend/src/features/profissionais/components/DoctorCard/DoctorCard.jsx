@@ -10,6 +10,24 @@ function iniciais(nome = "") {
 }
 
 /**
+ * Vaga ainda sem profissional no ranking: o mesmo cartão, em branco. Repete a
+ * estrutura com o conteúdo invisível para ter exatamente a mesma altura.
+ */
+export function DoctorCardVazio({ className }) {
+  return (
+    <article className={cx(styles.card, styles.vazio, className)} aria-hidden="true">
+      <span className={cx(styles.photo, styles.photoEmBranco)} />
+      <div className={cx(styles.body, styles.invisivel)}>
+        <span className={styles.tag}>&nbsp;</span>
+        <span className={styles.name}>&nbsp;</span>
+        <Rating value={0} reviews={0} size="md" className={styles.rating} />
+        <span className={cx(styles.button, styles.botaoEmBranco)} />
+      </div>
+    </article>
+  );
+}
+
+/**
  * Card compacto de profissional em destaque. Com `perfilHref` (dados da API),
  * "Ver perfil" abre o perfil; sem ele (demonstração), busca pelo nome.
  */

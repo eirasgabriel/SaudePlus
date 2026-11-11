@@ -11,6 +11,7 @@ import {
 } from "../../../components/icons/Icons.jsx";
 
 import { HELP_SHORTCUTS, FAQ, CONTACT_CHANNELS } from "../data/ajuda.js";
+import { useChatOnline } from "../../../components/ChatFlutuante/chatOnline.js";
 import heroArt from "../../../assets/images/hero-ajuda-rente.jpg";
 import heroMobile from "../../../assets/images/hero-ajuda-mobile.jpg";
 
@@ -32,6 +33,7 @@ function ConteudoAtalho({ icone: Icone, titulo, descricao }) {
 
 export default function Ajuda({ onUnavailable }) {
   const [openIndex, setOpenIndex] = useState(null);
+  const chatOnline = useChatOnline();
 
   return (
     <>
@@ -103,9 +105,14 @@ export default function Ajuda({ onUnavailable }) {
           </p>
 
           <ul className={styles.channels}>
-            {CONTACT_CHANNELS.map(({ icone, titulo, descricao, status }) => (
+            {CONTACT_CHANNELS.map(({ icone, titulo, descricao, status, chat }) => (
               <li key={titulo}>
-                <button type="button" className={styles.channel} onClick={() => onUnavailable(titulo)}>
+                <button
+                  type="button"
+                  className={styles.channel}
+                  aria-haspopup={chat && chatOnline ? "dialog" : undefined}
+                  onClick={() => (chat && chatOnline ? chatOnline.abrir() : onUnavailable(titulo))}
+                >
                   <IconCircle icon={icone} size={52} iconSize={28} className={styles.channelIcon} />
                   <span className={styles.channelBody}>
                     <span className={styles.channelTitle}>{titulo}</span>

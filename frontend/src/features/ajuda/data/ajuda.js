@@ -34,13 +34,14 @@ export const FAQ = [
   },
   {
     question: "Como falar com um atendente?",
-    answer: "Os canais de atendimento (chat, e-mail e telefone) estão em preparação e serão anunciados nesta página. Enquanto isso, as respostas acima cobrem as dúvidas mais comuns.",
+    answer: "O atendimento com pessoas (e-mail e telefone) está em preparação e será anunciado nesta página. Enquanto isso, o Chat online, em Fale conosco, responde na hora às dúvidas mais comuns.",
   },
 ];
 
-/* Canais de atendimento: ainda em preparação, por isso sem número nem status "on-line". */
+/* Canais de atendimento. O chat online já funciona com respostas automáticas
+   (`chat: true` abre o popup); e-mail e telefone ainda estão em preparação. */
 export const CONTACT_CHANNELS = [
-  { icone: ChatLineIcon, titulo: "Chat online", descricao: "Atendimento em tempo real", status: "Em breve" },
+  { icone: ChatLineIcon, titulo: "Chat online", descricao: "Respostas automáticas na hora", chat: true },
   { icone: MailLineIcon, titulo: "E-mail", descricao: "Canal disponível em breve" },
   { icone: PhoneLineIcon, titulo: "Telefone", descricao: "Canal disponível em breve" },
 ];

@@ -578,7 +578,7 @@ class AdminApiTest {
             como(admin, get("/api/admin/sistema"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.banco").value(startsWith("PostgreSQL")))
-                    .andExpect(jsonPath("$.ultimaMigracao.versao").value("10"))
+                    .andExpect(jsonPath("$.ultimaMigracao.versao").value("12"))
                     .andExpect(jsonPath("$.noArDesde").isString());
             como(equipe(Papel.GESTOR), get("/api/admin/sistema")).andExpect(status().isForbidden());
         }

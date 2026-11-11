@@ -5,21 +5,25 @@ import Container from "../../../components/Container/Container.jsx";
 import IconCircle from "../../../components/IconCircle/IconCircle.jsx";
 import { SectionLink } from "../../../components/SectionTitle/SectionTitle.jsx";
 import CTABand from "../../../components/CTABand/CTABand.jsx";
-import DoctorCard from "../components/DoctorCard/DoctorCard.jsx";
+import DoctorCard, { DoctorCardVazio } from "../components/DoctorCard/DoctorCard.jsx";
 import Button from "../../../components/Button/Button.jsx";
 import { CalendarLineIcon } from "../../../components/icons/Icons.jsx";
 
-import { SPECIALTIES, POPULAR_SPECIALTIES } from "../data/specialties.js";
+import { SPECIALTIES } from "../data/specialties.js";
+import { useBuscasPopulares } from "../useBuscasPopulares.js";
 import { useDestaques } from "../useBuscaProfissionais.js";
 import heroArt from "../../../assets/images/hero-especialidades-rente.jpg";
 import heroMobile from "../../../assets/images/hero-especialidades-mobile.jpg";
 
 import styles from "./Especialidades.module.css";
 
+const VAGAS_EM_DESTAQUE = 4;
+
 const buscaPor = (nome) => `/buscar?especialidade=${encodeURIComponent(nome)}`;
 
 export default function Especialidades() {
-  const destaques = useDestaques();
+  const destaques = useDestaques(VAGAS_EM_DESTAQUE);
+  const { buscas: buscasPopulares } = useBuscasPopulares(10);
 
   return (
     <>
@@ -45,16 +49,21 @@ export default function Especialidades() {
         />
       </HeroSection>
 
-      {/* Buscas populares: atalhos para a busca já filtrada */}
+      {/* Buscas populares: o cartão fica sempre; os botões são o top 10 das
+          especialidades mais buscadas em 30 dias (API). Sem dados, fica em branco. */}
       <Container as="nav" className={styles.popular} aria-label="Buscas populares">
         <span className={styles.popularLabel}>Buscas populares:</span>
-        <ul className={styles.popularList}>
-          {POPULAR_SPECIALTIES.map((nome) => (
-            <li key={nome}>
-              <Link to={buscaPor(nome)} className={styles.chip}>{nome}</Link>
-            </li>
-          ))}
-        </ul>
+        {buscasPopulares.length > 0 ? (
+          <ul className={styles.popularList}>
+            {buscasPopulares.map((b) => (
+              <li key={b.slug}>
+                <Link to={buscaPor(b.nome)} className={styles.chip}>{b.nome}</Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <span className={styles.popularVazio} />
+        )}
       </Container>
 
       {/* Todas as especialidades */}
@@ -87,23 +96,24 @@ export default function Especialidades() {
         }
       />
 
-      {/* Profissionais em destaque: só com dados da API (sem demonstração). */}
-      {destaques.length > 0 && (
-        <Container as="section" className={styles.featured} aria-labelledby="featured-title">
-          <header className={styles.cardHeader}>
-            <h2 id="featured-title" className={styles.cardTitle}>
-              Profissionais <span>em destaque</span>
-            </h2>
-            <SectionLink to="/buscar">Ver todos os profissionais</SectionLink>
-          </header>
+      {/* Profissionais em destaque: VAGAS_EM_DESTAQUE cartões fixos. Cada vaga
+          mostra um médico do ranking (perfis mais abertos em 30 dias) ou fica
+          em branco; o ranking é buscado de novo conforme muda. */}
+      <Container as="section" className={styles.featured} aria-labelledby="featured-title">
+        <header className={styles.cardHeader}>
+          <h2 id="featured-title" className={styles.cardTitle}>
+            Profissionais <span>em destaque</span>
+          </h2>
+          <SectionLink to="/buscar">Ver todos os profissionais</SectionLink>
+        </header>
 
-          <div className={styles.doctorGrid}>
-            {destaques.map((p) => (
-              <DoctorCard key={p.id} {...p} />
-            ))}
-          </div>
-        </Container>
-      )}
+        <div className={styles.doctorGrid}>
+          {Array.from({ length: VAGAS_EM_DESTAQUE }, (_, i) => {
+            const p = destaques[i];
+            return p ? <DoctorCard key={p.id} {...p} /> : <DoctorCardVazio key={`vaga-${i}`} />;
+          })}
+        </div>
+      </Container>
     </>
   );
 }

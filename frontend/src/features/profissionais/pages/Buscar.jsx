@@ -10,7 +10,8 @@ import FilterSidebar from "../components/FilterSidebar/FilterSidebar.jsx";
 import ProfessionalCard from "../components/ProfessionalCard/ProfessionalCard.jsx";
 import Container from "../../../components/Container/Container.jsx";
 import { mensagemDaFalha } from "../../../components/PortaoDaApi/mensagemDaFalha.js";
-import { UsersIcon, ChevronDownIcon } from "../../../components/icons/Icons.jsx";
+import { UsersIcon } from "../../../components/icons/Icons.jsx";
+import ListaSuspensa from "../../../components/ListaSuspensa/ListaSuspensa.jsx";
 
 import { useBuscaProfissionais, useListasDaBusca } from "../useBuscaProfissionais.js";
 import { lerConsultaDaUrl } from "../buscaParametros.js";
@@ -144,12 +145,17 @@ export default function Buscar({ onUnavailable }) {
               {origem !== "erro" && <p className={styles.resultsSubtitle}>encontrados para você em {applied.city}</p>}
             </div>
 
-            <label htmlFor="sort" className={styles.sortLabel}>Ordenar por:</label>
+            <span id="sort-rotulo" className={styles.sortLabel}>Ordenar por:</span>
             <div className={styles.sortSelect}>
-              <select id="sort" value={sort} onChange={(e) => setSort(e.target.value)}>
-                {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-              </select>
-              <ChevronDownIcon size={18} />
+              <ListaSuspensa
+                id="sort"
+                labelledBy="sort-rotulo"
+                value={sort}
+                onChange={setSort}
+                options={SORT_OPTIONS}
+                className={styles.sortBotao}
+                alinhar="direita"
+              />
             </div>
           </header>
 

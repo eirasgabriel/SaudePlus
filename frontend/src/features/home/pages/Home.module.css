@@ -26,6 +26,48 @@
 .chip { composes: chip from vitrine; }
 .chipAtivo { composes: chipAtivo from vitrine; }
 
+/* Buscas populares: linha discreta entre os atalhos e a grade. Vem da API
+   (mais buscadas em 30 dias) e some quando não há dados. */
+.populares {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.popularesRotulo {
+  margin: 0;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  color: var(--color-text-muted);
+}
+
+.popularesLista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.popularesItem {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-light);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+  color: var(--color-primary-dark);
+  text-decoration: none;
+  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+.popularesItem:hover { background: var(--color-primary); color: #fff; }
+.popularesItem:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
 /* Grade em "tabela": células separadas por traços dentro de um cartão branco. */
 .specialtyGrid {
   display: grid;
