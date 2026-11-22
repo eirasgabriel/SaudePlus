@@ -16,6 +16,7 @@ import br.com.saudeplus.agenda.DisponibilidadeRepository;
 import br.com.saudeplus.agendamentos.AgendamentoRepository;
 import br.com.saudeplus.agendamentos.StatusAgendamento;
 import br.com.saudeplus.auditoria.Auditoria;
+import br.com.saudeplus.clinicas.StatusUnidade;
 import br.com.saudeplus.clinicas.Unidade;
 import br.com.saudeplus.exception.ConflitoException;
 import br.com.saudeplus.exception.RecursoNaoEncontradoException;
@@ -83,6 +84,9 @@ public class MedicosDaClinicaService {
 
     @Transactional
     public MedicoDaUnidade vincular(Unidade unidade, UUID medicoId) {
+        if (unidade.getStatus() == StatusUnidade.INATIVA) {
+            throw new RegraDeNegocioException("Esta clínica está inativa e não pode receber novos médicos.");
+        }
         Medico medico = medicos.findComUsuarioById(medicoId)
                 .orElseThrow(() -> RecursoNaoEncontradoException.de("Médico", medicoId.toString()));
         if (!medico.getUsuario().ativo()) {

@@ -178,7 +178,7 @@ public class ProfissionaisPublicoService {
         if (ids.isEmpty()) {
             return Map.of();
         }
-        return disponibilidades.modalidadesDos(ids).stream()
+        return disponibilidades.modalidadesDos(ids, agenda.hoje()).stream()
                 .collect(Collectors.groupingBy(ModalidadeDoMedico::medicoId, Collectors.collectingAndThen(
                         Collectors.mapping(ModalidadeDoMedico::modalidade, Collectors.toCollection(ArrayList::new)),
                         lista -> lista.stream().sorted(Comparator.comparing(Enum::ordinal)).toList())));

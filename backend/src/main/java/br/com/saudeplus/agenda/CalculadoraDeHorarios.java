@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Horários livres de um médico: as janelas semanais fatiadas pela duração,
+ * Horários livres de um médico: as janelas (por data ou semanais antigas) fatiadas pela duração,
  * menos o que já passou (ou está perto demais), os bloqueios e os horários
  * ocupados por agendamentos.
  *
@@ -22,9 +22,28 @@ public final class CalculadoraDeHorarios {
     private CalculadoraDeHorarios() {
     }
 
-    /** Janela semanal de atendimento. */
-    public record Janela(DayOfWeek dia, LocalTime inicio, LocalTime fim, int duracaoMin, UUID unidadeId,
-            Modalidade modalidade) {
+    /**
+     * Janela de atendimento: `data` (dia específico) ou `dia` (janela semanal
+     * antiga), exatamente um dos dois.
+     */
+    public record Janela(LocalDate data, DayOfWeek dia, LocalTime inicio, LocalTime fim, int duracaoMin,
+            UUID unidadeId, Modalidade modalidade) {
+
+        /** Janela semanal. */
+        public Janela(DayOfWeek dia, LocalTime inicio, LocalTime fim, int duracaoMin, UUID unidadeId,
+                Modalidade modalidade) {
+            this(null, dia, inicio, fim, duracaoMin, unidadeId, modalidade);
+        }
+
+        /** Janela num dia específico. */
+        public Janela(LocalDate data, LocalTime inicio, LocalTime fim, int duracaoMin, UUID unidadeId,
+                Modalidade modalidade) {
+            this(data, null, inicio, fim, duracaoMin, unidadeId, modalidade);
+        }
+
+        boolean valeEm(LocalDate diaDoCalendario) {
+            return data != null ? data.equals(diaDoCalendario) : dia == diaDoCalendario.getDayOfWeek();
+        }
     }
 
     /** Horário já tomado. */
@@ -57,7 +76,7 @@ public final class CalculadoraDeHorarios {
         List<HorarioLivre> livres = new ArrayList<>();
         for (LocalDate dia = de; !dia.isAfter(ate); dia = dia.plusDays(1)) {
             for (Janela janela : janelas) {
-                if (janela.dia() == dia.getDayOfWeek()) {
+                if (janela.valeEm(dia)) {
                     fatiar(dia, janela, ocupados, bloqueios, inicioMinimo, livres);
                 }
             }

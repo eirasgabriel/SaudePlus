@@ -52,6 +52,27 @@ class CalculadoraDeHorariosTest {
     }
 
     @Test
+    @DisplayName("janela por data só gera horários naquele dia, não na mesma semana seguinte")
+    void porData() {
+        Janela doDia = new Janela(SEGUNDA.plusDays(2), LocalTime.of(14, 0), LocalTime.of(15, 0), 30, UNIDADE,
+                Modalidade.ONLINE);
+        List<HorarioLivre> livres = CalculadoraDeHorarios.calcular(SEGUNDA, SEGUNDA.plusDays(13),
+                List.of(doDia), List.of(), List.of(), MUITO_ANTES);
+        assertEquals(List.of("14:00", "14:30"), horas(livres));
+        assertTrue(livres.stream().allMatch(l -> l.data().equals(SEGUNDA.plusDays(2))));
+    }
+
+    @Test
+    @DisplayName("janela por data convive com a semanal antiga do mesmo dia")
+    void porDataESemanal() {
+        List<HorarioLivre> livres = CalculadoraDeHorarios.calcular(SEGUNDA, SEGUNDA, List.of(
+                janela(DayOfWeek.MONDAY, "08:00", "09:00", 30),
+                new Janela(SEGUNDA, LocalTime.of(10, 0), LocalTime.of(10, 30), 30, UNIDADE, Modalidade.PRESENCIAL)),
+                List.of(), List.of(), MUITO_ANTES);
+        assertEquals(List.of("08:00", "08:30", "10:00"), horas(livres));
+    }
+
+    @Test
     @DisplayName("tira horários que colidem com agendamento, mesmo de duração diferente")
     void ocupados() {
         List<Ocupado> ocupados = List.of(new Ocupado(SEGUNDA, LocalTime.of(8, 50), 20));

@@ -58,6 +58,8 @@ public interface ExameRepository extends JpaRepository<Exame, UUID> {
 
     long countByCriadoEmGreaterThanEqualAndCriadoEmLessThan(Instant de, Instant ate);
 
+    boolean existsByUnidadeId(UUID unidadeId);
+
     /** Coletas marcadas no intervalo, para o calendário da administração. */
     @Query("select e.dataHora from Exame e where e.dataHora >= :de and e.dataHora < :ate")
     List<Instant> coletasEntre(Instant de, Instant ate);

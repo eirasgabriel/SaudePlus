@@ -5,7 +5,7 @@ import dlg from "../../../components/ModalAgendamento.module.css";
 import { CampoDaTela, CartaoDaTela, ConteudoCarregado } from "../../../components/Telas.jsx";
 import { useRetorno } from "../../../components/useRetorno.jsx";
 import estilos from "../../../styles/telas.module.css";
-import { DIAS_DA_SEMANA, ROTULO_MODALIDADE, dataHoraBr, hojeIso } from "../../../utils/formatos.js";
+import { DIAS_DA_SEMANA, ROTULO_MODALIDADE, dataCurtaBr, dataHoraBr, hojeIso } from "../../../utils/formatos.js";
 import { useDadosDaApi } from "../../paciente/useDadosDaApi.js";
 import StatusTag from "../components/StatusTag/StatusTag.jsx";
 import { STATUS_CONSULTA } from "../data/medico.js";
@@ -114,7 +114,18 @@ function ConsultasDoDia({ retorno }) {
   );
 }
 
-const JANELA_VAZIA = { unidadeId: "", diaSemana: "1", inicio: "08:00", fim: "12:00", duracaoMin: "30", modalidade: "presencial" };
+/* Janelas são por data (dd/mm/aa), de hoje até DIAS_DE_AGENDA à frente. */
+const DIAS_DE_AGENDA = 90;
+const JANELA_VAZIA = { unidadeId: "", data: "", inicio: "08:00", fim: "12:00", duracaoMin: "30", modalidade: "presencial" };
+
+/** Hoje e os próximos dias, em ISO, para a lista de datas do formulário. */
+const diasDaAgenda = () => Array.from({ length: DIAS_DE_AGENDA + 1 }, (_, i) => hojeIso(i));
+
+/** "12/11/26 (hoje)" para o dia atual; "12/11/26" para os outros. */
+const rotuloDoDia = (iso) => (iso === hojeIso() ? `${dataCurtaBr(iso)} (hoje)` : dataCurtaBr(iso));
+
+/** Janela por data → "12/11/26"; janela semanal antiga → "Toda segunda". */
+const quandoDaJanela = (d) => (d.data ? dataCurtaBr(d.data) : `Toda ${DIAS_DA_SEMANA[d.diaSemana]?.toLowerCase() ?? ""}`);
 const BLOQUEIO_VAZIO = { inicio: "", fim: "", motivo: "" };
 
 function ConfiguracaoDaAgenda({ retorno }) {
@@ -131,7 +142,7 @@ function ConfiguracaoDaAgenda({ retorno }) {
   const abrirJanela = () => {
     setErros({});
     setErroGeral(null);
-    setNovaJanela({ ...JANELA_VAZIA, unidadeId: unidadesAtivas[0]?.id ?? "" });
+    setNovaJanela({ ...JANELA_VAZIA, data: hojeIso(), unidadeId: unidadesAtivas[0]?.id ?? "" });
   };
 
   const abrirBloqueio = () => {
@@ -144,7 +155,9 @@ function ConfiguracaoDaAgenda({ retorno }) {
   const editarJanela = (janela) => {
     setErros({});
     setErroGeral(null);
-    setNovaJanela({ ...janela, unidadeId: janela.unidade.id });
+    const hoje = hojeIso();
+    const data = janela.data && janela.data >= hoje ? janela.data : hoje;
+    setNovaJanela({ ...janela, data, unidadeId: janela.unidade.id });
   };
 
   const salvarJanela = async (evento) => {
@@ -156,7 +169,7 @@ function ConfiguracaoDaAgenda({ retorno }) {
         inicio: novaJanela.inicio,
         fim: novaJanela.fim,
         modalidade: novaJanela.modalidade,
-        diaSemana: Number(novaJanela.diaSemana),
+        data: novaJanela.data,
         duracaoMin: Number(novaJanela.duracaoMin),
       };
       if (novaJanela.id) await alterarDisponibilidade(novaJanela.id, corpo);
@@ -237,7 +250,7 @@ function ConfiguracaoDaAgenda({ retorno }) {
                 <li key={d.id} className={estilos.item}>
                   <div className={estilos.itemTexto}>
                     <span className={estilos.itemPrincipal}>
-                      {DIAS_DA_SEMANA[d.diaSemana]}, {d.inicio} às {d.fim}
+                      {quandoDaJanela(d)}, {d.inicio} às {d.fim}
                     </span>
                     <span className={estilos.itemSecundario}>
                       {d.unidade.nome} · consultas de {d.duracaoMin} min · {ROTULO_MODALIDADE[d.modalidade] ?? d.modalidade}
@@ -313,11 +326,12 @@ function ConfiguracaoDaAgenda({ retorno }) {
               </select>
             </div>
             <div className={dlg.campo}>
-              <label className={dlg.rotulo} htmlFor="janela-dia">Dia da semana</label>
-              <select id="janela-dia" className={dlg.select} value={novaJanela.diaSemana}
-                onChange={(e) => setNovaJanela((atual) => ({ ...atual, diaSemana: e.target.value }))}>
-                {DIAS_DA_SEMANA.slice(1).map((dia, i) => <option key={dia} value={i + 1}>{dia}</option>)}
+              <label className={dlg.rotulo} htmlFor="janela-data">Data</label>
+              <select id="janela-data" className={`${dlg.select} ${erros.data ? dlg.campoInvalido : ""}`} value={novaJanela.data}
+                onChange={(e) => setNovaJanela((atual) => ({ ...atual, data: e.target.value }))}>
+                {diasDaAgenda().map((iso) => <option key={iso} value={iso}>{rotuloDoDia(iso)}</option>)}
               </select>
+              {erros.data && <p className={dlg.erro}>{erros.data}</p>}
             </div>
             {campoDaJanela("inicio", "Início", { type: "time" })}
             {campoDaJanela("fim", "Fim", { type: "time" })}

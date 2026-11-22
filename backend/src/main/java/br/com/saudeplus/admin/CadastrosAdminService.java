@@ -28,16 +28,19 @@ import br.com.saudeplus.admin.dto.RequisicoesAdmin.SalvarConvenio;
 import br.com.saudeplus.admin.dto.RequisicoesAdmin.SalvarEspecialidade;
 import br.com.saudeplus.admin.dto.RequisicoesAdmin.SalvarTipoExame;
 import br.com.saudeplus.admin.dto.RequisicoesAdmin.SalvarUnidade;
+import br.com.saudeplus.agenda.DisponibilidadeRepository;
 import br.com.saudeplus.agendamentos.AgendamentoRepository;
 import br.com.saudeplus.auditoria.Auditoria;
 import br.com.saudeplus.clinicas.StatusUnidade;
 import br.com.saudeplus.clinicas.Unidade;
 import br.com.saudeplus.clinicas.UnidadeRepository;
 import br.com.saudeplus.comum.Cnpj;
+import br.com.saudeplus.exames.ExameRepository;
 import br.com.saudeplus.exames.TipoExame;
 import br.com.saudeplus.exames.TipoExameRepository;
 import br.com.saudeplus.exception.ConflitoException;
 import br.com.saudeplus.exception.RecursoNaoEncontradoException;
+import br.com.saudeplus.exception.RegraDeNegocioException;
 import br.com.saudeplus.exception.RequisicaoInvalidaException;
 import br.com.saudeplus.profissionais.Convenio;
 import br.com.saudeplus.profissionais.ConvenioRepository;
@@ -47,9 +50,9 @@ import br.com.saudeplus.profissionais.MedicoRepository;
 
 /**
  * Cadastros da administração: unidades de atendimento e os catálogos
- * (especialidades, convênios, tipos de exame). Nada é apagado: unidade sai de
- * operação pelo status e convênio pelo `ativo`, porque há agendamentos e
- * exames que apontam para eles.
+ * (especialidades, convênios, tipos de exame). Unidade sai de operação pelo
+ * status e convênio pelo `ativo`, porque há agendamentos e exames que apontam
+ * para eles; só a unidade inativa e sem histórico pode ser apagada de vez.
  */
 @Service
 public class CadastrosAdminService {
@@ -64,10 +67,13 @@ public class CadastrosAdminService {
     private final Clock relogio;
     private final UsuarioRepository usuarios;
     private final PasswordEncoder codificador;
+    private final ExameRepository exames;
+    private final DisponibilidadeRepository disponibilidades;
 
     public CadastrosAdminService(UnidadeRepository unidades, MedicoRepository medicos, AgendamentoRepository agendamentos,
             EspecialidadeRepository especialidades, ConvenioRepository convenios, TipoExameRepository tiposDeExame,
-            Auditoria auditoria, Clock relogio, UsuarioRepository usuarios, PasswordEncoder codificador) {
+            Auditoria auditoria, Clock relogio, UsuarioRepository usuarios, PasswordEncoder codificador,
+            ExameRepository exames, DisponibilidadeRepository disponibilidades) {
         this.unidades = unidades;
         this.medicos = medicos;
         this.agendamentos = agendamentos;
@@ -78,6 +84,8 @@ public class CadastrosAdminService {
         this.relogio = relogio;
         this.usuarios = usuarios;
         this.codificador = codificador;
+        this.exames = exames;
+        this.disponibilidades = disponibilidades;
     }
 
     // ------------------------------------------------------------------ unidades
@@ -148,6 +156,49 @@ public class CadastrosAdminService {
         Unidade unidade = unidade(id);
         unidade.alterarStatus(StatusUnidade.INATIVA);
         auditoria.registrar("unidade.excluir", "unidade", id, Map.of("nome", unidade.getNome()));
+    }
+
+    /** Volta a unidade inativa (ou em manutenção) para a operação. */
+    @Transactional
+    public UnidadeAdmin reativarUnidade(UUID id) {
+        Unidade unidade = unidade(id);
+        if (unidade.getStatus() == StatusUnidade.ATIVA) {
+            throw new ConflitoException("A clínica já está ativa.");
+        }
+        unidade.alterarStatus(StatusUnidade.ATIVA);
+        auditoria.registrar("unidade.reativar", "unidade", id, Map.of("nome", unidade.getNome()));
+        return resumo(unidade);
+    }
+
+    /**
+     * Exclusão definitiva, só para unidade já inativa e sem histórico
+     * (agendamentos ou exames). Leva junto a conta de acesso da clínica, os
+     * vínculos com médicos e as janelas de agenda nela.
+     */
+    @Transactional
+    public void excluirUnidadeDefinitivamente(UUID id) {
+        Unidade unidade = unidade(id);
+        if (unidade.getStatus() != StatusUnidade.INATIVA) {
+            throw new RegraDeNegocioException("Inative a clínica antes de excluí-la definitivamente.");
+        }
+        if (agendamentos.existsByUnidadeId(id) || exames.existsByUnidadeId(id)) {
+            throw new ConflitoException(
+                    "A clínica tem agendamentos ou exames no histórico e não pode ser excluída. Mantenha-a inativa.");
+        }
+        String nome = unidade.getNome();
+        disponibilidades.deleteByUnidadeId(id);
+        medicos.vinculadosA(id).forEach(medico -> {
+            medico.removerUnidade(unidade);
+            medicos.save(medico);
+        });
+        usuarios.findByUnidadeId(id).ifPresent(usuarios::delete);
+        try {
+            unidades.delete(unidade);
+            unidades.flush();
+        } catch (DataIntegrityViolationException falha) {
+            throw new ConflitoException("A clínica ainda tem registros associados e não pode ser excluída. Mantenha-a inativa.");
+        }
+        auditoria.registrar("unidade.excluir_definitivo", "unidade", id, Map.of("nome", nome));
     }
 
     private static String cnpj(String informado) {

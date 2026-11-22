@@ -14,6 +14,9 @@
   align-items: start;
 }
 
+/* Aba Permissões: só a coluna de papéis e a matriz, na largura toda. */
+.somentePermissoes { display: block; }
+
 .coluna {
   display: flex;
   flex-direction: column;

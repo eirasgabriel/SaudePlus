@@ -280,6 +280,12 @@
   color: var(--primary);
 }
 
+/* "Mais datas": mesmo formato do botão de data, sem borda, em azul. */
+.maisDatas {
+  border-style: dashed;
+  color: var(--primary);
+}
+
 .dataAtiva,
 .dataAtiva:hover {
   border-color: var(--primary);

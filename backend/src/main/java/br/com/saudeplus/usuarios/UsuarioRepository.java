@@ -52,4 +52,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID>, JpaSpec
     long countByStatusNot(StatusConta status);
 
     long countByCriadoEmGreaterThanEqualAndCriadoEmLessThan(Instant de, Instant ate);
+
+    // Variantes sem as contas de clínica, que têm painel próprio fora da lista de usuários.
+
+    long countByStatusAndPapelNot(StatusConta status, Papel papel);
+
+    long countByStatusNotAndPapelNot(StatusConta status, Papel papel);
+
+    long countByPapelNotAndCriadoEmGreaterThanEqualAndCriadoEmLessThan(Papel papel, Instant de, Instant ate);
 }

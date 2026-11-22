@@ -109,24 +109,6 @@ export function paraClinica(u) {
   };
 }
 
-/** Unidade da API → cadastro da aba "Clínicas e Unidades" (com CNPJ e e-mail). */
-export function paraUnidadeDaConfiguracao(u) {
-  return {
-    id: u.id,
-    nome: u.nome,
-    cnpj: u.cnpj ?? "",
-    unidade: `${u.cidade} - ${u.uf}`,
-    endereco: u.endereco,
-    bairro: [u.bairro, `${u.cidade}/${u.uf}`].filter(Boolean).join(" - "),
-    telefone: u.telefone ?? "—",
-    email: u.email ?? "",
-    emailLogin: u.emailLogin ?? "",
-    funcionamento: [u.horarioFuncionamento || "Horário não informado"],
-    status: u.status,
-    vinculadas: [],
-  };
-}
-
 export function metricasDeClinicas(modelos, m) {
   return cartoes(modelos, {
     total: { valor: m.total },

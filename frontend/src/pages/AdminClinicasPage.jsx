@@ -35,7 +35,9 @@ const COLUNAS = [
 
 /**
  * Dados e opções de filtro por prop, com os mocks como padrão. Com a API,
- * `aoNovaClinica`, `aoEditar(clinica)` e `aoExcluir(clinica)` ligam os botões.
+ * `aoNovaClinica`, `aoEditar(clinica)`, `aoExcluir(clinica)` e
+ * `aoReativar(clinica)` ligam os botões. A lixeira inativa a clínica; com ela
+ * já inativa, aparecem "Reativar" e "Excluir permanentemente".
  */
 export default function AdminClinicasPage({
   clinicas = clinicasMock,
@@ -46,6 +48,7 @@ export default function AdminClinicasPage({
   aoNovaClinica,
   aoEditar,
   aoExcluir,
+  aoReativar,
 }) {
   const [hoje] = useState(() => new Date());
   const tabela = useTabela({
@@ -138,8 +141,16 @@ export default function AdminClinicasPage({
                         aoEditar
                           ? [
                               { icone: "lapis", rotulo: "Editar", aoClicar: () => aoEditar(c) },
-                              ...(c.status !== "inativa"
-                                ? [{ icone: "lixeira", rotulo: "Excluir", tom: "perigo", aoClicar: () => aoExcluir(c) }]
+                              ...(c.status === "inativa" && aoReativar
+                                ? [{ icone: "atualizar", rotulo: "Reativar", tom: "neutra", aoClicar: () => aoReativar(c) }]
+                                : []),
+                              ...(aoExcluir
+                                ? [{
+                                    icone: "lixeira",
+                                    rotulo: c.status === "inativa" ? "Excluir permanentemente" : "Excluir (inativar clínica)",
+                                    tom: "perigo",
+                                    aoClicar: () => aoExcluir(c),
+                                  }]
                                 : []),
                             ]
                           : [

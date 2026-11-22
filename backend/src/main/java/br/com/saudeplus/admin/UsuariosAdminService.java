@@ -33,6 +33,7 @@ import br.com.saudeplus.admin.dto.UsuarioAdminResposta.PerfilPaciente;
 import br.com.saudeplus.admin.dto.UsuarioAdminResposta.Referencia;
 import br.com.saudeplus.auditoria.Auditoria;
 import br.com.saudeplus.auth.RecuperacaoDeSenhaService;
+import br.com.saudeplus.clinicas.StatusUnidade;
 import br.com.saudeplus.clinicas.Unidade;
 import br.com.saudeplus.clinicas.UnidadeRepository;
 import br.com.saudeplus.comum.Cpf;
@@ -122,12 +123,13 @@ public class UsuariosAdminService {
     public Metricas metricas() {
         YearMonth mes = Periodos.mesAtual(relogio);
         return new Metricas(
-                usuarios.countByStatusNot(StatusConta.EXCLUIDO),
-                usuarios.countByStatus(StatusConta.ATIVO),
-                usuarios.countByStatus(StatusConta.BLOQUEADO),
-                usuarios.countByStatus(StatusConta.INATIVO),
-                usuarios.countByCriadoEmGreaterThanEqualAndCriadoEmLessThan(Periodos.inicio(mes, relogio), Periodos.fim(mes, relogio)),
-                usuarios.countByCriadoEmGreaterThanEqualAndCriadoEmLessThan(
+                usuarios.countByStatusNotAndPapelNot(StatusConta.EXCLUIDO, Papel.CLINICA),
+                usuarios.countByStatusAndPapelNot(StatusConta.ATIVO, Papel.CLINICA),
+                usuarios.countByStatusAndPapelNot(StatusConta.BLOQUEADO, Papel.CLINICA),
+                usuarios.countByStatusAndPapelNot(StatusConta.INATIVO, Papel.CLINICA),
+                usuarios.countByPapelNotAndCriadoEmGreaterThanEqualAndCriadoEmLessThan(Papel.CLINICA,
+                        Periodos.inicio(mes, relogio), Periodos.fim(mes, relogio)),
+                usuarios.countByPapelNotAndCriadoEmGreaterThanEqualAndCriadoEmLessThan(Papel.CLINICA,
                         Periodos.inicio(mes.minusMonths(1), relogio), Periodos.fim(mes.minusMonths(1), relogio)));
     }
 
@@ -282,6 +284,14 @@ public class UsuariosAdminService {
         if (vinculadas.size() != new HashSet<>(idsDasUnidades).size()) {
             throw new RegraDeNegocioException("Há unidade inexistente na lista.");
         }
+        // Vínculo novo só com unidade ativa ou em manutenção; um vínculo antigo com
+        // unidade que foi inativada pode continuar na lista sem ser recusado.
+        Set<UUID> jaVinculadas = medico.unidadesVinculadas().stream().map(Unidade::getId).collect(Collectors.toSet());
+        boolean novaInativa = vinculadas.stream()
+                .anyMatch(u -> u.getStatus() == StatusUnidade.INATIVA && !jaVinculadas.contains(u.getId()));
+        if (novaInativa) {
+            throw RequisicaoInvalidaException.noCampo("unidadeIds", "Não é possível vincular o médico a uma clínica inativa.");
+        }
         medico.definirEspecialidades(escolhidas);
         medico.definirUnidades(vinculadas);
     }
@@ -313,8 +323,10 @@ public class UsuariosAdminService {
 
     private Usuario buscar(UUID id) {
         // Conta excluída não é mais gerida: para a administração, ela não existe.
+        // Conta de clínica também fica de fora: é gerida pelo cadastro da clínica.
         return usuarios.findById(id)
                 .filter(usuario -> usuario.getStatus() != StatusConta.EXCLUIDO)
+                .filter(usuario -> usuario.getPapel() != Papel.CLINICA)
                 .orElseThrow(() -> RecursoNaoEncontradoException.de("Usuário", id.toString()));
     }
 
@@ -322,6 +334,8 @@ public class UsuariosAdminService {
         return (usuario, consulta, cb) -> {
             List<Predicate> regras = new ArrayList<>();
             regras.add(cb.notEqual(usuario.get("status"), StatusConta.EXCLUIDO));
+            // Clínicas têm painel próprio (/admin/clinicas) e não aparecem entre os usuários.
+            regras.add(cb.notEqual(usuario.get("papel"), Papel.CLINICA));
             if (termo != null && !termo.isBlank()) {
                 String padrao = "%" + termo.strip().toLowerCase(Locale.ROOT).replace("%", "").replace("_", "") + "%";
                 regras.add(cb.or(

@@ -37,11 +37,10 @@ public final class RequisicoesDoMedico {
             String desfecho) {
     }
 
-    /** Janela semanal. `diaSemana` segue a ISO: 1 = segunda, 7 = domingo. */
+    /** Janela de atendimento num dia específico (`data`, de hoje em diante). */
     public record SalvarDisponibilidade(
             @NotNull(message = "Informe a unidade") UUID unidadeId,
-            @NotNull(message = "Informe o dia da semana") @Min(value = 1, message = "Dia da semana vai de 1 a 7")
-            @Max(value = 7, message = "Dia da semana vai de 1 a 7") Integer diaSemana,
+            @NotNull(message = "Informe a data") LocalDate data,
             @NotNull(message = "Informe o início") LocalTime inicio,
             @NotNull(message = "Informe o fim") LocalTime fim,
             @NotNull(message = "Informe a duração") @Min(value = 5, message = "Duração mínima de 5 minutos")

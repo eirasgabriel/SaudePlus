@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { listarEspecialidades, buscarProfissionais } from "../profissionais/profissionais.api.js";
-import { buscarHorariosLivres } from "./paciente.api.js";
+import { buscarHorariosLivres, buscarHorariosLivresNoPeriodo } from "./paciente.api.js";
+import { hojeIso } from "../../utils/formatos.js";
+
+/** Até quantos dias à frente procurar dias com vaga (o servidor ainda corta na janela da agenda). */
+const DIAS_PROCURADOS = 90;
 
 /**
  * Opções do modal de agendamento vindas da API: especialidades, os médicos
- * da especialidade escolhida e os horários livres do médico na data.
+ * da especialidade escolhida, os dias com vaga do médico (de hoje em diante)
+ * e os horários livres do médico na data.
  *
  * Sem API (`origem: "erro"`), não há opções: o modal mostra a falha com
  * "Tentar de novo" (`tentarDeNovo`). Não existem opções de demonstração.
@@ -18,6 +23,7 @@ export function useOpcoesDeAgendamento({ aberto, especialidadeId, profissionalId
   const [catalogo, setCatalogo] = useState({ origem: "carregando", especialidades: [] });
   const [medicos, setMedicos] = useState({ chave: null, lista: [] });
   const [horarios, setHorarios] = useState({ chave: null, lista: [], erro: null });
+  const [dias, setDias] = useState({ chave: null, lista: [], erro: null });
   // Sobe no "Tentar de novo" dos horários, para refazer só essa busca.
   const [tentativa, setTentativa] = useState(0);
 
@@ -29,6 +35,7 @@ export function useOpcoesDeAgendamento({ aberto, especialidadeId, profissionalId
   // Médico fora da lista (remarcação, pedido vindo do perfil) segue buscando.
   const semAgenda = listaDeMedicos.find((m) => m.id === profissionalId)?.semAgenda === true;
   const chaveHorarios = profissionalId && data && !semAgenda ? `${profissionalId}|${data}|${versao}|${tentativa}` : null;
+  const chaveDias = profissionalId && !semAgenda ? `${profissionalId}|${versao}|${tentativa}` : null;
 
   // Depois de uma falha, volta a "carregando" e o efeito abaixo busca de novo.
   const tentarDeNovo = useCallback(() => setCatalogo({ origem: "carregando", especialidades: [] }), []);
@@ -97,8 +104,29 @@ export function useOpcoesDeAgendamento({ aberto, especialidadeId, profissionalId
     return () => controle.abort();
   }, [chaveHorarios]);
 
+  // Dias com pelo menos um horário livre, de hoje em diante.
+  useEffect(() => {
+    if (!chaveDias) return undefined;
+    const [medicoId] = chaveDias.split("|");
+    const controle = new AbortController();
+    buscarHorariosLivresNoPeriodo(medicoId, { de: hojeIso(), ate: hojeIso(DIAS_PROCURADOS) }, { sinal: controle.signal })
+      .then((livres) => {
+        if (controle.signal.aborted) return;
+        const hoje = hojeIso();
+        const lista = [...new Set(livres.map((l) => l.data))].filter((d) => d >= hoje).sort();
+        setDias({ chave: chaveDias, lista, erro: null });
+      })
+      .catch((erro) => {
+        if (!controle.signal.aborted) setDias({ chave: chaveDias, lista: [], erro });
+      });
+    return () => controle.abort();
+  }, [chaveDias]);
+
   return {
     origem: catalogo.origem,
+    datasSugeridas: dias.chave === chaveDias ? dias.lista : [],
+    carregandoDatas: Boolean(chaveDias) && dias.chave !== chaveDias,
+    erroDatas: dias.chave === chaveDias ? dias.erro : null,
     tentarDeNovo,
     especialidades,
     profissionais: listaDeMedicos,

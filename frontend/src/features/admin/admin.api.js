@@ -81,6 +81,16 @@ export function alterarStatusDaUnidade(id, status, { sinal } = {}) {
   return http.patch(`/api/admin/unidades/${id}/status`, { status }, { sinal, autenticado });
 }
 
+/** Volta a unidade para `ativa`. */
+export function reativarUnidade(id, { sinal } = {}) {
+  return http.post(`/api/admin/unidades/${id}/reativar`, undefined, { sinal, autenticado });
+}
+
+/** Exclusão definitiva: só unidade inativa e sem agendamentos ou exames (409 caso contrário). */
+export function excluirUnidadeDefinitivamente(id, { sinal } = {}) {
+  return http.remover(`/api/admin/unidades/${id}/definitivo`, { sinal, autenticado });
+}
+
 /** Exclusão lógica: a unidade fica inativa. */
 export function excluirUnidade(id, { sinal } = {}) {
   return http.remover(`/api/admin/unidades/${id}`, { sinal, autenticado });

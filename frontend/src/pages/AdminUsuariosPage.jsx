@@ -38,7 +38,8 @@ const COLUNAS = [
 /**
  * Dados por prop, com os mocks como padrão. `aoNovoUsuario` liga o botão
  * "Novo usuário"; `aoAlternarBloqueio(usuario)` liga o cadeado de cada linha;
- * `aoEditar(usuario)` e `aoExcluir(usuario)`, o lápis e a lixeira.
+ * `aoEditar(usuario)` e `aoExcluir(usuario)`, o lápis e a lixeira;
+ * `aoReativar(usuario)` devolve uma conta inativa para `ativo`.
  */
 export default function AdminUsuariosPage({
   usuarios = usuariosMock,
@@ -48,6 +49,7 @@ export default function AdminUsuariosPage({
   aoAlternarBloqueio,
   aoEditar,
   aoExcluir,
+  aoReativar,
   /* A própria conta não aparece com "Bloquear" nem "Excluir": a API recusa. */
   idDaPropriaConta = null,
 }) {
@@ -149,6 +151,8 @@ export default function AdminUsuariosPage({
                           : [{ icone: "olho", rotulo: "Ver detalhes" }, { icone: "lapis", rotulo: "Editar" }]),
                         u.id === idDaPropriaConta
                           ? null
+                          : u.status === "inativo" && aoReativar
+                          ? { icone: "atualizar", rotulo: "Reativar", tom: "neutra", aoClicar: () => aoReativar(u) }
                           : aoAlternarBloqueio
                           ? {
                               icone: "cadeado",

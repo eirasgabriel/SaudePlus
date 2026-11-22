@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout.jsx'
 import AvailabilityNotice from '../components/AvailabilityNotice/AvailabilityNotice.jsx'
 import { EVENTO_EM_BREVE } from '../components/AvailabilityNotice/emBreve.js'
@@ -50,6 +50,7 @@ import {
   NotificacoesDoAdminConectado,
 } from '../features/admin/pages/AdminConectado.jsx'
 import ExamesDoAdmin from '../features/admin/pages/ExamesDoAdmin.jsx'
+import ContaDoAdmin from '../features/admin/pages/ContaDoAdmin.jsx'
 import AdminSuportePage from '../pages/AdminSuportePage.jsx'
 import DashboardDaUnidade from '../features/clinicas/pages/DashboardDaUnidade.jsx'
 import { LayoutDaClinica, ContaDaClinica } from '../features/clinicas/pages/AreaDaClinica.jsx'
@@ -170,7 +171,8 @@ export default function App() {
           }
         >
           <Route index element={<DashboardDoAdmin />} />
-          <Route path="unidade" element={<DashboardDaUnidade />} />
+          {/* O painel da unidade é da conta da clínica (/clinica); link antigo volta ao início. */}
+          <Route path="unidade" element={<Navigate to="/admin" replace />} />
           <Route path="usuarios" element={<UsuariosDoAdmin />} />
           <Route path="clinicas" element={<ClinicasDoAdmin />} />
           <Route path="agendamentos" element={<AgendamentosDoAdmin />} />
@@ -181,6 +183,8 @@ export default function App() {
           {/* As abas ficam na query string: /admin/configuracoes?aba=seguranca */}
           <Route path="configuracoes" element={<ConfiguracoesDoAdmin />} />
           <Route path="suporte" element={<AdminSuportePage />} />
+          {/* Dados de quem está logado; as do sistema ficam em Configurações. */}
+          <Route path="conta" element={<ContaDoAdmin />} />
         </Route>
       </Routes>
       <AvailabilityNotice ref={noticeRef} {...notice} />

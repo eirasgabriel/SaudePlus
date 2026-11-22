@@ -51,7 +51,16 @@ const montar = (Componente, endereco) => renderizar(
   createElement(AuthContext.Provider, { value: sessao }, createElement(Componente)), { endereco },
 )
 const unidade = { id: 'u1', nome: 'Centro', status: 'ativa' }
-const janela = { id: 'j1', unidade, diaSemana: 1, inicio: '08:00', fim: '12:00', duracaoMin: 30, modalidade: 'presencial' }
+const doisDigitos = (n) => String(n).padStart(2, '0')
+function diaDaqui(dias) {
+  const d = new Date()
+  d.setDate(d.getDate() + dias)
+  return `${d.getFullYear()}-${doisDigitos(d.getMonth() + 1)}-${doisDigitos(d.getDate())}`
+}
+/** "2026-11-12" → "12/11/26" */
+const ddmmaa = (iso) => { const [a, m, d] = iso.split('-'); return `${d}/${m}/${a.slice(-2)}` }
+const EM_5_DIAS = diaDaqui(5)
+const janela = { id: 'j1', unidade, data: EM_5_DIAS, diaSemana: null, inicio: '08:00', fim: '12:00', duracaoMin: 30, modalidade: 'presencial' }
 const agendaApi = {
   'GET /api/medico/notificacoes': [],
   'GET /api/medico/agenda': [],
@@ -73,10 +82,40 @@ test('agenda edita a janela existente e envia os campos esperados pela API', asy
   await enviar(document.querySelector('[role="dialog"] form'))
   await esperar(() => porTexto('Horário de atendimento atualizado.', '[role="status"]'))
   assert.deepEqual(chamadas.find(c => c.metodo === 'PUT').corpo, {
-    unidadeId: 'u1', inicio: '08:00', fim: '13:00', modalidade: 'presencial', diaSemana: 1, duracaoMin: 30,
+    unidadeId: 'u1', inicio: '08:00', fim: '13:00', modalidade: 'presencial', data: EM_5_DIAS, duracaoMin: 30,
   })
   assert.equal(document.querySelector('[role="dialog"]'), null)
-  assert.ok(porTexto('13:00', 'span'))
+  assert.ok(porTexto(`${ddmmaa(EM_5_DIAS)}, 08:00 às 13:00`, 'span'))
+})
+
+test('janela nova: campo Data em dd/mm/aa, de hoje em diante (sem dia da semana)', async () => {
+  const chamadas = apiFalsa({
+    ...agendaApi,
+    'GET /api/medico/disponibilidades': [],
+    'POST /api/medico/disponibilidades': ({ corpo }) => ({ id: 'j2', unidade, diaSemana: null, ...corpo }),
+  })
+  await montar(Agenda, '/medico/agenda')
+  await clicar(await esperar(() => porTexto('Incluir horário', 'button')))
+  assert.equal(document.querySelector('#janela-dia'), null, 'sem o campo "Dia da semana"')
+  const campo = document.querySelector('#janela-data')
+  const opcoes = [...campo.options]
+  assert.equal(opcoes[0].value, diaDaqui(0), 'começa em hoje')
+  assert.equal(opcoes[0].textContent, `${ddmmaa(diaDaqui(0))} (hoje)`)
+  assert.equal(opcoes[1].textContent, ddmmaa(diaDaqui(1)))
+  assert.ok(opcoes.every((o) => o.value >= diaDaqui(0)), 'nenhuma data passada')
+  assert.equal(campo.value, diaDaqui(0))
+
+  await digitar(campo, EM_5_DIAS)
+  await enviar(document.querySelector('[role="dialog"] form'))
+  await esperar(() => porTexto('Horário de atendimento incluído.', '[role="status"]'))
+  assert.equal(chamadas.find(c => c.metodo === 'POST').corpo.data, EM_5_DIAS)
+  assert.equal('diaSemana' in chamadas.find(c => c.metodo === 'POST').corpo, false)
+})
+
+test('janela semanal antiga aparece como "Toda segunda"', async () => {
+  apiFalsa({ ...agendaApi, 'GET /api/medico/disponibilidades': [{ ...janela, data: null, diaSemana: 1 }] })
+  await montar(Agenda, '/medico/agenda')
+  await esperar(() => porTexto('Toda segunda, 08:00 às 12:00', 'span'))
 })
 
 test('bloqueio com conflito pede confirmação antes de cancelar consultas', async () => {

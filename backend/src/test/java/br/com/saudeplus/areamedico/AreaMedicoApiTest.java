@@ -280,12 +280,21 @@ class AreaMedicoApiTest {
     class Configuracao {
 
         private static final String JANELA = """
-                {"unidadeId":"%s","diaSemana":1,"inicio":"08:00","fim":"10:00","duracaoMin":30,"modalidade":"presencial"}""";
+                {"unidadeId":"%s","data":"%s","inicio":"08:00","fim":"10:00","duracaoMin":30,"modalidade":"presencial"}""";
+
+        /** Janela das 08:00 às 10:00 em `dia`, na unidade dada. */
+        private String janela(UUID unidade) {
+            return JANELA.formatted(unidade, dia);
+        }
+
+        private String janela(UUID unidade, LocalDate data) {
+            return JANELA.formatted(unidade, data);
+        }
 
         @Test
         @DisplayName("janela nova gera horários públicos, e consulta marcada ocupa o horário")
         void janelaEHorarios() throws Exception {
-            chamar(json(post("/api/medico/disponibilidades"), JANELA.formatted(Cenarios.UNIDADE_CENTRO)))
+            chamar(json(post("/api/medico/disponibilidades"), janela(Cenarios.UNIDADE_CENTRO)))
                     .andExpect(status().isCreated())
                     .andExpect(jsonPath("$.inicio").value("08:00"))
                     .andExpect(jsonPath("$.unidade.nome").value("Clínica da Família – Centro"));
@@ -299,18 +308,41 @@ class AreaMedicoApiTest {
         }
 
         @Test
+        @DisplayName("janela é por data: vale só naquele dia, não repete na semana seguinte, e volta com `data`")
+        void janelaPorData() throws Exception {
+            chamar(json(post("/api/medico/disponibilidades"), janela(Cenarios.UNIDADE_CENTRO)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.data").value(dia.toString()))
+                    .andExpect(jsonPath("$.diaSemana").doesNotExist());
+
+            mvc.perform(get("/api/publico/profissionais/{id}/horarios", medico.getId())
+                            .param("de", dia.plusDays(7).toString()).param("ate", dia.plusDays(7).toString()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(0)));
+            chamar(get("/api/medico/disponibilidades"))
+                    .andExpect(jsonPath("$[*].data", hasItem(dia.toString())));
+        }
+
+        @Test
+        @DisplayName("recusa janela em data passada (400 no campo data)")
+        void dataPassada() throws Exception {
+            chamar(json(post("/api/medico/disponibilidades"),
+                    janela(Cenarios.UNIDADE_CENTRO, LocalDate.now(relogio).minusDays(1))))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.campos.data").exists());
+        }
+
+        @Test
         @DisplayName("recusa janela sobreposta (409), em unidade alheia (422) e com fim antes do início (400)")
         void validacoes() throws Exception {
-            chamar(json(post("/api/medico/disponibilidades"), JANELA.formatted(Cenarios.UNIDADE_CENTRO)))
+            chamar(json(post("/api/medico/disponibilidades"), janela(Cenarios.UNIDADE_CENTRO)))
                     .andExpect(status().isCreated());
-            chamar(json(post("/api/medico/disponibilidades"), JANELA.formatted(Cenarios.UNIDADE_CENTRO)
+            chamar(json(post("/api/medico/disponibilidades"), janela(Cenarios.UNIDADE_CENTRO)
                     .replace("\"08:00\"", "\"09:30\"").replace("\"10:00\"", "\"11:00\"")))
                     .andExpect(status().isConflict());
-            chamar(json(post("/api/medico/disponibilidades"), JANELA.formatted(Cenarios.UNIDADE_PAULISTA)
-                    .replace("\"diaSemana\":1", "\"diaSemana\":2")))
+            chamar(json(post("/api/medico/disponibilidades"), janela(Cenarios.UNIDADE_PAULISTA, dia.plusDays(1))))
                     .andExpect(status().isUnprocessableContent());
-            chamar(json(post("/api/medico/disponibilidades"), JANELA.formatted(Cenarios.UNIDADE_CENTRO)
-                    .replace("\"diaSemana\":1", "\"diaSemana\":3").replace("\"10:00\"", "\"07:00\"")))
+            chamar(json(post("/api/medico/disponibilidades"), janela(Cenarios.UNIDADE_CENTRO, dia.plusDays(2)).replace("\"10:00\"", "\"07:00\"")))
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.campos.fim").exists());
         }
@@ -318,7 +350,7 @@ class AreaMedicoApiTest {
         @Test
         @DisplayName("bloqueio sobre consulta marcada exige confirmação e cancela avisando o paciente")
         void bloqueio() throws Exception {
-            chamar(json(post("/api/medico/disponibilidades"), JANELA.formatted(Cenarios.UNIDADE_CENTRO)))
+            chamar(json(post("/api/medico/disponibilidades"), janela(Cenarios.UNIDADE_CENTRO)))
                     .andExpect(status().isCreated());
             Agendamento consulta = cenarios.agendamento(medico, ana, dia, "08:30", StatusAgendamento.CONFIRMADA);
             String corpo = "{\"inicio\":\"%sT08:00\",\"fim\":\"%sT09:30\",\"motivo\":\"Congresso\"}".formatted(dia, dia);
@@ -341,7 +373,7 @@ class AreaMedicoApiTest {
         @Test
         @DisplayName("remove janela e bloqueio só do próprio médico")
         void remocao() throws Exception {
-            String criada = chamar(json(post("/api/medico/disponibilidades"), JANELA.formatted(Cenarios.UNIDADE_CENTRO)))
+            String criada = chamar(json(post("/api/medico/disponibilidades"), janela(Cenarios.UNIDADE_CENTRO)))
                     .andReturn().getResponse().getContentAsString();
             String id = criada.replaceAll(".*?\"id\":\"([^\"]+)\".*", "$1");
 

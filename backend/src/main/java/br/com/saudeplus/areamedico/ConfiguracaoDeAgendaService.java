@@ -1,11 +1,12 @@
 package br.com.saudeplus.areamedico;
 
 import java.time.Clock;
-import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,7 +36,8 @@ import br.com.saudeplus.security.UsuarioAutenticado;
 import br.com.saudeplus.usuarios.UsuarioRepository;
 
 /**
- * O médico monta a própria agenda: janelas semanais de atendimento e
+ * O médico monta a própria agenda: janelas de atendimento por data (de hoje
+ * em diante; as semanais antigas continuam valendo) e
  * bloqueios (férias, folgas). Agendamentos já feitos não mudam quando uma
  * janela muda; um bloqueio sobre consultas marcadas exige confirmação.
  */
@@ -64,10 +66,19 @@ public class ConfiguracaoDeAgendaService {
 
     // ------------------------------------------------------------------ janelas
 
+    /** Janelas por data primeiro, em ordem de dia e hora; as semanais antigas depois. */
+    private static final Comparator<Disponibilidade> ORDEM_DAS_JANELAS = Comparator
+            .comparing(Disponibilidade::getData, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(Disponibilidade::getDiaSemana, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(Disponibilidade::getInicio);
+
     @Transactional(readOnly = true)
     public List<DisponibilidadeResposta> disponibilidades(UsuarioAutenticado usuario) {
         Medico medico = medicoLogado.de(usuario);
-        return disponibilidades.findByMedicoIdOrderByDiaSemanaAscInicioAsc(medico.getId()).stream()
+        LocalDate hoje = LocalDate.now(relogio);
+        return disponibilidades.findByMedicoId(medico.getId()).stream()
+                .filter(d -> !d.passou(hoje))
+                .sorted(ORDEM_DAS_JANELAS)
                 .map(DisponibilidadeResposta::de)
                 .toList();
     }
@@ -77,7 +88,7 @@ public class ConfiguracaoDeAgendaService {
         Medico medico = medicoLogado.de(usuario);
         Unidade unidade = validar(medico, requisicao, null);
         Disponibilidade nova = disponibilidades.save(new Disponibilidade(medico, unidade,
-                DayOfWeek.of(requisicao.diaSemana()), requisicao.inicio(), requisicao.fim(), requisicao.duracaoMin(),
+                requisicao.data(), requisicao.inicio(), requisicao.fim(), requisicao.duracaoMin(),
                 requisicao.modalidade()));
         return DisponibilidadeResposta.de(nova);
     }
@@ -88,7 +99,7 @@ public class ConfiguracaoDeAgendaService {
         Medico medico = medicoLogado.de(usuario);
         Disponibilidade existente = disponibilidadeDoMedico(medico, id);
         Unidade unidade = validar(medico, requisicao, id);
-        existente.alterar(unidade, DayOfWeek.of(requisicao.diaSemana()), requisicao.inicio(), requisicao.fim(),
+        existente.alterar(unidade, requisicao.data(), requisicao.inicio(), requisicao.fim(),
                 requisicao.duracaoMin(), requisicao.modalidade());
         return DisponibilidadeResposta.de(existente);
     }
@@ -100,6 +111,10 @@ public class ConfiguracaoDeAgendaService {
     }
 
     private Unidade validar(Medico medico, SalvarDisponibilidade requisicao, UUID ignorar) {
+        LocalDate hoje = LocalDate.now(relogio);
+        if (requisicao.data().isBefore(hoje)) {
+            throw RequisicaoInvalidaException.noCampo("data", "Escolha uma data de hoje em diante.");
+        }
         if (!requisicao.inicio().isBefore(requisicao.fim())) {
             throw RequisicaoInvalidaException.noCampo("fim", "O fim precisa ser depois do início.");
         }
@@ -111,10 +126,9 @@ public class ConfiguracaoDeAgendaService {
                 .findFirst()
                 .orElseThrow(() -> new RegraDeNegocioException(
                         "Você não atende nesta unidade, ou ela não está em funcionamento."));
-        DayOfWeek dia = DayOfWeek.of(requisicao.diaSemana());
-        boolean sobrepoe = disponibilidades.findByMedicoIdOrderByDiaSemanaAscInicioAsc(medico.getId()).stream()
-                .filter(d -> !d.getId().equals(ignorar))
-                .anyMatch(d -> d.sobrepoe(dia, requisicao.inicio(), requisicao.fim()));
+        boolean sobrepoe = disponibilidades.findByMedicoId(medico.getId()).stream()
+                .filter(d -> !d.getId().equals(ignorar) && !d.passou(hoje))
+                .anyMatch(d -> d.sobrepoe(requisicao.data(), null, requisicao.inicio(), requisicao.fim()));
         if (sobrepoe) {
             throw new ConflitoException("Esse horário se sobrepõe a outra janela de atendimento no mesmo dia.");
         }

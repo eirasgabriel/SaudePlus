@@ -1,9 +1,11 @@
-/* Dados fictícios das 6 abas de Configurações. */
+/* Dados fictícios das abas de Configurações. */
 
+/* Usuários e clínicas têm telas próprias no menu; aqui fica só o que é do
+   sistema. A aba "usuarios" guarda o id antigo (links ?aba=usuarios), mas
+   agora mostra apenas papéis e permissões. */
 export const abas = [
   { id: "geral", rotulo: "Geral", icone: "engrenagem" },
-  { id: "usuarios", rotulo: "Usuários e Permissões", icone: "usuario" },
-  { id: "clinicas", rotulo: "Clínicas e Unidades", icone: "predio" },
+  { id: "usuarios", rotulo: "Permissões", icone: "escudoCheck" },
   { id: "notificacoes", rotulo: "Notificações", icone: "sino" },
   { id: "integracoes", rotulo: "Integrações", icone: "link" },
   { id: "seguranca", rotulo: "Segurança", icone: "escudoCheck" },
@@ -231,126 +233,6 @@ export const permissoesIniciais = {
   financeiro: { administrador: true, gestor: false, medico: false, enfermeiro: true, recepcionista: false },
   configuracoes: { administrador: true, gestor: false, medico: false, enfermeiro: false, recepcionista: false },
 };
-
-/* =========================================================
-   Aba: Clínicas e Unidades
-   ========================================================= */
-export const unidadesCadastradas = [
-  {
-    id: 1,
-    nome: "UBS Central",
-    cnpj: "12.345.678/0001-90",
-    unidade: "Unidade Centro",
-    endereco: "Rua das Flores, 123",
-    bairro: "Centro - Saquarema/RJ",
-    telefone: "(22) 99876-5432",
-    email: "ubscentral@saudeplus.com",
-    funcionamento: [
-      "Segunda a Sexta: 07:00 - 17:00",
-      "Sábado: 07:00 - 12:00",
-    ],
-    status: "ativa",
-    vinculadas: [
-      { id: "centro", rotulo: "Unidade Centro", status: "ativa" },
-      { id: "jacone", rotulo: "Unidade Jaconé", status: "ativa" },
-      { id: "itauna", rotulo: "Unidade Itaúna", status: "ativa" },
-    ],
-  },
-  {
-    id: 2,
-    nome: "UBS Jaconé",
-    cnpj: "98.765.432/0001-11",
-    unidade: "Unidade Jaconé",
-    endereco: "Av. Beira Mar, 456",
-    bairro: "Jaconé - Saquarema/RJ",
-    telefone: "(22) 99911-2233",
-    email: "ubsjacone@saudeplus.com",
-    funcionamento: ["Segunda a Sexta: 07:00 - 17:00"],
-    status: "ativa",
-    vinculadas: [{ id: "jacone", rotulo: "Unidade Jaconé", status: "ativa" }],
-  },
-  {
-    id: 3,
-    nome: "ESF Itaúna",
-    cnpj: "11.222.333/0001-44",
-    unidade: "Unidade Itaúna",
-    endereco: "Rua do Sol, 789",
-    bairro: "Itaúna - Saquarema/RJ",
-    telefone: "(22) 99777-6655",
-    email: "esfitauna@saudeplus.com",
-    funcionamento: ["Segunda a Sexta: 08:00 - 17:00"],
-    status: "ativa",
-    vinculadas: [{ id: "itauna", rotulo: "Unidade Itaúna", status: "ativa" }],
-  },
-  {
-    id: 4,
-    nome: "Policlínica Saquarema",
-    cnpj: "55.666.777/0001-88",
-    unidade: "Unidade Centro",
-    endereco: "Av. Saquarema, 1000",
-    bairro: "Centro - Saquarema/RJ",
-    telefone: "(22) 99888-7766",
-    email: "policlinica@saudeplus.com",
-    funcionamento: ["Segunda a Sexta: 07:00 - 19:00"],
-    status: "ativa",
-    vinculadas: [{ id: "centro", rotulo: "Unidade Centro", status: "ativa" }],
-  },
-  {
-    id: 5,
-    nome: "CAPS",
-    cnpj: "77.888.999/0001-22",
-    unidade: "Unidade Centro",
-    endereco: "Rua da Esperança, 321",
-    bairro: "Centro - Saquarema/RJ",
-    telefone: "(22) 99666-5544",
-    email: "caps@saudeplus.com",
-    funcionamento: ["Segunda a Sexta: 08:00 - 18:00"],
-    status: "ativa",
-    vinculadas: [{ id: "centro", rotulo: "Unidade Centro", status: "ativa" }],
-  },
-  {
-    id: 6,
-    nome: "UBS Boqueirão",
-    cnpj: "44.555.666/0001-77",
-    unidade: "Unidade Boqueirão",
-    endereco: "Rua das Acácias, 210",
-    bairro: "Boqueirão - Saquarema/RJ",
-    telefone: "(22) 99444-3322",
-    email: "ubsboqueirao@saudeplus.com",
-    funcionamento: ["Segunda a Sexta: 08:00 - 16:00"],
-    status: "manutencao",
-    vinculadas: [{ id: "boqueirao", rotulo: "Unidade Boqueirão", status: "manutencao" }],
-  },
-  {
-    id: 7,
-    nome: "ESF Palmital",
-    cnpj: "33.222.111/0001-00",
-    unidade: "Unidade Palmital",
-    endereco: "Rua Principal, 50",
-    bairro: "Palmital - Saquarema/RJ",
-    telefone: "(22) 99222-1100",
-    email: "esfpalmital@saudeplus.com",
-    funcionamento: ["Temporariamente suspenso"],
-    status: "inativa",
-    vinculadas: [{ id: "palmital", rotulo: "Unidade Palmital", status: "inativa" }],
-  },
-];
-
-export const filtrosUnidadeConfig = [
-  { valor: "todas", rotulo: "Todas as unidades" },
-  { valor: "Unidade Centro", rotulo: "Unidade Centro" },
-  { valor: "Unidade Jaconé", rotulo: "Unidade Jaconé" },
-  { valor: "Unidade Itaúna", rotulo: "Unidade Itaúna" },
-  { valor: "Unidade Boqueirão", rotulo: "Unidade Boqueirão" },
-  { valor: "Unidade Palmital", rotulo: "Unidade Palmital" },
-];
-
-export const filtrosClinicaConfig = [
-  { valor: "todas", rotulo: "Todas as clínicas" },
-  { valor: "ativa", rotulo: "Somente ativas" },
-  { valor: "manutencao", rotulo: "Em manutenção" },
-  { valor: "inativa", rotulo: "Inativas" },
-];
 
 /* =========================================================
    Aba: Notificações

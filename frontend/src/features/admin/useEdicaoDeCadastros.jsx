@@ -74,6 +74,9 @@ export function useEdicaoDeUsuarios({ especialidades = [], unidades = [], podeCr
 export function useEdicaoDeUnidades({ aoConcluir }) {
   const [modal, setModal] = useState(null); // { unidade } — `unidade` nula = nova
   const [excluindo, setExcluindo] = useState(null);
+  const [reativando, setReativando] = useState(null);
+  // Como nas contas: a lixeira inativa a clínica; com ela já inativa, exclui de vez.
+  const excluindoDeVez = excluindo?.status === "inativa";
 
   const salvar = async (dados) => {
     if (modal.unidade) {
@@ -97,16 +100,38 @@ export function useEdicaoDeUnidades({ aoConcluir }) {
       <DialogoConfirmacao
         aberto={Boolean(excluindo)}
         aoFechar={() => setExcluindo(null)}
-        titulo="Excluir clínica"
+        titulo={excluindoDeVez ? "Excluir clínica permanentemente" : "Inativar clínica"}
         mensagem={
-          excluindo
-            ? `${excluindo.nome} fica inativa: sai da busca e deixa de oferecer horários. Consultas já marcadas continuam.`
+          !excluindo
+            ? ""
+            : excluindoDeVez
+            ? `${excluindo.nome} e a conta de acesso dela saem do sistema de vez. Só é possível se a clínica não tiver agendamentos nem exames no histórico.`
+            : `${excluindo.nome} fica inativa: sai da busca, deixa de oferecer horários e não aceita novos vínculos. Consultas já marcadas continuam.`
+        }
+        rotuloConfirmar={excluindoDeVez ? "Excluir permanentemente" : "Inativar"}
+        aoConfirmar={async () => {
+          if (excluindoDeVez) {
+            await api.excluirUnidadeDefinitivamente(excluindo.id);
+            aoConcluir(`${excluindo.nome} excluída permanentemente.`);
+          } else {
+            await api.excluirUnidade(excluindo.id);
+            aoConcluir(`${excluindo.nome} inativada. Use a exclusão de novo para excluir de vez.`);
+          }
+        }}
+      />
+      <DialogoConfirmacao
+        aberto={Boolean(reativando)}
+        aoFechar={() => setReativando(null)}
+        titulo="Reativar clínica"
+        mensagem={
+          reativando
+            ? `${reativando.nome} volta a aparecer na busca, a oferecer horários e a aceitar vínculos de médicos.`
             : ""
         }
-        rotuloConfirmar="Excluir"
+        rotuloConfirmar="Reativar"
         aoConfirmar={async () => {
-          await api.excluirUnidade(excluindo.id);
-          aoConcluir(`${excluindo.nome} excluída (inativa).`);
+          await api.reativarUnidade(reativando.id);
+          aoConcluir(`${reativando.nome} reativada.`);
         }}
       />
     </>
@@ -117,6 +142,7 @@ export function useEdicaoDeUnidades({ aoConcluir }) {
     /** `opcoes.focar`: campo que abre com o foco (ex.: "emailLogin", pelo e-mail da tabela). */
     editar: (unidade, opcoes = {}) => setModal({ unidade, focar: opcoes.focar }),
     excluir: setExcluindo,
+    reativar: setReativando,
     elementos,
   };
 }

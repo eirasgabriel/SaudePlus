@@ -64,6 +64,18 @@ public class CadastrosAdminController {
         return cadastros.alterarStatusDaUnidade(id, dados.status());
     }
 
+    @PostMapping("/unidades/{id}/reativar")
+    public UnidadeAdmin reativarUnidade(@PathVariable UUID id) {
+        return cadastros.reativarUnidade(id);
+    }
+
+    /** Exclusão definitiva: só unidade inativa e sem agendamentos ou exames. */
+    @DeleteMapping("/unidades/{id}/definitivo")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void excluirUnidadeDefinitivamente(@PathVariable UUID id) {
+        cadastros.excluirUnidadeDefinitivamente(id);
+    }
+
     /** Exclusão lógica: a unidade fica inativa e o histórico continua. */
     @DeleteMapping("/unidades/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

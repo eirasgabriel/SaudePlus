@@ -198,6 +198,11 @@ export default function ModalNovoUsuario({
     </div>
   );
 
+  // Clínica inativa não recebe vínculo novo; a que já estava vinculada continua listada.
+  const unidadesVinculaveis = unidades.filter(
+    (u) => u.status !== "inativa" || (usuario?.medico?.unidades ?? []).some((v) => v.id === u.id),
+  );
+
   const listaDeMarcar = (nome, legenda, itens) => (
     <fieldset className={estilos.campo}>
       <legend className={estilos.rotulo}>{legenda}</legend>
@@ -260,7 +265,7 @@ export default function ModalNovoUsuario({
                 {campo("valorConsulta", "Valor da consulta (R$)", { type: "number", min: 0, step: "0.01" })}
               </div>
               {listaDeMarcar("especialidadeIds", "Especialidades", especialidades)}
-              {listaDeMarcar("unidadeIds", "Unidades onde atende", unidades)}
+              {listaDeMarcar("unidadeIds", "Unidades onde atende", unidadesVinculaveis)}
               <div className={estilos.campo}>
                 <label className={estilos.rotulo} htmlFor={`${prefixo}-bio`}>Apresentação (opcional)</label>
                 <textarea

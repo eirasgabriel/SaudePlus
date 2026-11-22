@@ -105,8 +105,8 @@ public class AgendaService {
         Map<UUID, List<Janela>> janelas = disponibilidades.findByMedicoIdIn(medicoIds).stream()
                 .filter(d -> d.getUnidade().ativa())
                 .collect(Collectors.groupingBy(d -> d.getMedico().getId(), Collectors.mapping(
-                        d -> new Janela(d.getDiaSemana(), d.getInicio(), d.getFim(), d.getDuracaoMin(),
-                                d.getUnidade().getId(), d.getModalidade()),
+                        d -> new Janela(d.getData(), d.getDiaSemana(), d.getInicio(), d.getFim(),
+                                d.getDuracaoMin(), d.getUnidade().getId(), d.getModalidade()),
                         Collectors.toList())));
         Map<UUID, List<Ocupado>> ocupados = agendamentos
                 .ocupacoes(medicoIds, de, ate, StatusAgendamento.queOcupamHorario()).stream()

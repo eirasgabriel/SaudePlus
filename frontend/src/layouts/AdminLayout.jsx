@@ -68,7 +68,7 @@ export default function AdminLayout({
     };
 
   const itensDaConta = [
-    { rotulo: "Minha conta", icone: iconeDoMenu("usuario"), href: acessoClinica ? '/clinica/conta' : '/admin/configuracoes' },
+    { rotulo: "Minha conta", icone: iconeDoMenu("usuario"), href: acessoClinica ? '/clinica/conta' : '/admin/conta' },
     { rotulo: "Ajuda", icone: iconeDoMenu("interrogacao"), href: "/ajuda" },
     itemDoTema(tema, alternarTema),
     {

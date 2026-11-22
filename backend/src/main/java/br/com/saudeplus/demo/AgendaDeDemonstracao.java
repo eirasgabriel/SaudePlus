@@ -170,7 +170,7 @@ class AgendaDeDemonstracao implements ApplicationRunner {
     }
 
     private void garantirDisponibilidades(Medico medico, Unidade unidade) {
-        if (!disponibilidades.findByMedicoIdOrderByDiaSemanaAscInicioAsc(medico.getId()).isEmpty()) {
+        if (!disponibilidades.findByMedicoId(medico.getId()).isEmpty()) {
             return;
         }
         for (DayOfWeek dia : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY,

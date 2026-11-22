@@ -6,7 +6,6 @@ import { abas } from "../services/dadosAdminConfiguracoes";
 
 import AbaGeral from "../components/AdminConfigGeral";
 import AbaUsuarios from "../components/AdminConfigUsuarios";
-import AbaClinicas from "../components/AdminConfigClinicas";
 import AbaNotificacoes from "../components/AdminConfigNotificacoes";
 import AbaIntegracoes from "../components/AdminConfigIntegracoes";
 import AbaSeguranca from "../components/AdminConfigSeguranca";
@@ -14,7 +13,6 @@ import AbaSeguranca from "../components/AdminConfigSeguranca";
 const conteudos = {
   geral: AbaGeral,
   usuarios: AbaUsuarios,
-  clinicas: AbaClinicas,
   notificacoes: AbaNotificacoes,
   integracoes: AbaIntegracoes,
   seguranca: AbaSeguranca,
@@ -23,8 +21,7 @@ const conteudos = {
 /** Subtítulo específico de cada aba, como no protótipo. */
 const subtitulos = {
   geral: "Gerencie as configurações do sistema SaúdePlus.",
-  usuarios: "Gerenciamento de usuários, permissões e acessos do sistema SaúdePlus.",
-  clinicas: "Gerencie as clínicas e unidades do sistema SaúdePlus.",
+  usuarios: "Defina o que cada papel da equipe pode acessar no SaúdePlus.",
   notificacoes: "Gerencie as notificações do sistema SaúdePlus.",
   integracoes: "Gerencie as integrações e conexões externas do sistema SaúdePlus.",
   seguranca: "Proteja os dados e garanta o acesso seguro ao sistema.",

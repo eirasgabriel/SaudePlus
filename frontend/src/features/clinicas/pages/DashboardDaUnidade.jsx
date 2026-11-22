@@ -42,8 +42,9 @@ const paraCartaoDoDia = (consulta) => consulta && {
  * painéis em dupla e a coluna direita com a peça azul (Agenda do dia).
  *
  * `acessoClinica`: a conta da própria clínica (/clinica). A unidade vem da
- * conta, então o seletor fica travado. Sem ela, é a visão de gestão
- * (/admin/unidade), com a unidade escolhida na query `unidade`.
+ * conta, então o seletor fica travado. Sem ela, é a visão de gestão, com a
+ * unidade escolhida na query `unidade`; ela não tem mais rota no admin (o
+ * painel da unidade é da própria unidade) e segue só nos testes do painel.
  */
 export default function DashboardDaUnidade({ acessoClinica = false }) {
   const cadastro = useDadosDaApi(acessoClinica ? carregarClinicaLogada : carregarUnidades);

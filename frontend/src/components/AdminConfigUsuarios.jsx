@@ -1,12 +1,7 @@
 import { useState } from "react";
 import Cartao from "./Cartao";
 import Icone from "./Icone";
-import Etiqueta from "./Etiqueta";
-import Avatar from "./Avatar";
-import { CampoBusca, Seletor, Botao } from "./Controles";
-import { Tabela, CelulaDupla, AcoesLinha, RodapeTabela } from "./Tabela";
-import useTabela from "../services/useTabela";
-import { rotuloDaExclusao } from "../services/dadosAdminUsuarios";
+import { Botao } from "./Controles";
 import {
   papeis,
   usuariosSistema,
@@ -16,41 +11,18 @@ import {
 } from "../services/dadosAdminConfiguracoes";
 import estilos from "../styles/adminConfig.module.css";
 
-const COLUNAS = ["Nome", "E-mail", "Papel", "Clínica/Unidade", "Status", "Ações"];
-
-const opcoesPapel = [
-  { valor: "todos", rotulo: "Todos os papéis" },
-  ...papeis.map((p) => ({ valor: p.id, rotulo: p.rotulo })),
-];
-
-const opcoesStatus = [
-  { valor: "todos", rotulo: "Todos os status" },
-  { valor: "ativo", rotulo: "Ativos" },
-  { valor: "bloqueado", rotulo: "Bloqueados" },
-  { valor: "inativo", rotulo: "Inativos" },
-];
-
-const STATUS = {
-  ativo: { rotulo: "Ativo", variante: "sucesso" },
-  bloqueado: { rotulo: "Bloqueado", variante: "erro" },
-  inativo: { rotulo: "Inativo", variante: "neutro" },
-};
-
 /**
  * `permissoes` (formato de `permissoesIniciais`) e `aoSalvarPermissoes`
  * ligam a matriz à API. Com a API, a coluna do administrador fica travada:
  * o servidor sempre libera tudo para ele.
  *
- * `usuarios` (formato de `usuariosSistema`) troca a lista do protótipo pela
- * equipe real; `aoNovoUsuario`, `aoEditar(u)` e `aoExcluir(u)` ligam os botões.
+ * `usuarios` (formato de `usuariosSistema`) só alimenta a contagem do "Resumo
+ * dos Papéis": a lista e a edição de usuários ficam na tela de Usuários.
  */
 export default function AdminConfigUsuarios({
   permissoes: permissoesRecebidas = permissoesIniciais,
   aoSalvarPermissoes,
   usuarios = usuariosSistema,
-  aoNovoUsuario,
-  aoEditar,
-  aoExcluir,
 }) {
   const [permissoes, definirPermissoes] = useState(permissoesRecebidas);
   const [salvando, definirSalvando] = useState(false);
@@ -69,17 +41,6 @@ export default function AdminConfigUsuarios({
     }
   }
 
-  const tabela = useTabela({
-    dados: usuarios,
-    porPagina: 7,
-    camposBusca: ["nome", "email", "cargo"],
-    valoresIniciais: { papel: "todos", status: "todos" },
-    filtros: {
-      papel: (item, valor) => item.papel === valor,
-      status: (item, valor) => item.status === valor,
-    },
-  });
-
   /** Liga/desliga o acesso de um papel a um módulo. */
   function alternarPermissao(modulo, papel) {
     definirPermissoes((atuais) => ({
@@ -89,88 +50,8 @@ export default function AdminConfigUsuarios({
   }
 
   return (
-    <div className={estilos.gradePrincipal}>
-      {/* ---------- tabela de usuários ---------- */}
-      <Cartao
-        titulo="Usuários do Sistema"
-        icone="usuarios"
-        extra={<Botao icone="mais" onClick={aoNovoUsuario}>Novo usuário</Botao>}
-        semPadding
-      >
-        <div style={{ padding: "0 16px 12px" }}>
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              flexWrap: "wrap",
-              marginBottom: 14,
-              alignItems: "flex-end",
-            }}
-          >
-            <CampoBusca
-              valor={tabela.busca}
-              aoMudar={tabela.aoBuscar}
-              placeholder="Buscar por nome, e-mail ou cargo..."
-            />
-            <Seletor
-              valor={tabela.valores.papel}
-              aoMudar={(v) => tabela.definirFiltro("papel", v)}
-              opcoes={opcoesPapel}
-              rotulo="Papel"
-            />
-            <Seletor
-              valor={tabela.valores.status}
-              aoMudar={(v) => tabela.definirFiltro("status", v)}
-              opcoes={opcoesStatus}
-              rotulo="Status"
-            />
-          </div>
-
-          <Tabela colunas={COLUNAS} vazio="Nenhum usuário encontrado.">
-            {tabela.visiveis.map((u) => {
-              const papel = papeis.find((p) => p.id === u.papel);
-              return (
-                <tr key={u.id}>
-                  <td>
-                    <CelulaDupla
-                      principal={u.nome}
-                      secundario={u.cargo}
-                      avatar={<Avatar nome={u.nome} tam={34} />}
-                    />
-                  </td>
-                  <td>{u.email}</td>
-                  <td>
-                    <Etiqueta variante={papel?.variante}>{papel?.rotulo}</Etiqueta>
-                  </td>
-                  <td>{u.unidade}</td>
-                  <td>
-                    <Etiqueta variante={STATUS[u.status]?.variante ?? "neutro"} comPonto>
-                      {STATUS[u.status]?.rotulo ?? u.status}
-                    </Etiqueta>
-                  </td>
-                  <td>
-                    <AcoesLinha
-                      acoes={[
-                        { icone: "lapis", rotulo: "Editar", aoClicar: aoEditar && (() => aoEditar(u)) },
-                        { icone: "lixeira", rotulo: rotuloDaExclusao(u.status), tom: "perigo", aoClicar: aoExcluir && (() => aoExcluir(u)) },
-                      ]}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-          </Tabela>
-
-          <RodapeTabela
-            pagina={tabela.pagina}
-            totalPaginas={tabela.totalPaginas}
-            total={tabela.total}
-            mostrando={tabela.mostrando}
-            aoMudarPagina={tabela.definirPagina}
-          />
-        </div>
-      </Cartao>
-
+    // A lista de usuários fica na tela própria (Usuários); aqui, só papéis e permissões.
+    <div className={estilos.somentePermissoes}>
       {/* ---------- resumo dos papéis + matriz ---------- */}
       <div className={estilos.coluna}>
         <Cartao titulo="Resumo dos Papéis" icone="usuarios">

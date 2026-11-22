@@ -11,6 +11,13 @@ export function dataBr(iso) {
   return DATA.format(new Date(ano, mes - 1, dia));
 }
 
+/** "2026-09-29" → "29/09/26" (dd/mm/aa), sem passar por fuso. */
+export function dataCurtaBr(iso) {
+  if (!iso) return "";
+  const [ano, mes, dia] = String(iso).slice(0, 10).split("-");
+  return `${dia}/${mes}/${ano.slice(-2)}`;
+}
+
 /** Instante ("2026-09-29T18:00:00Z") ou data-hora local ("2026-09-29T08:00") → "29/09/2026 08:00". */
 export function dataHoraBr(valor) {
   if (!valor) return "";

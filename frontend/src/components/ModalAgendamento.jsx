@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useOpcoesDeAgendamento } from '../features/paciente/useOpcoesDeAgendamento';
+import { dataCurtaBr } from '../utils/formatos';
 import estilos from './ModalAgendamento.module.css';
 
 const classes = (...lista) => lista.filter(Boolean).join(' ');
@@ -17,48 +18,11 @@ function dataLocal(iso, horario = '00:00') {
   return new Date(ano, mes - 1, dia, hora, minuto, 0, 0);
 }
 
-function limiteISO(dias = 90) {
-  const limite = new Date();
-  limite.setDate(limite.getDate() + dias);
-  return isoDoDate(limite);
-}
+/** "2026-11-12" → "12/11/26", e "12/11/26 (hoje)" para o dia atual. */
+/** Quantos dias aparecem antes do "Mais datas". */
+const DATAS_VISIVEIS = 10;
 
-const formatoExtenso = new Intl.DateTimeFormat('pt-BR', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-});
-const formatoSemanaCurto = new Intl.DateTimeFormat('pt-BR', { weekday: 'short' });
-const formatoDia = new Intl.DateTimeFormat('pt-BR', { day: '2-digit' });
-const formatoMesCurto = new Intl.DateTimeFormat('pt-BR', { month: 'short' });
-
-const capitalizar = (texto) => texto.charAt(0).toUpperCase() + texto.slice(1);
-const semPonto = (texto) => texto.replace(/\./g, '');
-
-const descreverData = (iso) => capitalizar(formatoExtenso.format(dataLocal(iso)));
-
-function rotuloChip(iso) {
-  const data = dataLocal(iso);
-  const semana = capitalizar(semPonto(formatoSemanaCurto.format(data)));
-  return `${semana} ${formatoDia.format(data)} ${semPonto(formatoMesCurto.format(data))}`;
-}
-
-const DIAS_NO_PLURAL = ['domingos', 'segundas', 'terças', 'quartas', 'quintas', 'sextas', 'sábados'];
-
-function descreverDiasDeAtendimento(profissional) {
-  if (!profissional || !profissional.schedule) return '';
-
-  const nomes = Object.keys(profissional.schedule)
-    .map(Number)
-    .sort((a, b) => a - b)
-    .map((dia) => DIAS_NO_PLURAL[dia])
-    .filter(Boolean);
-
-  if (nomes.length === 0) return '';
-  if (nomes.length === 1) return nomes[0];
-  return `${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length - 1]}`;
-}
+const rotuloDaData = (iso) => (iso === hojeISO() ? `${dataCurtaBr(iso)} (hoje)` : dataCurtaBr(iso));
 
 const SEM_OCUPADOS = [];
 
@@ -183,6 +147,13 @@ export default function ModalAgendamento({
   }, [opcoes.horarios, formulario.data, ocupados]);
   const podeVerHorarios = Boolean(formulario.profissionalId && formulario.data);
   const datasSugeridas = opcoes.datasSugeridas ?? [];
+  const rotuloDataId = `${ids.data}-rotulo`;
+  const [todasAsDatas, setTodasAsDatas] = useState(false);
+  // A data escolhida (ex.: remarcação) sempre aparece, mesmo além das primeiras.
+  const indiceEscolhida = datasSugeridas.indexOf(formulario.data);
+  const datasVisiveis = todasAsDatas || indiceEscolhida >= DATAS_VISIVEIS
+    ? datasSugeridas
+    : datasSugeridas.slice(0, DATAS_VISIVEIS);
   const resumoPronto = Boolean(formulario.data && formulario.horario);
 
   const [abertoAnterior, setAbertoAnterior] = useState(aberto);
@@ -193,6 +164,7 @@ export default function ModalAgendamento({
       setErros({});
       setErroGeral(null);
       setEnviando(false);
+      setTodasAsDatas(false);
     }
   }
 
@@ -415,22 +387,41 @@ export default function ModalAgendamento({
                 <option key={item.id} value={item.id}>{item.semAgenda ? `${item.name} (sem agenda aberta)` : item.name}</option>
               ))}
             </select>
-            {profissional && descreverDiasDeAtendimento(profissional) && (
-              <p className={estilos.ajuda}>
-                Atende {descreverDiasDeAtendimento(profissional)}, na unidade {profissional.clinic}.
-              </p>
-            )}
             {erros.profissionalId && (
               <p id={`${ids.profissional}-erro`} className={estilos.erro}>{erros.profissionalId}</p>
             )}
           </div>
 
+          {/* Data: só os dias com horário livre, de hoje em diante, em dd/mm/aa. */}
           <div className={estilos.campo}>
-            <label className={estilos.rotulo} htmlFor={ids.data}>Data</label>
+            <span className={estilos.rotulo} id={rotuloDataId}>Data</span>
 
-            {datasSugeridas.length > 0 && (
-              <div className={estilos.datas}>
-                {datasSugeridas.map((iso) => {
+            {!profissional ? (
+              <p className={estilos.ajuda}>Escolha o profissional para ver as datas livres.</p>
+            ) : opcoes.semAgenda ? (
+              <p className={estilos.ajuda}>Sem datas: este profissional ainda não abriu agenda.</p>
+            ) : opcoes.carregandoDatas ? (
+              <p className={estilos.ajuda} aria-live="polite">Procurando dias com horário livre…</p>
+            ) : opcoes.erroDatas ? (
+              <div className={estilos.aviso}>
+                <p>Não foi possível carregar os dias livres.</p>
+                <button type="button" className={estilos.botaoSecundario} onClick={opcoes.tentarHorariosDeNovo}>
+                  Tentar de novo
+                </button>
+              </div>
+            ) : datasSugeridas.length === 0 ? (
+              <p className={estilos.ajuda} aria-live="polite">Sem horários livres a partir de hoje.</p>
+            ) : (
+              <div
+                className={estilos.datas}
+                id={ids.data}
+                tabIndex={-1}
+                role="group"
+                aria-labelledby={rotuloDataId}
+                aria-invalid={erros.data ? 'true' : undefined}
+                aria-describedby={erros.data ? `${ids.data}-erro` : undefined}
+              >
+                {datasVisiveis.map((iso) => {
                   const selecionada = formulario.data === iso;
                   return (
                     <button
@@ -440,27 +431,18 @@ export default function ModalAgendamento({
                       onClick={() => alterarCampo('data', iso)}
                       aria-pressed={selecionada}
                     >
-                      {rotuloChip(iso)}
+                      {rotuloDaData(iso)}
                     </button>
                   );
                 })}
+                {datasVisiveis.length < datasSugeridas.length && (
+                  <button type="button" className={classes(estilos.data, estilos.maisDatas)} onClick={() => setTodasAsDatas(true)}>
+                    Mais datas ({datasSugeridas.length - datasVisiveis.length})
+                  </button>
+                )}
               </div>
             )}
 
-            <input
-              id={ids.data}
-              type="date"
-              min={hojeISO()}
-              max={limiteISO()}
-              className={classes(estilos.input, erros.data && estilos.campoInvalido)}
-              value={formulario.data}
-              onChange={(evento) => alterarCampo('data', evento.target.value)}
-              disabled={!profissional}
-              aria-invalid={erros.data ? 'true' : undefined}
-              aria-describedby={erros.data ? `${ids.data}-erro` : undefined}
-            />
-
-            {!profissional && <p className={estilos.ajuda}>Escolha o profissional para ver as datas livres.</p>}
             {erros.data && <p id={`${ids.data}-erro`} className={estilos.erro}>{erros.data}</p>}
           </div>
 
@@ -471,13 +453,13 @@ export default function ModalAgendamento({
           >
             <legend className={estilos.rotulo}>Horário</legend>
 
-            {!podeVerHorarios ? (
-              <p className={estilos.aviso} id={ids.horario} tabIndex={-1}>
-                Os horários livres aparecem depois que você escolhe o profissional e a data.
-              </p>
-            ) : opcoes.semAgenda ? (
+            {opcoes.semAgenda ? (
               <p className={estilos.aviso} id={ids.horario} tabIndex={-1} aria-live="polite">
                 Este profissional ainda não abriu agenda para agendamento online. Escolha outro profissional.
+              </p>
+            ) : !podeVerHorarios ? (
+              <p className={estilos.aviso} id={ids.horario} tabIndex={-1}>
+                Os horários livres aparecem depois que você escolhe o profissional e a data.
               </p>
             ) : opcoes.erroHorarios ? (
               <div className={estilos.aviso} id={ids.horario} tabIndex={-1}>
@@ -520,7 +502,7 @@ export default function ModalAgendamento({
             <p className={estilos.resumo}>
               <IconeCheck className={estilos.resumoIcone} />
               <span>
-                Consulta para <strong>{descreverData(formulario.data)}</strong> às{' '}
+                Consulta para <strong>{dataCurtaBr(formulario.data)}</strong> às{' '}
                 <strong>{formulario.horario}</strong>.
               </span>
             </p>

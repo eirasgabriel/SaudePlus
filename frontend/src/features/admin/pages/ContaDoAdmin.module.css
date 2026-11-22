@@ -1,0 +1,7 @@
+/* "Minha conta" do admin: os cartões empilhados, na largura de leitura. */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5, 20px);
+  max-width: 880px;
+}

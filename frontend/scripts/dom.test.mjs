@@ -30,6 +30,8 @@ function diaDaqui(dias) {
   return `${d.getFullYear()}-${doisDigitos(d.getMonth() + 1)}-${doisDigitos(d.getDate())}`
 }
 const AMANHA = diaDaqui(1)
+/** "2026-11-12" → "12/11/26" */
+const ddmmaa = (iso) => { const [a, m, d] = iso.split('-'); return `${d}/${m}/${a.slice(-2)}` }
 const DEPOIS = diaDaqui(2)
 
 const UNIDADE = {
@@ -71,8 +73,11 @@ function rotasPublicas({ livres = LIVRES } = {}) {
     'GET /api/publico/profissionais': pagina([RESUMO]),
     'GET /api/publico/destaques': [RESUMO],
     'GET /api/publico/profissionais/c1': DETALHE,
+    // Pedido de um dia (de = ate) traz os horários dele; o do período (dias livres do modal), todos.
     'GET /api/publico/profissionais/c1/horarios': ({ parametros }) =>
-      parametros.get('de') ? livres.filter((h) => h.data === parametros.get('de')) : livres,
+      parametros.get('de') && parametros.get('de') === parametros.get('ate')
+        ? livres.filter((h) => h.data === parametros.get('de'))
+        : livres,
     'GET /api/publico/profissionais/c1/avaliacoes': ({ parametros }) => AVALIACOES[Number(parametros.get('pagina') ?? 0)],
     'GET /api/publico/especialidades': ESPECIALIDADES,
     'GET /api/publico/cidades': [{ nome: 'São Paulo', uf: 'SP', rotulo: 'São Paulo - SP' }],
@@ -277,7 +282,8 @@ describe('agendar pelo perfil', () => {
     assert.equal(porTexto('Agendar consulta', 'h2', modal()).textContent, 'Agendar consulta')
     assert.equal(campoDoModal('Especialidade').value, 'e-cardio')
     assert.equal(campoDoModal('Especialidade').disabled, false, 'continua editável')
-    assert.equal(campoDoModal('Data').value, AMANHA)
+    // A data vem marcada entre os dias livres, em dd/mm/aa.
+    await esperar(() => porTexto(ddmmaa(AMANHA), '[role="group"] button[aria-pressed="true"]', modal()), { mensagem: 'data marcada' })
     const horario = await esperar(() => porTexto('08:30', 'button[aria-pressed="true"]', modal()), { mensagem: 'horário marcado' })
     assert.ok(horario)
     // O destino já foi usado: um login futuro não volta para cá.
@@ -314,7 +320,8 @@ describe('agendar pelo perfil', () => {
     const tela = await aplicacao('/paciente/consultas?agendar=c1')
 
     await esperar(() => modal() && campoDoModal('Médico')?.value === 'c1')
-    assert.equal(campoDoModal('Data').value, '')
+    await esperar(() => modal().querySelector('[role="group"] button'), { mensagem: 'dias livres' })
+    assert.equal(modal().querySelector('[role="group"] button[aria-pressed="true"]'), null, 'nenhuma data escolhida')
     await clicar(porTexto('Cancelar', 'button', modal()))
     await esperar(() => !modal())
     assert.equal(tela.onde(), '/paciente/consultas')

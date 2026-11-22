@@ -33,7 +33,6 @@ import {
   paraMarcacoes,
   paraRelatorios,
   paraTransacao,
-  paraUnidadeDaConfiguracao,
   paraUsuario,
   paraUsuarioDaEquipe,
 } from "../adaptadores.js";
@@ -166,6 +165,16 @@ export function UsuariosDoAdmin() {
   // As linhas da tabela são o formato do mock; as ações precisam da conta da API.
   const daApi = (linha) => dados.pagina.conteudo.find((u) => u.id === linha.id);
 
+  const reativar = async (u) => {
+    try {
+      await api.alterarStatusDoUsuario(u.id, "ativo");
+      retorno.sucesso(`Conta de ${u.nome} reativada.`);
+      recarregar();
+    } catch (falha) {
+      retorno.erro(falha);
+    }
+  };
+
   const alternarBloqueio = async (u) => {
     const novo = u.status === "bloqueado" ? "ativo" : "bloqueado";
     try {
@@ -188,6 +197,7 @@ export function UsuariosDoAdmin() {
             aviso={retorno.aviso}
             aoNovoUsuario={edicao.novo}
             aoAlternarBloqueio={alternarBloqueio}
+            aoReativar={reativar}
             aoEditar={(linha) => edicao.editar(daApi(linha))}
             aoExcluir={(linha) => edicao.excluir(daApi(linha))}
           />
@@ -233,6 +243,7 @@ export function ClinicasDoAdmin() {
               aoNovaClinica={edicao.nova}
               aoEditar={(linha, opcoes) => edicao.editar(daApi(linha), opcoes)}
               aoExcluir={(linha) => edicao.excluir(daApi(linha))}
+              aoReativar={(linha) => edicao.reativar(daApi(linha))}
               aviso={retorno.aviso}
             />
             {edicao.elementos}
@@ -497,19 +508,19 @@ function matrizDaApi(tela, original) {
 
 /**
  * A matriz de permissões é o essencial (só ADMIN). O resto vem de outros
- * módulos: o que for recusado fica `null`, e aquela aba mantém o protótipo.
+ * módulos: o que for recusado fica `null`. Os usuários só alimentam a
+ * contagem do "Resumo dos Papéis"; listas de usuários e clínicas ficam nas
+ * telas próprias.
  */
 const carregarConfiguracoes = async ({ sinal }) => {
   const opcional = (promessa) => promessa.catch(() => null);
-  const [permissoes, grupos, sistema, usuarios, unidades, especialidades] = await Promise.all([
+  const [permissoes, grupos, sistema, usuarios] = await Promise.all([
     api.buscarPermissoes({ sinal }),
     opcional(api.buscarConfiguracoes({ sinal })),
     opcional(api.buscarInformacoesDoSistema({ sinal })),
     opcional(api.listarUsuarios({ sinal })),
-    opcional(api.listarUnidades({ sinal })),
-    opcional(api.listarEspecialidades({ sinal })),
   ]);
-  return { permissoes, grupos, sistema, usuarios, unidades, especialidades };
+  return { permissoes, grupos, sistema, usuarios };
 };
 
 /** `GET /api/admin/sistema` → pares do cartão "Informações do Sistema". */
@@ -524,30 +535,14 @@ function informacoesDoSistema(s) {
 }
 
 export function ConfiguracoesDoAdmin() {
-  const { usuario } = useAuth();
   const estado = useDadosDaApi(carregarConfiguracoes);
-  const { dados, recarregar } = estado;
+  const { dados } = estado;
   const retorno = useRetorno();
   const [vendoLogs, definirVendoLogs] = useState(false);
-  const aoConcluir = (texto) => {
-    retorno.sucesso(texto);
-    recarregar();
-  };
-  const usuarios = useEdicaoDeUsuarios({
-    especialidades: dados?.especialidades ?? [],
-    unidades: dados?.unidades ?? [],
-    podeCriarAdmin: usuario?.role === "ADMIN",
-    aoConcluir,
-  });
-  const unidades = useEdicaoDeUnidades({ aoConcluir });
 
-  /* A aba de usuários mostra a equipe e os médicos; pacientes ficam na tela de
-     Usuários. Módulo recusado pelo servidor: lista vazia, nunca dados de
-     demonstração. */
+  /* Equipe e médicos, só para contar cada papel no "Resumo dos Papéis".
+     Módulo recusado pelo servidor: contagem zerada, nunca dados de demonstração. */
   const equipe = dados?.usuarios?.conteudo.filter((u) => u.papel !== "PACIENTE") ?? [];
-  const contaDaEquipe = (linha) => equipe.find((u) => u.id === linha.id);
-  const unidadeDaApi = (linha) => dados.unidades.find((u) => u.id === linha.id);
-  const cadastrosDaConfiguracao = dados?.unidades?.map(paraUnidadeDaConfiguracao) ?? [];
 
   return (
     <>
@@ -569,16 +564,6 @@ export function ConfiguracoesDoAdmin() {
                     await api.salvarPermissoes(matrizDaApi(tela, dados.permissoes));
                   },
                   usuarios: equipe.map(paraUsuarioDaEquipe),
-                  aoNovoUsuario: usuarios.novo,
-                  aoEditar: (linha) => usuarios.editar(contaDaEquipe(linha)),
-                  aoExcluir: (linha) => usuarios.excluir(contaDaEquipe(linha)),
-                },
-                clinicas: {
-                  unidades: cadastrosDaConfiguracao,
-                  filtrosUnidade: opcoesDe(cadastrosDaConfiguracao, "unidade", "Todas as unidades", "todas"),
-                  aoNovaClinica: unidades.nova,
-                  aoEditar: (linha) => unidades.editar(unidadeDaApi(linha)),
-                  aoExcluir: (linha) => unidades.excluir(unidadeDaApi(linha)),
                 },
                 seguranca: { aoVerLogs: () => definirVendoLogs(true) },
               }
@@ -587,11 +572,7 @@ export function ConfiguracoesDoAdmin() {
         )}
       </PortaoDaApi>
       {estado.origem === "api" && (
-        <>
-          {usuarios.elementos}
-          {unidades.elementos}
-          <DialogoAuditoria aberto={vendoLogs} aoFechar={() => definirVendoLogs(false)} />
-        </>
+        <DialogoAuditoria aberto={vendoLogs} aoFechar={() => definirVendoLogs(false)} />
       )}
     </>
   );

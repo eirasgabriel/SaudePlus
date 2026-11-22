@@ -470,6 +470,42 @@ class AdminApiTest {
         }
 
         @Test
+        @DisplayName("unidade inativa recusa vínculo de médico, pode ser reativada e, sem histórico, excluída de vez")
+        void reativarEExcluirDeVez() throws Exception {
+            String acesso = "reativar-" + UUID.randomUUID().toString().substring(0, 6) + "@teste.com";
+            String corpo = como(admin, json(post("/api/admin/unidades"),
+                    "{\"nome\":\"UBS Reativável\",\"endereco\":\"Rua C, 3\",\"cidade\":\"Araruama\",\"uf\":\"RJ\",\"emailLogin\":\"%s\",\"senhaLogin\":\"senhaTeste123\"}"
+                            .formatted(acesso)))
+                    .andReturn().getResponse().getContentAsString();
+            String id = json.readTree(corpo).get("id").asString();
+
+            // Conta da clínica não aparece entre os usuários: ela tem painel próprio.
+            como(admin, get("/api/admin/usuarios").param("q", acesso))
+                    .andExpect(jsonPath("$.conteudo").isEmpty());
+
+            // Ativa não pode ser excluída de vez nem "reativada".
+            como(admin, delete("/api/admin/unidades/{id}/definitivo", id)).andExpect(status().isUnprocessableEntity());
+            como(admin, post("/api/admin/unidades/{id}/reativar", id)).andExpect(status().isConflict());
+
+            como(admin, delete("/api/admin/unidades/{id}", id)).andExpect(status().isNoContent());
+            String crm = String.valueOf(100_000 + (int) (Math.random() * 800_000));
+            como(admin, json(post("/api/admin/usuarios"), """
+                    {"nomeCompleto":"Dr. Sem Vínculo","email":"%s","telefone":"(22) 99999-0000","papel":"MEDICO",
+                     "medico":{"crm":"%s","crmUf":"RJ","especialidadeIds":["%s"],"unidadeIds":["%s"],"valorConsulta":200}}"""
+                    .formatted(email(), crm, clinicoGeral, id)))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.campos.unidadeIds").exists());
+
+            como(admin, post("/api/admin/unidades/{id}/reativar", id))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").value("ativa"));
+
+            como(admin, delete("/api/admin/unidades/{id}", id)).andExpect(status().isNoContent());
+            como(admin, delete("/api/admin/unidades/{id}/definitivo", id)).andExpect(status().isNoContent());
+            como(admin, get("/api/admin/unidades")).andExpect(jsonPath("$[*].id", not(hasItem(id))));
+        }
+
+        @Test
         @DisplayName("especialidade nova ganha slug; repetida dá 409")
         void especialidade() throws Exception {
             como(admin, json(post("/api/admin/especialidades"), "{\"nome\":\"Medicina Esportiva\"}"))
@@ -578,7 +614,7 @@ class AdminApiTest {
             como(admin, get("/api/admin/sistema"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.banco").value(startsWith("PostgreSQL")))
-                    .andExpect(jsonPath("$.ultimaMigracao.versao").value("12"))
+                    .andExpect(jsonPath("$.ultimaMigracao.versao").value("13"))
                     .andExpect(jsonPath("$.noArDesde").isString());
             como(equipe(Papel.GESTOR), get("/api/admin/sistema")).andExpect(status().isForbidden());
         }

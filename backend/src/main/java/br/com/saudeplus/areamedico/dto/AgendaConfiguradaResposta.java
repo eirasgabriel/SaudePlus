@@ -1,6 +1,7 @@
 package br.com.saudeplus.areamedico.dto;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -10,7 +11,7 @@ import br.com.saudeplus.agenda.BloqueioAgenda;
 import br.com.saudeplus.agenda.Disponibilidade;
 import br.com.saudeplus.agenda.Modalidade;
 
-/** Respostas da configuração de agenda: janelas semanais e bloqueios. */
+/** Respostas da configuração de agenda: janelas de atendimento e bloqueios. */
 public final class AgendaConfiguradaResposta {
 
     private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("HH:mm");
@@ -21,14 +22,19 @@ public final class AgendaConfiguradaResposta {
     public record UnidadeResumo(UUID id, String nome) {
     }
 
-    public record DisponibilidadeResposta(UUID id, UnidadeResumo unidade, int diaSemana, String inicio, String fim,
-            int duracaoMin, Modalidade modalidade) {
+    /**
+     * Janela de atendimento. `data` nas janelas por dia; `diaSemana` (ISO,
+     * 1 = segunda) só nas semanais antigas. Exatamente um dos dois vem preenchido.
+     */
+    public record DisponibilidadeResposta(UUID id, UnidadeResumo unidade, LocalDate data, Integer diaSemana,
+            String inicio, String fim, int duracaoMin, Modalidade modalidade) {
 
         public static DisponibilidadeResposta de(Disponibilidade disponibilidade) {
             return new DisponibilidadeResposta(
                     disponibilidade.getId(),
                     new UnidadeResumo(disponibilidade.getUnidade().getId(), disponibilidade.getUnidade().getNome()),
-                    disponibilidade.getDiaSemana().getValue(),
+                    disponibilidade.getData(),
+                    disponibilidade.getDiaSemana() == null ? null : disponibilidade.getDiaSemana().getValue(),
                     disponibilidade.getInicio().format(HORA),
                     disponibilidade.getFim().format(HORA),
                     disponibilidade.getDuracaoMin(),

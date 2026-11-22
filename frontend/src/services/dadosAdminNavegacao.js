@@ -1,11 +1,12 @@
 /**
  * Definição única da navegação administrativa.
  * Alterar aqui reflete no menu do topo, no menu lateral e nas rotas.
+ * O painel da unidade clínica não fica aqui: é da conta da própria unidade
+ * (/clinica), não dos administradores.
  */
 
 export const itensMenu = [
   { id: "dashboard", rotulo: "Dashboard", icone: "home", para: "/admin" },
-  { id: "unidade", modulo: "clinicas", rotulo: "Unidade Clínica", icone: "clinica", para: "/admin/unidade" },
   { id: "usuarios", rotulo: "Usuários", icone: "usuarios", para: "/admin/usuarios" },
   { id: "clinicas", rotulo: "Clínicas", icone: "clinica", para: "/admin/clinicas" },
   { id: "agendamentos", rotulo: "Agendamentos", icone: "calendario", para: "/admin/agendamentos" },
