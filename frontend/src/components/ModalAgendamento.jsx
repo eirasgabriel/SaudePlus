@@ -18,10 +18,10 @@ function dataLocal(iso, horario = '00:00') {
   return new Date(ano, mes - 1, dia, hora, minuto, 0, 0);
 }
 
-/** "2026-11-12" → "12/11/26", e "12/11/26 (hoje)" para o dia atual. */
 /** Quantos dias aparecem antes do "Mais datas". */
 const DATAS_VISIVEIS = 10;
 
+/** "2026-11-12" → "12/11/26", e "12/11/26 (hoje)" para o dia atual. */
 const rotuloDaData = (iso) => (iso === hojeISO() ? `${dataCurtaBr(iso)} (hoje)` : dataCurtaBr(iso));
 
 const SEM_OCUPADOS = [];

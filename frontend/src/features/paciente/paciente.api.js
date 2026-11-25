@@ -91,15 +91,15 @@ export function marcarTodasComoLidas({ sinal } = {}) {
   return http.patch("/api/paciente/notificacoes/lidas", undefined, { sinal, autenticado });
 }
 
-/** Horários livres de um médico num dia (rota pública). */
 /**
- * Todos os horários livres do médico de `de` até `ate` (o servidor corta na
- * janela máxima de agendamento). Usado para listar os dias com vaga.
+ * Todos os horários livres do médico de `de` até `ate` (rota pública; o
+ * servidor corta na janela máxima de agendamento). Usado para listar os dias com vaga.
  */
 export function buscarHorariosLivresNoPeriodo(medicoId, { de, ate }, { sinal } = {}) {
   return http.get(`/api/publico/profissionais/${medicoId}/horarios`, { parametros: { de, ate }, sinal });
 }
 
+/** Horários livres de um médico num dia (rota pública). */
 export function buscarHorariosLivres(medicoId, data, { sinal } = {}) {
   return http.get(`/api/publico/profissionais/${medicoId}/horarios`, { parametros: { de: data, ate: data }, sinal });
 }

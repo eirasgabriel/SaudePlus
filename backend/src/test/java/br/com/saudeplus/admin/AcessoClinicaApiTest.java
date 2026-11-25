@@ -149,6 +149,47 @@ class AcessoClinicaApiTest {
             .andExpect(jsonPath("$.campos.senhaLogin").exists());
     }
 
+    @Test void recepcaoContatoENotificacoesDaPropriaUnidade() throws Exception {
+        String email = "clinica-" + UUID.randomUUID() + "@teste.com";
+        String unidadeId = criar(email);
+        String bearer = entrar(email, "senhaTeste123");
+        var medico = cenarios.medico();
+        var paciente = cenarios.paciente("Paciente Teste", LocalDate.of(1990, 1, 1));
+        var daUnidade = cenarios.agendamento(medico, paciente, LocalDate.of(2090, 10, 1), "09:00",
+            StatusAgendamento.PENDENTE, UUID.fromString(unidadeId));
+        var deOutra = cenarios.agendamento(medico, paciente, LocalDate.of(2090, 10, 1), "10:00",
+            StatusAgendamento.PENDENTE);
+
+        // Confirma a da própria unidade; a de outra unidade não existe para ela.
+        mvc.perform(patch("/api/clinica/agendamentos/{id}/status", daUnidade.getId()).header(HttpHeaders.AUTHORIZATION, bearer)
+            .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"confirmada\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("confirmada"));
+        mvc.perform(patch("/api/clinica/agendamentos/{id}/status", deOutra.getId()).header(HttpHeaders.AUTHORIZATION, bearer)
+            .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"confirmada\"}"))
+            .andExpect(status().isNotFound());
+        // Atendimento é do médico, não da recepção.
+        mvc.perform(patch("/api/clinica/agendamentos/{id}/status", daUnidade.getId()).header(HttpHeaders.AUTHORIZATION, bearer)
+            .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"realizada\"}"))
+            .andExpect(status().isUnprocessableContent());
+        mvc.perform(patch("/api/clinica/agendamentos/{id}/status", daUnidade.getId()).header(HttpHeaders.AUTHORIZATION, bearer)
+            .contentType(MediaType.APPLICATION_JSON).content("{\"status\":\"cancelada\",\"motivo\":\"Médico indisponível\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("cancelada"));
+
+        // Contato: telefone, horário e e-mail; o nome continua o do cadastro.
+        mvc.perform(put("/api/clinica/unidade").header(HttpHeaders.AUTHORIZATION, bearer).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"telefone\":\"(22) 2222-0000\",\"horarioFuncionamento\":\"Seg a sex, 8h às 17h\",\"email\":\"contato@clinica.com\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.telefone").value("(22) 2222-0000"))
+            .andExpect(jsonPath("$.email").value("contato@clinica.com")).andExpect(jsonPath("$.nome").value("Clínica Teste"));
+        mvc.perform(put("/api/clinica/unidade").header(HttpHeaders.AUTHORIZATION, bearer).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"email\":\"sem-arroba\"}"))
+            .andExpect(status().isBadRequest()).andExpect(jsonPath("$.campos.email").exists());
+
+        mvc.perform(get("/api/clinica/notificacoes").header(HttpHeaders.AUTHORIZATION, bearer)).andExpect(status().isOk());
+        mvc.perform(patch("/api/clinica/notificacoes/lidas").header(HttpHeaders.AUTHORIZATION, bearer))
+            .andExpect(status().isNoContent());
+        mvc.perform(get("/api/clinica/notificacoes").header(HttpHeaders.AUTHORIZATION, admin)).andExpect(status().isForbidden());
+    }
+
     @Test void corpoClinicoDaPropriaUnidade() throws Exception {
         String email = "clinica-" + UUID.randomUUID() + "@teste.com";
         String unidadeId = criar(email);

@@ -52,10 +52,15 @@ export default function AdminUsuariosPage({
   aoReativar,
   /* A própria conta não aparece com "Bloquear" nem "Excluir": a API recusa. */
   idDaPropriaConta = null,
+  /* Termo vindo da busca do topo (/admin/usuarios?q=...). */
+  buscaInicial = "",
+  /* Total no servidor, quando a lista carregada não traz todos. */
+  totalNoServidor = null,
 }) {
   const [hoje] = useState(() => new Date());
   const tabela = useTabela({
     dados: usuarios,
+    buscaInicial,
     porPagina: 7,
     camposBusca: ["nome", "cpf", "email"],
     valoresIniciais: { status: "todos", perfil: "todos", unidade: "todas" },
@@ -77,6 +82,12 @@ export default function AdminUsuariosPage({
       />
 
       {aviso}
+
+      {totalNoServidor != null && totalNoServidor > usuarios.length && (
+        <p className={comum.avisoTexto} role="status">
+          Mostrando {usuarios.length} de {totalNoServidor} usuários. Use a busca para encontrar os demais.
+        </p>
+      )}
 
       <section className={comum.metricas} aria-label="Indicadores de usuários">
         {metricas.map((m) => (

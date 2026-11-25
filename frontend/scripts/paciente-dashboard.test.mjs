@@ -75,3 +75,18 @@ test('falha da lista conserva o menu e permite tentar novamente na dashboard', a
   assert.equal(document.querySelector('[aria-label="Menu do paciente"]'), lateral)
   assert.ok(porTexto('Profissional Teste', 'main'))
 })
+
+test('"Marcar todas como lidas" do sino grava no servidor e o contador some', async () => {
+  let lida = false
+  const chamadas = apiFalsa({
+    ...rotas,
+    'GET /api/paciente/notificacoes': () => [{ id: 'n1', titulo: 'Consulta confirmada', tipo: 'agendamento', lida }],
+    'PATCH /api/paciente/notificacoes/lidas': () => { lida = true; return null },
+  })
+  await montar()
+  const sino = await esperar(() => document.querySelector('button[aria-label="Notificações, 1 não lidas"]'))
+  await clicar(sino)
+  await clicar(await esperar(() => porTexto('Marcar todas como lidas', 'button')))
+  await esperar(() => chamadas.some((c) => c.metodo === 'PATCH' && c.caminho === '/api/paciente/notificacoes/lidas'))
+  await esperar(() => document.querySelector('button[aria-label="Notificações"]'))
+})

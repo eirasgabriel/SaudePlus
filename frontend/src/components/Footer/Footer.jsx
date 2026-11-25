@@ -1,6 +1,7 @@
 import { useId } from "react";
 
 import { cx } from "../../utils/cx.js";
+import { IDENTIDADE_PADRAO, useIdentidadeDoSite } from "../../services/identidadeDoSite.js";
 import styles from "./Footer.module.css";
 
 /* ============================================================================
@@ -94,18 +95,25 @@ function Coluna({ titulo, itens, aoClicarReservado }) {
  * @param className          para ajustes pontuais de quem usa
  */
 export default function Footer({ aoClicarReservado, ano = new Date().getFullYear(), tom, className }) {
+  // Nome, descrição e contatos de Configurações > Geral; sem eles, o padrão.
+  const identidade = useIdentidadeDoSite({ carregar: false });
+  const nomePadrao = identidade.nomeSistema === IDENTIDADE_PADRAO.nomeSistema;
+  const contatos = [
+    identidade.emailSuporte && <a key="email" href={`mailto:${identidade.emailSuporte}`}>{identidade.emailSuporte}</a>,
+    identidade.telefone && <a key="telefone" href={`tel:${identidade.telefone.replace(/[^\d+]/g, "")}`}>{identidade.telefone}</a>,
+    identidade.endereco && <span key="endereco">{identidade.endereco}</span>,
+  ].filter(Boolean);
   return (
     <footer className={cx(styles.rodape, tom === "azul" && styles.azul, className)}>
       <div className={styles.conteudo}>
         <div className={styles.grade}>
           <div className={styles.marca}>
             <span className={styles.nome}>
-              Saúde<span>Plus</span>
+              {nomePadrao ? <>Saúde<span>Plus</span></> : identidade.nomeSistema}
             </span>
             <p className={styles.slogan}>A sua saúde, sempre andando junto com você!</p>
-            <p className={styles.texto}>
-              Agendamento de consultas e exames, com profissionais e unidades perto de você.
-            </p>
+            <p className={styles.texto}>{identidade.descricao}</p>
+            {contatos.length > 0 && <p className={styles.texto}>{contatos.reduce((lista, item) => [...lista, lista.length ? " · " : null, item], [])}</p>}
           </div>
 
           <Coluna titulo="Plataforma" itens={PLATAFORMA} aoClicarReservado={aoClicarReservado} />
@@ -114,7 +122,7 @@ export default function Footer({ aoClicarReservado, ano = new Date().getFullYear
         </div>
 
         <div className={styles.base}>
-          <p className={styles.direitos}>© {ano} SaúdePlus. Todos os direitos reservados.</p>
+          <p className={styles.direitos}>© {ano} {identidade.nomeSistema}. Todos os direitos reservados.</p>
           {/* Deixa explícito que não é um serviço em operação. Num site de
               saúde, parecer real sem ser é pior do que parecer inacabado. */}
           <p className={styles.aviso}>

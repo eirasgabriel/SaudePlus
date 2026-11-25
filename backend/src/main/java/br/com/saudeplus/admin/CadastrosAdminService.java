@@ -148,6 +148,21 @@ public class CadastrosAdminService {
     }
 
     /**
+     * O que a própria clínica edita (/clinica/conta): telefone, horário de
+     * funcionamento e e-mail de contato. Nome, endereço, CNPJ e acesso
+     * continuam com a administração.
+     */
+    @Transactional
+    public UnidadeAdmin alterarContatoDaUnidade(UUID id, String telefone, String horarioFuncionamento, String email) {
+        Unidade unidade = unidade(id);
+        unidade.alterar(unidade.getNome(), unidade.getEndereco(), unidade.getBairro(), unidade.getCidade(),
+                unidade.getUf(), telefone, horarioFuncionamento, unidade.getMapUrl());
+        unidade.alterarContato(unidade.getCnpj(), email);
+        auditoria.registrar("unidade.alterar_contato", "unidade", id, Map.of("nome", unidade.getNome()));
+        return resumo(unidade);
+    }
+
+    /**
      * "Excluir" da tela: a unidade fica inativa. O registro fica, porque
      * agendamentos, exames e o histórico dos médicos apontam para ele.
      */

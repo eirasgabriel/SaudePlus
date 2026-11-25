@@ -77,3 +77,12 @@ test('Configurações: sem as listas de usuários e clínicas; permissões conti
   assert.equal(porTexto('Usuários do Sistema', 'h2'), null, 'sem a lista de usuários')
   assert.ok(porTexto('Resumo dos Papéis', 'h2'))
 })
+
+test('/admin/configuracoes?aba=clinicas (link antigo) leva à tela de Clínicas', async () => {
+  apiFalsa(rotasDoAdmin({
+    'GET /api/admin/permissoes': { matriz: {} },
+    'GET /api/admin/unidades': [],
+  }))
+  const tela = await abrir('/admin/configuracoes?aba=clinicas')
+  await esperar(() => tela.onde() === '/admin/clinicas', { mensagem: 'redirecionar para /admin/clinicas' })
+})

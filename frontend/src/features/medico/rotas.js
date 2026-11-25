@@ -65,10 +65,6 @@ export const ROTAS = {
   conta: { caminho: "/medico/conta", rotulo: "Minha conta", existe: true },
   busca: { caminho: "/medico/busca", rotulo: "Busca", existe: true },
 
-  /* Reservada: as preferências do médico ainda não têm tela. A configuração
-     da agenda (janelas e bloqueios) fica em "Minha agenda". */
-  configuracoes: { caminho: "/medico/configuracoes", rotulo: "Configurações", existe: false },
-
   /* Fora da área do médico, no site institucional — já existe. */
   ajuda: { caminho: "/ajuda", rotulo: "Ajuda", existe: true },
 

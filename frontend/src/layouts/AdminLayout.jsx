@@ -49,6 +49,16 @@ export default function AdminLayout({
   const idMenuConta = `${useId().replace(/[^a-zA-Z0-9_-]/g, "")}-menu-conta`;
   const navegar = useNavigate();
 
+  const [buscaAberta, setBuscaAberta] = useState(false);
+  const [termo, setTermo] = useState("");
+  const buscar = (evento) => {
+    evento.preventDefault();
+    const texto = termo.trim();
+    setBuscaAberta(false);
+    setTermo("");
+    navegar(texto ? `/admin/usuarios?q=${encodeURIComponent(texto)}` : "/admin/usuarios");
+  };
+
   /* Sino: o mesmo menu suspenso do painel do médico. Lidas nesta sessão somem
      do menu e do contador na hora, sem esperar a lista recarregar. */
   const [sinoAberto, setSinoAberto] = useState(false);
@@ -123,11 +133,32 @@ export default function AdminLayout({
         </nav>
 
         <div className={estilos.acoes}>
-          {!acessoClinica && <button type="button" className={estilos.iconeBtn} aria-label="Buscar">
-            <Icone nome="busca" tam={20} />
-          </button>}
+          {/* Busca de usuários: leva à tela de Usuários já filtrada (o servidor procura em todas as contas). */}
+          {!acessoClinica && visivel({ id: "usuarios" }) && (
+            buscaAberta ? (
+              <form className={estilos.busca} role="search" onSubmit={buscar}>
+                <input
+                  type="search"
+                  className={estilos.buscaInput}
+                  value={termo}
+                  onChange={(e) => setTermo(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Escape") setBuscaAberta(false); }}
+                  placeholder="Buscar usuário por nome, CPF ou e-mail"
+                  aria-label="Buscar usuário por nome, CPF ou e-mail"
+                  autoFocus
+                />
+                <button type="submit" className={estilos.iconeBtn} aria-label="Buscar">
+                  <Icone nome="busca" tam={20} />
+                </button>
+              </form>
+            ) : (
+              <button type="button" className={estilos.iconeBtn} aria-label="Abrir busca de usuários" onClick={() => setBuscaAberta(true)}>
+                <Icone nome="busca" tam={20} />
+              </button>
+            )
+          )}
 
-          {!acessoClinica && (
+          {(!acessoClinica || notificacoesDoSino) && (
             <div className={estilos.ancora}>
               <button
                 type="button"
@@ -159,7 +190,7 @@ export default function AdminLayout({
                 aoMarcarComoLidas={(ids) => setLidasAgora((anteriores) => new Set([...anteriores, ...ids]))}
                 aoVerTodas={() => {
                   setSinoAberto(false);
-                  navegar("/admin/notificacoes");
+                  navegar(`${inicio}/notificacoes`);
                 }}
                 marcarUma={notificacoesDoSino?.marcarUma}
                 marcarTodas={notificacoesDoSino?.marcarTodas}

@@ -1,4 +1,3 @@
-import * as api from '../admin/admin.api.js';
 import { http } from '../../services/http.js';
 
 export const carregarClinicaLogada = ({ sinal }) => http.get('/api/clinica/painel', { sinal, autenticado: true });
@@ -19,15 +18,13 @@ export function dataValida(valor) {
 }
 
 /** Percorre as páginas para que os indicadores nunca contem só a primeira. */
-export async function carregarAgendaDaUnidade({ unidadeId, data, sinal, acessoClinica = false }) {
+export async function carregarAgendaDaUnidade({ data, sinal }) {
   const consultas = [];
   let pagina = 0;
   let totalPaginas;
   do {
-    const resposta = acessoClinica ? await http.get('/api/clinica/agendamentos', {
+    const resposta = await http.get('/api/clinica/agendamentos', {
       parametros: { de: data, ate: data, pagina, tamanho: 500 }, sinal, autenticado: true,
-    }) : await api.listarAgendamentos({
-      unidadeId, de: data, ate: data, pagina, tamanho: 500, sinal,
     });
     consultas.push(...resposta.conteudo);
     totalPaginas = resposta.totalPaginas;

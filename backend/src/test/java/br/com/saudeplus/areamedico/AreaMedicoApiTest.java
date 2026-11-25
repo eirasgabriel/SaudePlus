@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -321,6 +322,46 @@ class AreaMedicoApiTest {
                     .andExpect(jsonPath("$", hasSize(0)));
             chamar(get("/api/medico/disponibilidades"))
                     .andExpect(jsonPath("$[*].data", hasItem(dia.toString())));
+        }
+
+        @Test
+        @DisplayName("janela semanal: criada com diaSemana, cruza com janela por data do mesmo dia e não se edita (422)")
+        void janelaSemanal() throws Exception {
+            String semanal = """
+                    {"unidadeId":"%s","diaSemana":1,"inicio":"09:00","fim":"11:00","duracaoMin":30,"modalidade":"presencial"}"""
+                    .formatted(Cenarios.UNIDADE_CENTRO);
+            String criada = chamar(json(post("/api/medico/disponibilidades"), semanal))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.diaSemana").value(1))
+                    .andExpect(jsonPath("$.data").doesNotExist())
+                    .andReturn().getResponse().getContentAsString();
+            String id = criada.replaceAll(".*?\"id\":\"([^\"]+)\".*", "$1");
+
+            // `dia` é uma segunda: a janela por data das 08:00 às 10:00 cruza com a semanal.
+            chamar(json(post("/api/medico/disponibilidades"), janela(Cenarios.UNIDADE_CENTRO)))
+                    .andExpect(status().isConflict());
+            chamar(json(put("/api/medico/disponibilidades/{id}", id), janela(Cenarios.UNIDADE_CENTRO, dia.plusDays(1))))
+                    .andExpect(status().isUnprocessableContent());
+
+            // Repete toda segunda: aparece também na semana seguinte.
+            mvc.perform(get("/api/publico/profissionais/{id}/horarios", medico.getId())
+                            .param("de", dia.plusDays(7).toString()).param("ate", dia.plusDays(7).toString()))
+                    .andExpect(jsonPath("$", hasSize(4)));
+        }
+
+        @Test
+        @DisplayName("exige data ou dia da semana, só um dos dois (400)")
+        void dataOuDiaDaSemana() throws Exception {
+            String semNenhum = """
+                    {"unidadeId":"%s","inicio":"08:00","fim":"10:00","duracaoMin":30,"modalidade":"presencial"}"""
+                    .formatted(Cenarios.UNIDADE_CENTRO);
+            chamar(json(post("/api/medico/disponibilidades"), semNenhum))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.campos.data").exists());
+            chamar(json(post("/api/medico/disponibilidades"),
+                    janela(Cenarios.UNIDADE_CENTRO).replace("\"inicio\"", "\"diaSemana\":1,\"inicio\"")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.campos.data").exists());
         }
 
         @Test

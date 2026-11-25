@@ -47,6 +47,19 @@ Somente o papel `CLINICA` acessa `/api/clinica/**`:
 
 A clínica não cadastra médicos: eles continuam sendo criados pela administração.
 
+Recepção, contato e avisos:
+
+- `PATCH /api/clinica/agendamentos/{id}/status` com `{ "status": "confirmada" | "aguardando" | "cancelada", "motivo"? }`:
+  confirma, registra a chegada ou cancela (avisando o paciente). Consulta de
+  outra unidade: 404. Outros status (realizada, faltou...): 422, porque são do médico.
+- `PUT /api/clinica/unidade` com `{ telefone, horarioFuncionamento, email }`:
+  o contato que aparece para os pacientes. Nome, endereço, CNPJ e login
+  continuam com a administração. Auditado como `unidade.alterar_contato`.
+- `GET /api/clinica/notificacoes`, `PATCH /api/clinica/notificacoes/{id}/lida`
+  e `PATCH /api/clinica/notificacoes/lidas`: o sino da clínica. A conta recebe
+  aviso de agendamento novo, remarcado e cancelado na unidade (menos o que ela
+  mesma cancelou).
+
 O servidor deriva a unidade da conta autenticada. Um parâmetro `unidadeId`
 não altera esse escopo. A clínica não pode acessar `/api/admin/**`,
 `/api/paciente/**` ou `/api/medico/**`.

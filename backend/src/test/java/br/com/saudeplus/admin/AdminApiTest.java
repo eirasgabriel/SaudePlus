@@ -400,6 +400,29 @@ class AdminApiTest {
                 como(admin, json(put("/api/admin/configuracoes/agendamento"), agendaOriginal)).andExpect(status().isOk());
             }
         }
+
+        @Test
+        @DisplayName("Geral gravado aparece na identidade pública do site, só com cor em hexadecimal")
+        void identidadePublica() throws Exception {
+            String original = como(admin, get("/api/admin/configuracoes")).andReturn().getResponse().getContentAsString();
+            var geraisOriginais = json.readTree(original).get("gerais");
+            String gerais = geraisOriginais == null ? "{}" : json.writeValueAsString(geraisOriginais);
+            try {
+                como(admin, json(put("/api/admin/configuracoes/gerais"), """
+                        {"nomeSistema":"Saúde Teste","telefone":"(22) 3333-0000","corPrincipal":"#123ABC",
+                         "corSecundaria":"red;background:url(x)","senhaInterna":"não sai"}"""))
+                        .andExpect(status().isOk());
+                mvc.perform(get("/api/publico/identidade"))
+                        .andExpect(status().isOk())
+                        .andExpect(jsonPath("$.nomeSistema").value("Saúde Teste"))
+                        .andExpect(jsonPath("$.telefone").value("(22) 3333-0000"))
+                        .andExpect(jsonPath("$.corPrincipal").value("#123ABC"))
+                        .andExpect(jsonPath("$.corSecundaria").doesNotExist())
+                        .andExpect(jsonPath("$.senhaInterna").doesNotExist());
+            } finally {
+                como(admin, json(put("/api/admin/configuracoes/gerais"), gerais)).andExpect(status().isOk());
+            }
+        }
     }
 
     @Nested

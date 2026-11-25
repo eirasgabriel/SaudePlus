@@ -88,7 +88,7 @@ test('agenda edita a janela existente e envia os campos esperados pela API', asy
   assert.ok(porTexto(`${ddmmaa(EM_5_DIAS)}, 08:00 às 13:00`, 'span'))
 })
 
-test('janela nova: campo Data em dd/mm/aa, de hoje em diante (sem dia da semana)', async () => {
+test('janela nova: "Uma data" é o padrão, com Data em dd/mm/aa de hoje em diante (sem dia da semana)', async () => {
   const chamadas = apiFalsa({
     ...agendaApi,
     'GET /api/medico/disponibilidades': [],
@@ -112,10 +112,34 @@ test('janela nova: campo Data em dd/mm/aa, de hoje em diante (sem dia da semana)
   assert.equal('diaSemana' in chamadas.find(c => c.metodo === 'POST').corpo, false)
 })
 
-test('janela semanal antiga aparece como "Toda segunda"', async () => {
+test('janela nova "Toda semana" envia diaSemana, sem data', async () => {
+  const chamadas = apiFalsa({
+    ...agendaApi,
+    'GET /api/medico/disponibilidades': [],
+    'POST /api/medico/disponibilidades': ({ corpo }) => ({ id: 'j3', unidade, data: null, ...corpo }),
+  })
+  await montar(Agenda, '/medico/agenda')
+  await clicar(await esperar(() => porTexto('Incluir horário', 'button')))
+  await clicar(porTexto('Toda semana', 'button'))
+  assert.equal(document.querySelector('#janela-data'), null, 'sem o campo Data')
+  const dia = document.querySelector('#janela-dia')
+  assert.equal(dia.options[0].textContent, 'Toda segunda')
+  assert.equal(dia.options[6].textContent, 'Todo domingo')
+  await digitar(dia, '3')
+  await enviar(document.querySelector('[role="dialog"] form'))
+  await esperar(() => porTexto('Horário de atendimento incluído.', '[role="status"]'))
+  const corpo = chamadas.find(c => c.metodo === 'POST').corpo
+  assert.equal(corpo.diaSemana, 3)
+  assert.equal('data' in corpo, false)
+})
+
+test('janela semanal aparece como "Toda segunda", só leitura (sem Editar, com Remover)', async () => {
   apiFalsa({ ...agendaApi, 'GET /api/medico/disponibilidades': [{ ...janela, data: null, diaSemana: 1 }] })
   await montar(Agenda, '/medico/agenda')
-  await esperar(() => porTexto('Toda segunda, 08:00 às 12:00', 'span'))
+  const item = (await esperar(() => porTexto('Toda segunda, 08:00 às 12:00', 'span'))).closest('li')
+  assert.ok(item.textContent.includes('Repete toda semana'))
+  const botoes = [...item.querySelectorAll('button')].map((b) => b.textContent.trim())
+  assert.deepEqual(botoes, ['Remover'])
 })
 
 test('bloqueio com conflito pede confirmação antes de cancelar consultas', async () => {

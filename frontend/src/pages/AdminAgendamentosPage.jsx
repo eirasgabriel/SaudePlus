@@ -72,6 +72,8 @@ export default function AdminAgendamentosPage({
   aoMudarMes,
   aoAlterarStatus,
   aoNovoAgendamento,
+  /* Total no servidor, quando a lista carregada não traz todos. */
+  totalNoServidor = null,
 }) {
   const [hoje] = useState(() => new Date());
   const hojeIso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
@@ -99,6 +101,12 @@ export default function AdminAgendamentosPage({
       />
 
       {aviso}
+
+      {totalNoServidor != null && totalNoServidor > agendamentos.length && (
+        <p className={comum.avisoTexto} role="status">
+          Mostrando {agendamentos.length} de {totalNoServidor} agendamentos, a partir do mês anterior. Use os filtros para refinar.
+        </p>
+      )}
 
       <section className={comum.metricas} aria-label="Indicadores de agendamentos">
         {metricas.map((m) => (

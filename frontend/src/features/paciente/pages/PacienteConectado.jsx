@@ -21,6 +21,8 @@ import {
   cancelarConsulta,
   listarConsultas,
   listarExames,
+  marcarNotificacaoComoLida,
+  marcarTodasComoLidas,
   remarcarConsulta,
   reservarConsulta,
 } from "../paciente.api.js";
@@ -88,6 +90,8 @@ export function PainelDoPaciente() {
           carregandoUnidade={painel.origem === "carregando"}
           avisoUnidade={painel.origem === "erro" ? "Não foi possível carregar os dados da unidade. Você pode continuar consultando seus agendamentos e exames." : null}
           notificacoes={(notificacoes.dados ?? []).map(paraNotificacao)}
+          aoMarcarTodasComoLidas={() => marcarTodasComoLidas().then(() => notificacoes.recarregar())}
+          aoMarcarComoLida={(id) => marcarNotificacaoComoLida(id)}
           onConfirmar={confirmar}
           conteudo={conteudo ?? (painel.origem !== "api" ? (
             <PortaoDaApi estados={painel} carregando="Carregando seu painel…" />

@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { useLocation, useOutletContext } from "react-router-dom";
+import { useLocation, useOutletContext, useSearchParams } from "react-router-dom";
 
 import AdminLayout from "../../../layouts/AdminLayout";
 import AdminDashboardPage from "../../../pages/AdminDashboardPage";
@@ -138,9 +138,10 @@ export function DashboardDoAdmin() {
 
 /* ------------------------------------------------------------ usuários */
 
-const carregarUsuarios = async ({ sinal }) => {
+/** `q`: termo da busca do topo; vai ao servidor, que procura em todas as contas (não só nas carregadas). */
+const carregarUsuarios = async ({ q, sinal }) => {
   const [pagina, metricas, especialidades, unidades] = await Promise.all([
-    api.listarUsuarios({ sinal }),
+    api.listarUsuarios({ q: q || undefined, sinal }),
     api.buscarMetricasDeUsuarios({ sinal }),
     api.listarEspecialidades({ sinal }).catch(() => []),
     api.listarUnidades({ sinal }).catch(() => []),
@@ -150,7 +151,10 @@ const carregarUsuarios = async ({ sinal }) => {
 
 export function UsuariosDoAdmin() {
   const { usuario } = useAuth();
-  const estado = useDadosDaApi(carregarUsuarios);
+  const [parametros] = useSearchParams();
+  const q = parametros.get("q") ?? "";
+  const carregar = useCallback(({ sinal }) => carregarUsuarios({ q, sinal }), [q]);
+  const estado = useDadosDaApi(carregar);
   const { dados, recarregar } = estado;
   const retorno = useRetorno();
   const edicao = useEdicaoDeUsuarios({
@@ -191,6 +195,9 @@ export function UsuariosDoAdmin() {
       {() => (
         <>
           <AdminUsuariosPage
+            key={q}
+            buscaInicial={q}
+            totalNoServidor={dados.pagina.totalElementos}
             usuarios={dados.pagina.conteudo.map(paraUsuario)}
             idDaPropriaConta={usuario?.id ?? null}
             metricas={metricasDeUsuarios(modelosUsuarios, dados.metricas)}
@@ -309,6 +316,7 @@ export function AgendamentosDoAdmin() {
           <ModalNovoAgendamento aberto={novo} aoFechar={() => definirNovo(false)} aoAgendar={agendou} />
           <AdminAgendamentosPage
             agendamentos={agendamentos}
+            totalNoServidor={lista.dados.pagina.totalElementos}
             metricas={metricasDeAgendamentos(modelosAgendamentos, lista.dados.metricas)}
             filtrosClinica={opcoesDe(agendamentos, "unidade", "Todas", "todas")}
             filtrosProfissional={opcoesDe(agendamentos, "profissional", "Todos")}
@@ -564,6 +572,14 @@ export function ConfiguracoesDoAdmin() {
                     await api.salvarPermissoes(matrizDaApi(tela, dados.permissoes));
                   },
                   usuarios: equipe.map(paraUsuarioDaEquipe),
+                },
+                agendamento: {
+                  valores: dados.grupos?.agendamento,
+                  aoSalvar: dados.grupos ? (grupo) => api.salvarConfiguracao("agendamento", grupo) : undefined,
+                },
+                notificacoes: {
+                  valores: dados.grupos?.notificacoes,
+                  aoSalvar: dados.grupos ? (grupo) => api.salvarConfiguracao("notificacoes", grupo) : undefined,
                 },
                 seguranca: { aoVerLogs: () => definirVendoLogs(true) },
               }

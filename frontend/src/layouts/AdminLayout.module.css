@@ -126,6 +126,24 @@
 }
 .iconeBtn:hover { background: var(--shell-hover); color: #fff; }
 
+/* Busca do topo: o campo aparece no lugar da lupa. */
+.busca {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+}
+.buscaInput {
+  width: min(260px, 40vw);
+  height: 36px;
+  padding: 0 var(--space-3, 12px);
+  border-radius: var(--radius-button);
+  border: 1px solid var(--shell-hover);
+  background: transparent;
+  color: #fff;
+  font: inherit;
+}
+.buscaInput::placeholder { color: var(--shell-text-muted); }
+
 .badge {
   position: absolute;
   top: 3px;

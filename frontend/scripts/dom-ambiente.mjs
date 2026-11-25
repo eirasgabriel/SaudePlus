@@ -5,6 +5,7 @@
 // React. O react-dom decide se há DOM quando é carregado pela primeira vez.
 import { JSDOM } from 'jsdom'
 import { createServer } from 'vite'
+import { fileURLToPath } from 'node:url'
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'http://localhost/', pretendToBeVisual: true })
 const { window } = dom
@@ -35,7 +36,8 @@ let server
 /** Carrega um módulo do app pelo Vite (JSX, CSS Modules e imagens resolvidos). */
 export async function carregar(caminho) {
   server ??= await createServer({
-    root: new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'),
+    // fileURLToPath decodifica espaços e acentos (ex.: "Nova pasta"); `.pathname` deixava "%20".
+    root: fileURLToPath(new URL('..', import.meta.url)),
     server: { middlewareMode: true, hmr: false },
     appType: 'custom',
     logLevel: 'silent',

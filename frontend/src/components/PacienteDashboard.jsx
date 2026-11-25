@@ -281,6 +281,9 @@ export default function PacienteDashboard({
   onConfirmar: aoConfirmarAgendamento,
   aoAbrirPerfil,
   aoPesquisar,
+  /* Com a API: gravam a leitura no servidor (senão ela some ao recarregar). */
+  aoMarcarTodasComoLidas,
+  aoMarcarComoLida,
   conteudo,
   carregandoUnidade = false,
   avisoUnidade = null,
@@ -317,8 +320,19 @@ export default function PacienteDashboard({
   const totalNotificacoes = naoLidas;
   const rotuloContador = totalNotificacoes > 9 ? '9+' : totalNotificacoes;
 
+  /* Marca na hora (o contador some já) e grava; se a gravação falhar, volta a mostrar como não lida. */
   function marcarTodasComoLidas() {
+    const antes = lidas;
     setLidas(notificacoes.map((n) => n.id));
+    aoMarcarTodasComoLidas?.()?.catch?.(() => setLidas(antes));
+  }
+
+  function abrirNotificacao(item) {
+    setPainelNotificacoes(false);
+    if (!estaLida(item)) {
+      setLidas((atuais) => [...atuais, item.id]);
+      aoMarcarComoLida?.(item.id)?.catch?.(() => setLidas((atuais) => atuais.filter((id) => id !== item.id)));
+    }
   }
 
   function alternarNotificacoes() {
@@ -490,7 +504,7 @@ export default function PacienteDashboard({
                               <Link
                                 to={item.para}
                                 className={classes(estilos.notItem, naoLida && estilos.notItemNaoLida)}
-                                onClick={() => setPainelNotificacoes(false)}
+                                onClick={() => abrirNotificacao(item)}
                               >
                                 {conteudo}
                               </Link>

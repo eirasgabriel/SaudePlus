@@ -13,8 +13,9 @@ import estilos from "../styles/adminConfig.module.css";
 import { avisarEmBreve } from "./AvailabilityNotice/emBreve.js";
 
 /**
- * `aoVerLogs` liga "Visualizar Logs" à auditoria. Os demais itens (2FA,
- * dispositivos, backup...) são do protótipo e ainda não têm back-end.
+ * `aoVerLogs` liga "Visualizar Logs" à auditoria. O 2FA ainda não existe e
+ * aparece como "Em breve"; política de senhas, dispositivos, LGPD e backup
+ * abrem o aviso de "em breve".
  */
 export default function AdminConfigSeguranca({ aoVerLogs }) {
   const [itens, definirItens] = useState(itensSeguranca);
@@ -41,7 +42,9 @@ export default function AdminConfigSeguranca({ aoVerLogs }) {
               descricao={item.descricao}
               comSeta
               direita={
-                item.tipo === "interruptor" ? (
+                item.tipo === "emBreve" ? (
+                  <Etiqueta variante="neutro">Em breve</Etiqueta>
+                ) : item.tipo === "interruptor" ? (
                   <>
                     <Etiqueta variante={item.ativo ? "sucesso" : "neutro"} comPonto>
                       {item.ativo ? "Ativo" : "Inativo"}

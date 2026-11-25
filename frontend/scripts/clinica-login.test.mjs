@@ -23,7 +23,7 @@ test('clínica usa a própria área, sem menu administrativo nem seleção de ou
   const tela = await montar('/admin')
   await esperar(() => porTexto('Nenhuma consulta agendada', 'p'))
   assert.equal(tela.onde(), '/clinica')
-  assert.ok(document.querySelector('select').disabled)
+  assert.equal(document.querySelector('select'), null, 'sem seletor de unidade')
   assert.equal(document.querySelector('a[href^="/admin"]'), null)
   assert.ok(chamadas.every((c) => c.caminho.startsWith('/api/clinica/')))
   const agenda = chamadas.find((c) => c.caminho === '/api/clinica/agendamentos')
@@ -32,18 +32,20 @@ test('clínica usa a própria área, sem menu administrativo nem seleção de ou
 
 test('conta da clínica troca a senha pelo endpoint autenticado e não envia confirmação', async () => {
   const chamadas = apiFalsa({ 'PUT /api/auth/senha': { mensagem: 'Senha alterada.' } })
+  // O contato da unidade e o sino também carregam: aqui só interessam as trocas de senha.
+  const trocas = () => chamadas.filter((c) => c.metodo === 'PUT')
   await montar('/clinica/conta')
   const campos = document.querySelectorAll('input[type="password"]')
   await digitar(campos[0], 'senhaAtual123')
   await digitar(campos[1], ' senhaNova123 ')
   await digitar(campos[2], 'diferente')
   await enviar(document.querySelector('form'))
-  assert.equal(chamadas.length, 0)
+  assert.equal(trocas().length, 0)
   assert.ok(porTexto('As senhas não conferem.', 'p'))
   await digitar(campos[2], ' senhaNova123 ')
   await enviar(document.querySelector('form'))
   await esperar(() => porTexto('Senha alterada.', 'p'))
-  assert.deepEqual(chamadas[0].corpo, { senhaAtual: 'senhaAtual123', novaSenha: ' senhaNova123 ' })
+  assert.deepEqual(trocas()[0].corpo, { senhaAtual: 'senhaAtual123', novaSenha: ' senhaNova123 ' })
 })
 
 test('conta da clínica mostra quando a senha atual não confere e não limpa o formulário', async () => {
@@ -85,4 +87,37 @@ test('editar conta existente sem senha mantém a senha atual', async () => {
   await enviar(document.querySelector('form'))
   assert.equal(salvos.length, 1)
   assert.equal(salvos[0].senhaLogin, undefined)
+})
+
+test('conta da clínica edita telefone, horário e e-mail de contato pela rota da clínica', async () => {
+  const chamadas = apiFalsa({
+    'GET /api/clinica/painel': { unidades: [{ ...unidade, telefone: '(22) 1111-0000', horarioFuncionamento: null, email: null }], modulos: ['clinicas', 'agendamentos'] },
+    'PUT /api/clinica/unidade': ({ corpo }) => ({ ...unidade, ...corpo }),
+  })
+  await montar('/clinica/conta')
+  const formulario = (await esperar(() => porTexto('Contato da unidade', 'h2'))).closest('form')
+  const [telefone, horario, email] = formulario.querySelectorAll('input')
+  assert.equal(telefone.value, '(22) 1111-0000')
+  await digitar(horario, 'Seg a sex, 8h às 17h')
+  await digitar(email, 'contato@clinica.com')
+  await enviar(formulario)
+  await esperar(() => porTexto('Dados de contato salvos.', 'p'))
+  assert.deepEqual(chamadas.find((c) => c.metodo === 'PUT').corpo, {
+    telefone: '(22) 1111-0000', horarioFuncionamento: 'Seg a sex, 8h às 17h', email: 'contato@clinica.com',
+  })
+})
+
+test('clínica vê o sino com os avisos da unidade e a página de notificações', async () => {
+  const chamadas = apiFalsa({
+    'GET /api/clinica/painel': { unidades: [unidade], modulos: ['clinicas', 'agendamentos'] },
+    'GET /api/clinica/agendamentos': { conteudo: [], totalPaginas: 0 },
+    'GET /api/clinica/notificacoes': [{ id: 'n1', titulo: 'Novo agendamento na unidade', detalhe: 'Ana – 10/11 às 09:00', quando: 'agora', lida: false, tipo: 'agendamento' }],
+    'PATCH /api/clinica/notificacoes/lidas': { status: 204, corpo: null },
+  })
+  await montar('/clinica/notificacoes')
+  await esperar(() => porTexto('Novo agendamento na unidade', 'span'))
+  assert.ok(document.querySelector('button[aria-label="Notificações, 1 não lidas"]'))
+  await clicar(porTexto('Marcar todas como lidas', 'button'))
+  await esperar(() => chamadas.some((c) => c.metodo === 'PATCH' && c.caminho === '/api/clinica/notificacoes/lidas'))
+  assert.ok(chamadas.every((c) => c.caminho.startsWith('/api/clinica/')), 'só rotas da clínica')
 })

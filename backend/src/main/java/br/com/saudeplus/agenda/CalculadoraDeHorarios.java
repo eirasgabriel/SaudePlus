@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Horários livres de um médico: as janelas (por data ou semanais antigas) fatiadas pela duração,
+ * Horários livres de um médico: as janelas (por data ou semanais) fatiadas pela duração,
  * menos o que já passou (ou está perto demais), os bloqueios e os horários
  * ocupados por agendamentos.
  *
@@ -23,8 +23,8 @@ public final class CalculadoraDeHorarios {
     }
 
     /**
-     * Janela de atendimento: `data` (dia específico) ou `dia` (janela semanal
-     * antiga), exatamente um dos dois.
+     * Janela de atendimento: `data` (dia específico) ou `dia` (janela
+     * semanal), exatamente um dos dois.
      */
     public record Janela(LocalDate data, DayOfWeek dia, LocalTime inicio, LocalTime fim, int duracaoMin,
             UUID unidadeId, Modalidade modalidade) {

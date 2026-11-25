@@ -19,8 +19,9 @@ export default function useTabela({
   camposBusca = [],
   filtros = {},
   valoresIniciais = {},
+  buscaInicial = "",
 }) {
-  const [busca, definirBusca] = useState("");
+  const [busca, definirBusca] = useState(buscaInicial);
   const [valores, definirValores] = useState(valoresIniciais);
   const [pagina, definirPagina] = useState(1);
 

@@ -74,6 +74,46 @@
   grid-template-columns: 4px 52px minmax(0, 1fr) auto;
 }
 
+/* Ações da recepção: ocupam uma linha própria, abaixo do nome, sem apertar a grade. */
+.acoesDaConsulta {
+  grid-column: 3 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+}
+
+.acao,
+.acaoPerigo {
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface);
+  color: var(--color-primary-dark);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.acao:hover { border-color: var(--color-primary-dark); }
+.acaoPerigo { color: var(--state-danger); }
+.acaoPerigo:hover { border-color: var(--state-danger); }
+
+.retorno {
+  margin: 0 0 var(--space-3, 12px);
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--state-success-bg);
+  color: var(--color-navy-950);
+  font-size: 14px;
+}
+
+.retorno[role='alert'] {
+  background: var(--state-danger-bg, var(--color-surface-muted));
+  color: var(--state-danger);
+}
+
 .itemSemLink[data-status='cancelada'] time,
 .itemSemLink[data-status='cancelada'] strong,
 .itemSemLink[data-status='faltou'] time,

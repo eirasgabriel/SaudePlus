@@ -1,22 +1,21 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Cartao from "./Cartao";
 import Icone from "./Icone";
 import Etiqueta from "./Etiqueta";
 import ItemLista, { Lista } from "./ItemLista";
-import { Interruptor, Botao } from "./Controles";
+import { Botao } from "./Controles";
 import { integracoes, integracoesDisponiveis } from "../services/dadosAdminConfiguracoes";
 import comum from "../styles/adminComum.module.css";
 import estilos from "../styles/adminConfig.module.css";
 import { avisarEmBreve } from "./AvailabilityNotice/emBreve.js";
 
+/**
+ * Integrações com a situação real de cada uma: nada aqui liga ou desliga um
+ * serviço que ainda não existe. A que tem aba própria (Notificações) abre
+ * essa aba.
+ */
 export default function AdminConfigIntegracoes() {
-  const [lista, definirLista] = useState(integracoes);
-
-  function alternar(id, ativo) {
-    definirLista((atuais) =>
-      atuais.map((i) => (i.id === id ? { ...i, ativo } : i))
-    );
-  }
+  const [, definirParametros] = useSearchParams();
 
   return (
     <div className={estilos.gradePrincipal}>
@@ -26,47 +25,27 @@ export default function AdminConfigIntegracoes() {
         icone="link"
       >
         <Lista>
-          {lista.map((item) => {
-            const ligado = item.tipo === "interruptor" ? item.ativo : true;
-
-            return (
-              <ItemLista
-                key={item.id}
-                icone={item.icone}
-                tom={item.tom}
-                titulo={item.titulo}
-                descricao={item.descricao}
-                comSeta
-                direita={
-                  <>
-                    {item.tipo === "interruptor" ? (
-                      <>
-                        <Etiqueta variante={ligado ? "sucesso" : "neutro"} comPonto>
-                          {ligado ? "Ativo" : "Inativo"}
-                        </Etiqueta>
-                        <Interruptor
-                          ligado={ligado}
-                          aoAlternar={(v) => alternar(item.id, v)}
-                          rotulo={item.titulo}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        {item.etiqueta && (
-                          <Etiqueta variante={item.etiqueta.variante} comPonto>
-                            {item.etiqueta.rotulo}
-                          </Etiqueta>
-                        )}
-                        <Botao variante="secundario" icone="engrenagem" onClick={() => avisarEmBreve(`Configurar ${item.titulo}`)}>
-                          Configurar
-                        </Botao>
-                      </>
-                    )}
-                  </>
-                }
-              />
-            );
-          })}
+          {integracoes.map((item) => (
+            <ItemLista
+              key={item.id}
+              icone={item.icone}
+              tom={item.tom}
+              titulo={item.titulo}
+              descricao={item.descricao}
+              direita={
+                <>
+                  <Etiqueta variante={item.situacao.variante} comPonto>
+                    {item.situacao.rotulo}
+                  </Etiqueta>
+                  {item.aba && (
+                    <Botao variante="secundario" icone="engrenagem" onClick={() => definirParametros({ aba: item.aba })}>
+                      Configurar
+                    </Botao>
+                  )}
+                </>
+              }
+            />
+          ))}
         </Lista>
       </Cartao>
 

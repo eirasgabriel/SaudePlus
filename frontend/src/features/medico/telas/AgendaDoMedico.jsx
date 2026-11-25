@@ -114,9 +114,18 @@ function ConsultasDoDia({ retorno }) {
   );
 }
 
-/* Janelas são por data (dd/mm/aa), de hoje até DIAS_DE_AGENDA à frente. */
+/*
+ * Janela num dia (dd/mm/aa, de hoje até DIAS_DE_AGENDA à frente) ou toda
+ * semana. A semanal é só leitura depois de criada: para mudar, remove e inclui outra.
+ */
 const DIAS_DE_AGENDA = 90;
-const JANELA_VAZIA = { unidadeId: "", data: "", inicio: "08:00", fim: "12:00", duracaoMin: "30", modalidade: "presencial" };
+const JANELA_VAZIA = {
+  unidadeId: "", tipo: "data", data: "", diaSemana: "1", inicio: "08:00", fim: "12:00", duracaoMin: "30", modalidade: "presencial",
+};
+const TIPOS_DE_JANELA = [
+  { valor: "data", rotulo: "Uma data" },
+  { valor: "semanal", rotulo: "Toda semana" },
+];
 
 /** Hoje e os próximos dias, em ISO, para a lista de datas do formulário. */
 const diasDaAgenda = () => Array.from({ length: DIAS_DE_AGENDA + 1 }, (_, i) => hojeIso(i));
@@ -124,8 +133,12 @@ const diasDaAgenda = () => Array.from({ length: DIAS_DE_AGENDA + 1 }, (_, i) => 
 /** "12/11/26 (hoje)" para o dia atual; "12/11/26" para os outros. */
 const rotuloDoDia = (iso) => (iso === hojeIso() ? `${dataCurtaBr(iso)} (hoje)` : dataCurtaBr(iso));
 
-/** Janela por data → "12/11/26"; janela semanal antiga → "Toda segunda". */
-const quandoDaJanela = (d) => (d.data ? dataCurtaBr(d.data) : `Toda ${DIAS_DA_SEMANA[d.diaSemana]?.toLowerCase() ?? ""}`);
+/** "Toda segunda", mas "Todo sábado" e "Todo domingo" (ISO: 6 e 7). */
+const todaSemana = (diaSemana) =>
+  `${Number(diaSemana) >= 6 ? "Todo" : "Toda"} ${DIAS_DA_SEMANA[diaSemana]?.toLowerCase() ?? ""}`;
+
+/** Janela por data → "12/11/26"; janela semanal → "Toda segunda". */
+const quandoDaJanela = (d) => (d.data ? dataCurtaBr(d.data) : todaSemana(d.diaSemana));
 const BLOQUEIO_VAZIO = { inicio: "", fim: "", motivo: "" };
 
 function ConfiguracaoDaAgenda({ retorno }) {
@@ -152,12 +165,13 @@ function ConfiguracaoDaAgenda({ retorno }) {
     setNovoBloqueio(BLOQUEIO_VAZIO);
   };
 
+  /** Só janelas por data chegam aqui: a semanal não tem "Editar". */
   const editarJanela = (janela) => {
     setErros({});
     setErroGeral(null);
     const hoje = hojeIso();
-    const data = janela.data && janela.data >= hoje ? janela.data : hoje;
-    setNovaJanela({ ...janela, data, unidadeId: janela.unidade.id });
+    const data = janela.data >= hoje ? janela.data : hoje;
+    setNovaJanela({ ...JANELA_VAZIA, ...janela, tipo: "data", data, unidadeId: janela.unidade.id });
   };
 
   const salvarJanela = async (evento) => {
@@ -169,8 +183,10 @@ function ConfiguracaoDaAgenda({ retorno }) {
         inicio: novaJanela.inicio,
         fim: novaJanela.fim,
         modalidade: novaJanela.modalidade,
-        data: novaJanela.data,
         duracaoMin: Number(novaJanela.duracaoMin),
+        ...(novaJanela.tipo === "semanal"
+          ? { diaSemana: Number(novaJanela.diaSemana) }
+          : { data: novaJanela.data }),
       };
       if (novaJanela.id) await alterarDisponibilidade(novaJanela.id, corpo);
       else await criarDisponibilidade(corpo);
@@ -255,11 +271,18 @@ function ConfiguracaoDaAgenda({ retorno }) {
                     <span className={estilos.itemSecundario}>
                       {d.unidade.nome} · consultas de {d.duracaoMin} min · {ROTULO_MODALIDADE[d.modalidade] ?? d.modalidade}
                     </span>
+                    {!d.data && (
+                      <span className={estilos.itemSecundario}>
+                        Repete toda semana. Para mudar, remova e inclua outra.
+                      </span>
+                    )}
                   </div>
                   <div className={estilos.botoes}>
-                    <button type="button" className={estilos.botaoSecundario} onClick={() => editarJanela(d)}>
-                      Editar
-                    </button>
+                    {d.data && (
+                      <button type="button" className={estilos.botaoSecundario} onClick={() => editarJanela(d)}>
+                        Editar
+                      </button>
+                    )}
                     <button
                       type="button"
                       className={estilos.botaoPerigo}
@@ -325,14 +348,44 @@ function ConfiguracaoDaAgenda({ retorno }) {
                 {unidadesAtivas.map((u) => <option key={u.id} value={u.id}>{u.nome}</option>)}
               </select>
             </div>
-            <div className={dlg.campo}>
-              <label className={dlg.rotulo} htmlFor="janela-data">Data</label>
-              <select id="janela-data" className={`${dlg.select} ${erros.data ? dlg.campoInvalido : ""}`} value={novaJanela.data}
-                onChange={(e) => setNovaJanela((atual) => ({ ...atual, data: e.target.value }))}>
-                {diasDaAgenda().map((iso) => <option key={iso} value={iso}>{rotuloDoDia(iso)}</option>)}
-              </select>
-              {erros.data && <p className={dlg.erro}>{erros.data}</p>}
-            </div>
+            {/* Só na inclusão: a janela editada continua por data. */}
+            {!novaJanela.id && (
+              <fieldset className={dlg.campo}>
+                <legend className={dlg.rotulo}>Repetição</legend>
+                <div className={dlg.datas}>
+                  {TIPOS_DE_JANELA.map(({ valor, rotulo }) => (
+                    <button
+                      key={valor}
+                      type="button"
+                      className={`${dlg.data} ${novaJanela.tipo === valor ? dlg.dataAtiva : ""}`}
+                      aria-pressed={novaJanela.tipo === valor}
+                      onClick={() => setNovaJanela((atual) => ({ ...atual, tipo: valor }))}
+                    >
+                      {rotulo}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+            {novaJanela.tipo === "semanal" ? (
+              <div className={dlg.campo}>
+                <label className={dlg.rotulo} htmlFor="janela-dia">Dia da semana</label>
+                <select id="janela-dia" className={`${dlg.select} ${erros.diaSemana ? dlg.campoInvalido : ""}`} value={novaJanela.diaSemana}
+                  onChange={(e) => setNovaJanela((atual) => ({ ...atual, diaSemana: e.target.value }))}>
+                  {DIAS_DA_SEMANA.slice(1).map((dia, i) => <option key={dia} value={i + 1}>{todaSemana(i + 1)}</option>)}
+                </select>
+                {(erros.diaSemana || erros.data) && <p className={dlg.erro}>{erros.diaSemana || erros.data}</p>}
+              </div>
+            ) : (
+              <div className={dlg.campo}>
+                <label className={dlg.rotulo} htmlFor="janela-data">Data</label>
+                <select id="janela-data" className={`${dlg.select} ${erros.data ? dlg.campoInvalido : ""}`} value={novaJanela.data}
+                  onChange={(e) => setNovaJanela((atual) => ({ ...atual, data: e.target.value }))}>
+                  {diasDaAgenda().map((iso) => <option key={iso} value={iso}>{rotuloDoDia(iso)}</option>)}
+                </select>
+                {erros.data && <p className={dlg.erro}>{erros.data}</p>}
+              </div>
+            )}
             {campoDaJanela("inicio", "Início", { type: "time" })}
             {campoDaJanela("fim", "Fim", { type: "time" })}
             {campoDaJanela("duracaoMin", "Duração de cada consulta (min)", { type: "number", min: 5, max: 240 })}

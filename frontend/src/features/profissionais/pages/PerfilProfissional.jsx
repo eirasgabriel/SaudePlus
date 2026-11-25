@@ -12,6 +12,7 @@ import { agruparHorarios, linkDeAgendamento, paraPerfil, rotuloDoDia } from "../
 import { useAuthOpcional } from "../../auth/auth.context.js";
 
 import styles from "./PerfilProfissional.module.css";
+import { nomeDoSistema } from "../../../services/identidadeDoSite.js";
 
 const AVALIACOES_POR_PAGINA = 5;
 const dataCurta = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" });
@@ -170,7 +171,7 @@ export default function PerfilProfissional() {
   const { estado, perfil, dias, avaliacoes, tentarDeNovo } = usePerfil(id);
 
   useEffect(() => {
-    if (perfil) document.title = `SaúdePlus — ${perfil.nome}`;
+    if (perfil) document.title = `${nomeDoSistema()} — ${perfil.nome}`;
   }, [perfil]);
 
   if (estado === "carregando") {

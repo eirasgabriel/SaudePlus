@@ -24,7 +24,7 @@ public final class AgendaConfiguradaResposta {
 
     /**
      * Janela de atendimento. `data` nas janelas por dia; `diaSemana` (ISO,
-     * 1 = segunda) só nas semanais antigas. Exatamente um dos dois vem preenchido.
+     * 1 = segunda) nas semanais. Exatamente um dos dois vem preenchido.
      */
     public record DisponibilidadeResposta(UUID id, UnidadeResumo unidade, LocalDate data, Integer diaSemana,
             String inicio, String fim, int duracaoMin, Modalidade modalidade) {

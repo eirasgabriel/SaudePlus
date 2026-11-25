@@ -1,6 +1,9 @@
 package br.com.saudeplus.publico;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
@@ -113,7 +116,9 @@ class PublicoApiTest {
                     .andExpect(jsonPath("$.conteudo[1].fotoUrl").value("/images/profissionais/dr-roberto-almeida.jpg"))
                     // Janelas de segunda a sexta: sempre há horário livre nas próximas duas semanas.
                     .andExpect(jsonPath("$.conteudo[1].proximaData").isNotEmpty())
-                    .andExpect(jsonPath("$.conteudo[1].proximosHorarios", hasSize(6)));
+                    // Até 6 horários do primeiro dia com vaga. O relógio é o real: no meio da manhã
+                    // o dia de hoje pode ter sobrado só 1, então o número exato depende da hora.
+                    .andExpect(jsonPath("$.conteudo[1].proximosHorarios", hasSize(allOf(greaterThanOrEqualTo(1), lessThanOrEqualTo(6)))));
         }
 
         @Test

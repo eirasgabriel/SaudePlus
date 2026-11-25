@@ -20,8 +20,8 @@ import jakarta.persistence.Table;
  * bloqueios e agendamentos. As modalidades que um médico oferece são as das
  * suas disponibilidades.
  *
- * As janelas novas são por `data`. As antigas, semanais ("às segundas"), têm
- * `diaSemana` e continuam valendo; cada janela tem exatamente um dos dois.
+ * A janela vale num dia (`data`) ou toda semana (`diaSemana`, "às segundas");
+ * cada janela tem exatamente um dos dois.
  */
 @Entity
 @Table(name = "disponibilidades")
@@ -35,11 +35,11 @@ public class Disponibilidade extends EntidadeComId {
     @JoinColumn(name = "unidade_id", nullable = false)
     private Unidade unidade;
 
-    /** Janela semanal antiga. ISO-8601: 1 = segunda, 7 = domingo. Nulo nas janelas por data. */
+    /** Janela semanal. ISO-8601: 1 = segunda, 7 = domingo. Nulo nas janelas por data. */
     @Column(name = "dia_semana")
     private Short diaSemana;
 
-    /** Dia da janela. Nulo nas janelas semanais antigas. */
+    /** Dia da janela. Nulo nas janelas semanais. */
     @Column(name = "data")
     private LocalDate data;
 
@@ -58,7 +58,7 @@ public class Disponibilidade extends EntidadeComId {
     protected Disponibilidade() {
     }
 
-    /** Janela semanal (formato antigo; mantido para dados existentes e testes). */
+    /** Janela semanal ("toda segunda"). */
     public Disponibilidade(Medico medico, Unidade unidade, DayOfWeek diaSemana, LocalTime inicio, LocalTime fim,
             int duracaoMin, Modalidade modalidade) {
         this.medico = medico;
@@ -126,7 +126,7 @@ public class Disponibilidade extends EntidadeComId {
         return unidade;
     }
 
-    /** Dia da semana da janela semanal antiga; null nas janelas por data. */
+    /** Dia da semana da janela semanal; null nas janelas por data. */
     public DayOfWeek getDiaSemana() {
         return diaSemana == null ? null : DayOfWeek.of(diaSemana);
     }

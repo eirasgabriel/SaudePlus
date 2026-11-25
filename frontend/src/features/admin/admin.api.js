@@ -113,8 +113,26 @@ export function alterarConvenio(id, dados, { sinal } = {}) {
   return http.put(`/api/admin/convenios/${id}`, dados, { sinal, autenticado });
 }
 
+/** `{ nome, descricao }`; o slug sai do nome. Nome repetido responde 409. */
+export function criarEspecialidade(dados, { sinal } = {}) {
+  return http.post("/api/admin/especialidades", dados, { sinal, autenticado });
+}
+
+export function alterarEspecialidade(id, dados, { sinal } = {}) {
+  return http.put(`/api/admin/especialidades/${id}`, dados, { sinal, autenticado });
+}
+
 export function listarTiposDeExame({ sinal } = {}) {
   return http.get("/api/admin/tipos-exame", { sinal, autenticado });
+}
+
+/** `{ nome, categoria, preparo, prazoResultadoDias }`. */
+export function criarTipoDeExame(dados, { sinal } = {}) {
+  return http.post("/api/admin/tipos-exame", dados, { sinal, autenticado });
+}
+
+export function alterarTipoDeExame(id, dados, { sinal } = {}) {
+  return http.put(`/api/admin/tipos-exame/${id}`, dados, { sinal, autenticado });
 }
 
 /* ------------------------------------------------------------ agendamentos */

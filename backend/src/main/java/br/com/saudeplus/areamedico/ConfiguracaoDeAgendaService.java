@@ -1,6 +1,7 @@
 package br.com.saudeplus.areamedico;
 
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -36,8 +37,8 @@ import br.com.saudeplus.security.UsuarioAutenticado;
 import br.com.saudeplus.usuarios.UsuarioRepository;
 
 /**
- * O médico monta a própria agenda: janelas de atendimento por data (de hoje
- * em diante; as semanais antigas continuam valendo) e
+ * O médico monta a própria agenda: janelas de atendimento num dia (de hoje
+ * em diante) ou toda semana (só leitura depois de criadas) e
  * bloqueios (férias, folgas). Agendamentos já feitos não mudam quando uma
  * janela muda; um bloqueio sobre consultas marcadas exige confirmação.
  */
@@ -66,7 +67,7 @@ public class ConfiguracaoDeAgendaService {
 
     // ------------------------------------------------------------------ janelas
 
-    /** Janelas por data primeiro, em ordem de dia e hora; as semanais antigas depois. */
+    /** Janelas por data primeiro, em ordem de dia e hora; as semanais depois. */
     private static final Comparator<Disponibilidade> ORDEM_DAS_JANELAS = Comparator
             .comparing(Disponibilidade::getData, Comparator.nullsLast(Comparator.naturalOrder()))
             .thenComparing(Disponibilidade::getDiaSemana, Comparator.nullsLast(Comparator.naturalOrder()))
@@ -87,17 +88,32 @@ public class ConfiguracaoDeAgendaService {
     public DisponibilidadeResposta criarDisponibilidade(UsuarioAutenticado usuario, SalvarDisponibilidade requisicao) {
         Medico medico = medicoLogado.de(usuario);
         Unidade unidade = validar(medico, requisicao, null);
-        Disponibilidade nova = disponibilidades.save(new Disponibilidade(medico, unidade,
-                requisicao.data(), requisicao.inicio(), requisicao.fim(), requisicao.duracaoMin(),
-                requisicao.modalidade()));
-        return DisponibilidadeResposta.de(nova);
+        Disponibilidade nova = requisicao.data() != null
+                ? new Disponibilidade(medico, unidade, requisicao.data(), requisicao.inicio(), requisicao.fim(),
+                        requisicao.duracaoMin(), requisicao.modalidade())
+                : new Disponibilidade(medico, unidade, DayOfWeek.of(requisicao.diaSemana()), requisicao.inicio(),
+                        requisicao.fim(), requisicao.duracaoMin(), requisicao.modalidade());
+        return DisponibilidadeResposta.de(disponibilidades.save(nova));
     }
 
+    /**
+     * Só janelas por data se editam, e continuam por data. A semanal é só
+     * leitura: mudá-la alteraria todas as semanas de uma vez, então o médico
+     * remove e inclui outra.
+     */
     @Transactional
     public DisponibilidadeResposta alterarDisponibilidade(UsuarioAutenticado usuario, UUID id,
             SalvarDisponibilidade requisicao) {
         Medico medico = medicoLogado.de(usuario);
         Disponibilidade existente = disponibilidadeDoMedico(medico, id);
+        if (existente.getData() == null) {
+            throw new RegraDeNegocioException(
+                    "Janelas semanais não podem ser editadas. Remova esta e inclua outra.");
+        }
+        if (requisicao.data() == null) {
+            throw RequisicaoInvalidaException.noCampo("data",
+                    "Uma janela por data continua por data. Para atender toda semana, inclua uma janela semanal.");
+        }
         Unidade unidade = validar(medico, requisicao, id);
         existente.alterar(unidade, requisicao.data(), requisicao.inicio(), requisicao.fim(),
                 requisicao.duracaoMin(), requisicao.modalidade());
@@ -112,7 +128,10 @@ public class ConfiguracaoDeAgendaService {
 
     private Unidade validar(Medico medico, SalvarDisponibilidade requisicao, UUID ignorar) {
         LocalDate hoje = LocalDate.now(relogio);
-        if (requisicao.data().isBefore(hoje)) {
+        if ((requisicao.data() == null) == (requisicao.diaSemana() == null)) {
+            throw RequisicaoInvalidaException.noCampo("data", "Escolha uma data ou um dia da semana (só um dos dois).");
+        }
+        if (requisicao.data() != null && requisicao.data().isBefore(hoje)) {
             throw RequisicaoInvalidaException.noCampo("data", "Escolha uma data de hoje em diante.");
         }
         if (!requisicao.inicio().isBefore(requisicao.fim())) {
@@ -126,9 +145,10 @@ public class ConfiguracaoDeAgendaService {
                 .findFirst()
                 .orElseThrow(() -> new RegraDeNegocioException(
                         "Você não atende nesta unidade, ou ela não está em funcionamento."));
+        DayOfWeek dia = requisicao.diaSemana() == null ? null : DayOfWeek.of(requisicao.diaSemana());
         boolean sobrepoe = disponibilidades.findByMedicoId(medico.getId()).stream()
                 .filter(d -> !d.getId().equals(ignorar) && !d.passou(hoje))
-                .anyMatch(d -> d.sobrepoe(requisicao.data(), null, requisicao.inicio(), requisicao.fim()));
+                .anyMatch(d -> d.sobrepoe(requisicao.data(), dia, requisicao.inicio(), requisicao.fim()));
         if (sobrepoe) {
             throw new ConflitoException("Esse horário se sobrepõe a outra janela de atendimento no mesmo dia.");
         }

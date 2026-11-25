@@ -118,8 +118,8 @@ export function registrarAtendimento(consultaId, { resumo, desfecho }, { sinal }
   return http.patch(`/api/medico/agendamentos/${consultaId}/atendimento`, { resumo, desfecho }, { sinal, autenticado });
 }
 
-/* Janelas por data: { unidadeId, data "AAAA-MM-DD" (de hoje em diante), inicio "HH:mm", fim, duracaoMin, modalidade }.
-   Na resposta, janelas semanais antigas vêm com diaSemana (1 = segunda) e data nula. */
+/* Janelas: { unidadeId, data "AAAA-MM-DD" (de hoje em diante) OU diaSemana (1 = segunda), inicio "HH:mm", fim,
+   duracaoMin, modalidade }. Exatamente um dos dois; só janelas por data podem ser alteradas (a semanal dá 422). */
 
 export function listarDisponibilidades({ sinal } = {}) {
   return http.get("/api/medico/disponibilidades", { sinal, autenticado });

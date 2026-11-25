@@ -53,7 +53,7 @@ import ExamesDoAdmin from '../features/admin/pages/ExamesDoAdmin.jsx'
 import ContaDoAdmin from '../features/admin/pages/ContaDoAdmin.jsx'
 import AdminSuportePage from '../pages/AdminSuportePage.jsx'
 import DashboardDaUnidade from '../features/clinicas/pages/DashboardDaUnidade.jsx'
-import { LayoutDaClinica, ContaDaClinica } from '../features/clinicas/pages/AreaDaClinica.jsx'
+import { LayoutDaClinica, ContaDaClinica, NotificacoesDaClinica } from '../features/clinicas/pages/AreaDaClinica.jsx'
 import MedicosDaClinica from '../features/clinicas/pages/MedicosDaClinica.jsx'
 import RouteEffects from './RouteEffects.jsx'
 import styles from './App.module.css'
@@ -157,9 +157,10 @@ export default function App() {
           <Route path="conta" element={<ContaDoMedico />} />
         </Route>
         <Route path="/clinica" element={<RotaProtegida permitir={['CLINICA']}><LayoutDaClinica /></RotaProtegida>}>
-          <Route index element={<DashboardDaUnidade acessoClinica />} />
+          <Route index element={<DashboardDaUnidade />} />
           <Route path="medicos" element={<MedicosDaClinica />} />
           <Route path="conta" element={<ContaDaClinica />} />
+          <Route path="notificacoes" element={<NotificacoesDaClinica />} />
         </Route>
         <Route
           path="/admin"

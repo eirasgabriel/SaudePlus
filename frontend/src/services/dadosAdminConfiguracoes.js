@@ -6,6 +6,8 @@
 export const abas = [
   { id: "geral", rotulo: "Geral", icone: "engrenagem" },
   { id: "usuarios", rotulo: "Permissões", icone: "escudoCheck" },
+  { id: "agendamento", rotulo: "Agendamento", icone: "calendario" },
+  { id: "cadastros", rotulo: "Cadastros", icone: "documento" },
   { id: "notificacoes", rotulo: "Notificações", icone: "sino" },
   { id: "integracoes", rotulo: "Integrações", icone: "link" },
   { id: "seguranca", rotulo: "Segurança", icone: "escudoCheck" },
@@ -240,13 +242,15 @@ export const permissoesIniciais = {
 export const canaisNotificacao = [
   {
     id: "email",
+    fixo: "Sempre ativo",
     titulo: "E-mail",
-    descricao: "Envio de notificações por e-mail para usuários, médicos e clínicas.",
+    descricao: "Hoje o e-mail só é usado na recuperação de senha, que não pode ser desligada.",
     icone: "email",
     ativo: true,
   },
   {
     id: "sms",
+    disponivel: false,
     titulo: "SMS",
     descricao: "Envio de mensagens de texto para o celular.",
     icone: "chat",
@@ -254,6 +258,7 @@ export const canaisNotificacao = [
   },
   {
     id: "push",
+    disponivel: false,
     titulo: "Push (App)",
     descricao: "Notificações no aplicativo móvel.",
     icone: "sino",
@@ -292,6 +297,7 @@ export const tiposNotificacao = [
   },
   {
     id: "cadastro",
+    disponivel: false,
     titulo: "Atualizações de cadastro",
     descricao: "Alterações de dados do usuário.",
     icone: "usuario",
@@ -299,6 +305,7 @@ export const tiposNotificacao = [
   },
   {
     id: "lembretes",
+    disponivel: false,
     titulo: "Lembretes de consulta",
     descricao: "Envio de lembretes por e-mail e SMS.",
     icone: "relogio",
@@ -327,6 +334,12 @@ export const modelosMensagem = [
 /* =========================================================
    Aba: Integrações
    ========================================================= */
+/*
+ * Situação real de cada integração. Nenhuma integração externa (Google,
+ * WhatsApp, push) existe ainda: elas aparecem como "Em breve", sem
+ * interruptor que finja ligar algo. O e-mail é configurado no servidor
+ * (variáveis de ambiente do SMTP) e as notificações têm aba própria.
+ */
 export const integracoes = [
   {
     id: "google",
@@ -334,8 +347,7 @@ export const integracoes = [
     descricao: "Sincronização de agendas e compromissos.",
     icone: "calendario",
     tom: "azul",
-    tipo: "interruptor",
-    ativo: true,
+    situacao: { rotulo: "Em breve", variante: "neutro" },
   },
   {
     id: "whatsapp",
@@ -343,17 +355,15 @@ export const integracoes = [
     descricao: "Envio de confirmações e lembretes.",
     icone: "chat",
     tom: "verde",
-    tipo: "interruptor",
-    ativo: true,
+    situacao: { rotulo: "Em breve", variante: "neutro" },
   },
   {
     id: "smtp",
     titulo: "E-mail / SMTP",
-    descricao: "Envio de e-mails do sistema.",
+    descricao: "Envio de e-mails do sistema. Servidor, usuário e senha ficam nas variáveis de ambiente do back-end.",
     icone: "email",
     tom: "neutro",
-    tipo: "configurar",
-    etiqueta: { rotulo: "Conectado", variante: "info" },
+    situacao: { rotulo: "Configurado no servidor", variante: "info" },
   },
   {
     id: "notificacoes",
@@ -361,8 +371,8 @@ export const integracoes = [
     descricao: "Alertas visíveis no painel do sistema.",
     icone: "sino",
     tom: "azul",
-    tipo: "interruptor",
-    ativo: true,
+    situacao: { rotulo: "Nativo", variante: "sucesso" },
+    aba: "notificacoes",
   },
   {
     id: "push",
@@ -370,17 +380,7 @@ export const integracoes = [
     descricao: "Notificações no aplicativo móvel.",
     icone: "celular",
     tom: "azul",
-    tipo: "interruptor",
-    ativo: true,
-  },
-  {
-    id: "cadastro",
-    titulo: "Atualizações de cadastro",
-    descricao: "Alterações de dados do usuário.",
-    icone: "usuario",
-    tom: "azul",
-    tipo: "configurar",
-    etiqueta: { rotulo: "Ativo", variante: "sucesso" },
+    situacao: { rotulo: "Em breve", variante: "neutro" },
   },
   {
     id: "lembretes",
@@ -388,8 +388,7 @@ export const integracoes = [
     descricao: "Envio de lembretes por e-mail e SMS.",
     icone: "relogio",
     tom: "azul",
-    tipo: "configurar",
-    etiqueta: { rotulo: "Ativo", variante: "sucesso" },
+    situacao: { rotulo: "Em breve", variante: "neutro" },
   },
 ];
 
@@ -432,9 +431,8 @@ export const itensSeguranca = [
     titulo: "Autenticação em Dois Fatores (2FA)",
     descricao: "Exija um segundo fator de autenticação para acesso à conta.",
     icone: "escudoCadeado",
-    tipo: "interruptor",
-    ativo: true,
-    etiqueta: { rotulo: "Ativo", variante: "sucesso" },
+    // Ainda não existe no back-end: não aparece como ativo nem tem interruptor.
+    tipo: "emBreve",
   },
   {
     id: "senhas",
@@ -478,16 +476,17 @@ export const itensSeguranca = [
   },
 ];
 
+/* O que vale hoje no servidor, sem prometer o que ainda não existe. */
 export const statusSeguranca = [
-  { id: "2fa", rotulo: "2FA ativado", valor: "Sim", variante: "sucesso" },
-  { id: "senhas", rotulo: "Política de senhas", valor: "Ativa", variante: "sucesso" },
+  { id: "2fa", rotulo: "2FA", valor: "Em breve", variante: "neutro" },
+  { id: "senhas", rotulo: "Senha mínima", valor: "8 caracteres", variante: "sucesso" },
   { id: "logs", rotulo: "Logs de acesso", valor: "Habilitado", variante: "sucesso" },
-  { id: "backup", rotulo: "Backup automático", valor: "Ativo", variante: "sucesso" },
+  { id: "backup", rotulo: "Backup", valor: "Pelo provedor do banco", variante: "info" },
 ];
 
 export const dicasSeguranca = [
   "Use senhas fortes e únicas.",
-  "Ative a autenticação em dois fatores.",
+  "Revise os logs de acesso com frequência.",
   "Não compartilhe seus dados de acesso.",
   "Mantenha o sistema sempre atualizado.",
 ];

@@ -3,7 +3,7 @@ import Cartao from "./Cartao";
 import Icone from "./Icone";
 import Etiqueta from "./Etiqueta";
 import ItemLista, { Lista } from "./ItemLista";
-import { Interruptor, Seletor } from "./Controles";
+import { Botao, Interruptor, Seletor } from "./Controles";
 import {
   canaisNotificacao,
   tiposNotificacao,
@@ -15,25 +15,52 @@ import comum from "../styles/adminComum.module.css";
 import estilos from "../styles/adminConfig.module.css";
 import { avisarEmBreve } from "./AvailabilityNotice/emBreve.js";
 
-export default function AdminConfigNotificacoes() {
-  const [canais, definirCanais] = useState(canaisNotificacao);
-  const [tipos, definirTipos] = useState(tiposNotificacao);
-  const [horarios, definirHorarios] = useState(horariosEnvio);
+/** Liga o que veio gravado (`{ canais: { sistema: false } }`) aos itens da tela. */
+const comValores = (itens, gravados = {}) =>
+  itens.map((item) => ({ ...item, ativo: typeof gravados[item.id] === "boolean" ? gravados[item.id] : item.ativo }));
+
+/** Só os itens que o servidor aplica vão para o grupo `notificacoes`. */
+const paraGravar = (itens) =>
+  Object.fromEntries(itens.filter((i) => i.disponivel !== false && !i.fixo).map((i) => [i.id, i.ativo]));
+
+const EmBreve = () => <Etiqueta variante="neutro">Em breve</Etiqueta>;
+
+/**
+ * Notificações do sistema. Com a API (`valores`, `aoSalvar`), "Notificações
+ * no sistema" e os tipos Agendamentos, Resultados de exames e Mensagens do
+ * sistema são gravados e valem para todos: desligados, o servidor não grava
+ * a notificação. SMS, push, horários de envio e modelos ainda não existem e
+ * aparecem como "Em breve".
+ */
+export default function AdminConfigNotificacoes({ valores, aoSalvar }) {
+  const [canais, definirCanais] = useState(() => comValores(canaisNotificacao, valores?.canais));
+  const [tipos, definirTipos] = useState(() => comValores(tiposNotificacao, valores?.tipos));
+  const [salvando, definirSalvando] = useState(false);
+  const [mensagem, definirMensagem] = useState(null);
 
   function alternarCanal(id, ativo) {
+    definirMensagem(null);
     definirCanais((atuais) => atuais.map((c) => (c.id === id ? { ...c, ativo } : c)));
   }
 
   function alternarTipo(id) {
+    definirMensagem(null);
     definirTipos((atuais) =>
       atuais.map((t) => (t.id === id ? { ...t, ativo: !t.ativo } : t))
     );
   }
 
-  function ajustarHorario(id, campo, valor) {
-    definirHorarios((atuais) =>
-      atuais.map((h) => (h.id === id ? { ...h, [campo]: valor } : h))
-    );
+  async function salvar() {
+    definirSalvando(true);
+    definirMensagem(null);
+    try {
+      await aoSalvar({ canais: paraGravar(canais), tipos: paraGravar(tipos) });
+      definirMensagem({ tom: "sucesso", texto: "Notificações salvas. Valem para os próximos avisos." });
+    } catch (falha) {
+      definirMensagem({ tom: "erro", texto: falha?.message ?? "Não foi possível salvar." });
+    } finally {
+      definirSalvando(false);
+    }
   }
 
   return (
@@ -53,11 +80,16 @@ export default function AdminConfigNotificacoes() {
               titulo={c.titulo}
               descricao={c.descricao}
               direita={
-                <Interruptor
-                  ligado={c.ativo}
-                  aoAlternar={(v) => alternarCanal(c.id, v)}
-                  rotulo={c.titulo}
-                />
+                c.disponivel === false ? <EmBreve /> : c.fixo ? (
+                  <Etiqueta variante="sucesso">{c.fixo}</Etiqueta>
+                ) : (
+                  <Interruptor
+                    ligado={c.ativo}
+                    aoAlternar={(v) => alternarCanal(c.id, v)}
+                    rotulo={c.titulo}
+                    desabilitado={!aoSalvar}
+                  />
+                )
               }
             />
           ))}
@@ -73,41 +105,49 @@ export default function AdminConfigNotificacoes() {
               icone={t.icone}
               titulo={t.titulo}
               descricao={t.descricao}
-              comSeta
-              aoClicar={() => alternarTipo(t.id)}
+              comSeta={t.disponivel !== false && Boolean(aoSalvar)}
+              aoClicar={t.disponivel !== false && aoSalvar ? () => alternarTipo(t.id) : undefined}
               direita={
-                <Etiqueta variante={t.ativo ? "sucesso" : "neutro"}>
-                  {t.ativo ? "Ativo" : "Inativo"}
-                </Etiqueta>
+                t.disponivel === false ? <EmBreve /> : (
+                  <Etiqueta variante={t.ativo ? "sucesso" : "neutro"}>
+                    {t.ativo ? "Ativo" : "Inativo"}
+                  </Etiqueta>
+                )
               }
             />
           ))}
         </Lista>
+
+        {aoSalvar && (
+          <div className={estilos.formulario} style={{ marginTop: 16 }}>
+            {mensagem && (
+              <p
+                role={mensagem.tom === "erro" ? "alert" : "status"}
+                style={{ margin: 0, fontSize: 13, color: mensagem.tom === "erro" ? "var(--state-danger)" : undefined }}
+              >
+                {mensagem.texto}
+              </p>
+            )}
+            <Botao icone="baixar" onClick={salvar} disabled={salvando}>
+              {salvando ? "Salvando…" : "Salvar notificações"}
+            </Botao>
+          </div>
+        )}
       </Cartao>
 
       {/* ---------- horários e modelos ---------- */}
       <div className={estilos.coluna}>
         <Cartao
           titulo="Horários de Envio"
-          subtitulo="Defina os horários em que as notificações podem ser enviadas."
+          subtitulo="Em breve: hoje os avisos chegam na hora em que acontecem."
           icone="relogio"
         >
-          {horarios.map((h) => (
-            <div key={h.id} className={estilos.horarioLinha}>
+          {horariosEnvio.map((h) => (
+            <div key={h.id} className={estilos.horarioLinha} aria-disabled="true" style={{ opacity: 0.6, pointerEvents: "none" }}>
               <span className={estilos.horarioRotulo}>{h.rotulo}</span>
-              <Seletor
-                valor={h.inicio}
-                aoMudar={(v) => ajustarHorario(h.id, "inicio", v)}
-                opcoes={opcoesHora}
-                rotulo={`${h.rotulo} — início`}
-              />
+              <Seletor valor={h.inicio} aoMudar={() => {}} opcoes={opcoesHora} rotulo={`${h.rotulo} — início`} />
               <span className={estilos.horarioTraco}>–</span>
-              <Seletor
-                valor={h.fim}
-                aoMudar={(v) => ajustarHorario(h.id, "fim", v)}
-                opcoes={opcoesHora}
-                rotulo={`${h.rotulo} — fim`}
-              />
+              <Seletor valor={h.fim} aoMudar={() => {}} opcoes={opcoesHora} rotulo={`${h.rotulo} — fim`} />
             </div>
           ))}
         </Cartao>
@@ -135,8 +175,8 @@ export default function AdminConfigNotificacoes() {
           <div>
             <div className={comum.avisoTitulo}>Importante</div>
             <p className={comum.avisoTexto}>
-              As notificações ajudam a melhorar a comunicação com os pacientes e
-              profissionais, reduzindo faltas e agilizando o acesso às informações.
+              Desligar um tipo vale para todos os usuários: pacientes, médicos,
+              clínicas e equipe deixam de receber esses avisos no sistema.
             </p>
           </div>
         </div>

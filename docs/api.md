@@ -262,6 +262,7 @@ Rotas sem login usadas pela busca de profissionais (`/buscar`). Implementadas em
 | `GET /api/publico/especialidades` | `[{ id, slug, nome, descricao }]`, por nome |
 | `GET /api/publico/tipos-exame` | `[{ id, nome, categoria, preparo, prazoResultadoDias }]` |
 | `GET /api/publico/convenios` | `[{ id, nome }]`, só os ativos |
+| `GET /api/publico/identidade` | `{ nomeSistema, descricao, emailSuporte, telefone, endereco, corPrincipal, corSecundaria }` de Configurações > Geral; campo não gravado vem nulo, cor só em `#RRGGBB` |
 | `GET /api/publico/cidades` | `[{ nome, uf, rotulo }]`; `rotulo` é o texto do filtro ("São Paulo - SP") |
 | `GET /api/publico/unidades?cidade=&uf=` | unidades em funcionamento, opcionalmente de uma cidade |
 | `GET /api/publico/unidades/{id}` | uma unidade; `404` se não existe ou não está `ativa` |
